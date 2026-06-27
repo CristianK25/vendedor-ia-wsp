@@ -12,27 +12,89 @@
           ]
         }
       },
-      "id": "cron-carrito",
-      "name": "Cron (11:00) - Carrito",
+      "id": "cron-unificado",
+      "name": "Cron (11:00) - Unificado",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
       "position": [
         0,
-        0
+        448
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT i.id, i.telefono, c.nombre, p.nombre AS producto_nombre FROM interacciones i JOIN productos p ON i.producto_id = p.id JOIN clientes c ON i.telefono = c.telefono WHERE i.tipo_evento = 'CONSULTA' AND i.fecha <= NOW() - INTERVAL '1 day' AND i.seguimiento_completado = false AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= NOW() - INTERVAL '7 days') AND c.ultima_interaccion_cliente <= NOW() - INTERVAL '24 hours'"
+        "query": "SELECT \n    i.id, \n    i.telefono, \n    c.nombre, \n    p.nombre AS producto_nombre, \n    p.categoria, \n    i.tipo_evento, \n    i.fecha,\n    CASE \n        WHEN i.tipo_evento = 'CONSULTA' THEN 'CARRITO'\n        WHEN i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '15 days' THEN 'CROSS_SELLING'\n        WHEN i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '7 days' THEN 'CALIDAD'\n    END AS destino_flujo\nFROM interacciones i \nJOIN productos p ON i.producto_id = p.id \nJOIN clientes c ON i.telefono = c.telefono \nWHERE i.seguimiento_completado = false \n  AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= NOW() - INTERVAL '7 days') \n  AND c.ultima_interaccion_cliente <= NOW() - INTERVAL '24 hours'\n  AND (\n      (i.tipo_evento = 'CONSULTA' AND i.fecha <= NOW() - INTERVAL '1 day')\n      OR (i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '7 days') \n  )"
       },
-      "id": "sql-carrito",
-      "name": "Buscar Carritos",
+      "id": "sql-unificado",
+      "name": "Buscar Interacciones (Unificado)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
         200,
-        0
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const validItems = [];\nconst invalidItems = [];\n\nconst items = $input.all();\n\nfor (const item of items) {\n  const data = item.json;\n  \n  const hasId = data.id !== undefined && data.id !== null;\n  const hasPhone = typeof data.telefono === 'string' && data.telefono.trim().length > 6;\n  const hasClientName = typeof data.nombre === 'string';\n  const hasDestino = typeof data.destino_flujo === 'string';\n  \n  if (hasId && hasPhone && hasClientName && hasDestino) {\n    validItems.push(item);\n  } else {\n    invalidItems.push({\n      json: {\n        error: \"Payload inválido o campos faltantes\",\n        timestamp: new Date().toISOString(),\n        originalData: data\n      }\n    });\n  }\n}\n\nreturn [validItems, invalidItems];"
+      },
+      "id": "code-validate",
+      "name": "Validar Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        448
+      ],
+      "typeOptions": {
+        "multipleValues": {
+          "main": 2
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "loop-node",
+      "name": "Loop",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        600,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.destino_flujo }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "CARRITO",
+              "output": 0
+            },
+            {
+              "value2": "CALIDAD",
+              "output": 1
+            },
+            {
+              "value2": "CROSS_SELLING",
+              "output": 2
+            }
+          ]
+        },
+        "fallbackOutput": "none"
+      },
+      "id": "switch-node",
+      "name": "Switch: Tipo Evento",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        800,
+        448
       ]
     },
     {
@@ -48,77 +110,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.6,
       "position": [
-        400,
-        0
-      ]
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Buscar Carritos').item.json.telefono }}",
-        "text": "={{ $json.output }}",
-        "additionalFields": {}
-      },
-      "id": "telegram-carrito",
-      "name": "Telegram (Carrito)",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.1,
-      "position": [
-        720,
-        0
-      ],
-      "credentials": {
-        "telegramApi": {
-          "id": "sNEgRxsnCouQBM1B",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE interacciones SET seguimiento_completado = true WHERE id = {{ $('Buscar Carritos').item.json.id }}; UPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $('Buscar Carritos').item.json.telefono }}';"
-      },
-      "id": "update-carrito",
-      "name": "Actualizar DB (Carrito)",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [
-        912,
-        0
-      ]
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "cronExpression",
-              "expression": "5 11 * * *"
-            }
-          ]
-        }
-      },
-      "id": "cron-calidad",
-      "name": "Cron (11:05) - Calidad",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1,
-      "position": [
-        0,
-        304
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT i.id, i.telefono, c.nombre, p.nombre AS producto_nombre FROM interacciones i JOIN productos p ON i.producto_id = p.id JOIN clientes c ON i.telefono = c.telefono WHERE i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '3 days' AND i.seguimiento_completado = false AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= NOW() - INTERVAL '7 days') AND c.ultima_interaccion_cliente <= NOW() - INTERVAL '24 hours'"
-      },
-      "id": "sql-calidad",
-      "name": "Buscar Post-Ventas",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [
-        208,
-        304
+        1100,
+        200
       ]
     },
     {
@@ -134,77 +127,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.6,
       "position": [
-        400,
-        304
-      ]
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Buscar Post-Ventas').item.json.telefono }}",
-        "text": "={{ $json.output }}",
-        "additionalFields": {}
-      },
-      "id": "telegram-calidad",
-      "name": "Telegram (Calidad)",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.1,
-      "position": [
-        720,
-        304
-      ],
-      "credentials": {
-        "telegramApi": {
-          "id": "sNEgRxsnCouQBM1B",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE interacciones SET seguimiento_completado = true WHERE id = {{ $('Buscar Post-Ventas').item.json.id }}; UPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $('Buscar Post-Ventas').item.json.telefono }}';"
-      },
-      "id": "update-calidad",
-      "name": "Actualizar DB (Calidad)",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [
-        912,
-        304
-      ]
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "cronExpression",
-              "expression": "10 11 * * *"
-            }
-          ]
-        }
-      },
-      "id": "cron-cross",
-      "name": "Cron (11:10) - Cross",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1,
-      "position": [
-        0,
-        608
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT i.id, i.telefono, c.nombre, p.nombre AS producto_nombre, p.categoria FROM interacciones i JOIN productos p ON i.producto_id = p.id JOIN clientes c ON i.telefono = c.telefono WHERE i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '15 days' AND i.seguimiento_completado = false AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= NOW() - INTERVAL '7 days') AND c.ultima_interaccion_cliente <= NOW() - INTERVAL '24 hours'"
-      },
-      "id": "sql-cross",
-      "name": "Buscar Cross-Selling",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [
-        208,
-        608
+        1100,
+        448
       ]
     },
     {
@@ -220,23 +144,23 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.6,
       "position": [
-        400,
-        608
+        1100,
+        700
       ]
     },
     {
       "parameters": {
-        "chatId": "={{ $('Buscar Cross-Selling').item.json.telefono }}",
+        "chatId": "={{ $json.telefono }}",
         "text": "={{ $json.output }}",
         "additionalFields": {}
       },
-      "id": "telegram-cross",
-      "name": "Telegram (Cross)",
+      "id": "telegram-carrito",
+      "name": "Telegram (Unificado)",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        720,
-        608
+        1400,
+        448
       ],
       "credentials": {
         "telegramApi": {
@@ -248,15 +172,15 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE interacciones SET seguimiento_completado = true WHERE id = {{ $('Buscar Cross-Selling').item.json.id }}; UPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $('Buscar Cross-Selling').item.json.telefono }}';"
+        "query": "UPDATE interacciones SET seguimiento_completado = true WHERE id = {{ $json.id }};\nUPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $json.telefono }}';"
       },
-      "id": "update-cross",
-      "name": "Actualizar DB (Cross)",
+      "id": "update-carrito",
+      "name": "Actualizar DB (Unificado)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        912,
-        608
+        1600,
+        448
       ]
     },
     {
@@ -322,22 +246,70 @@
   ],
   "pinData": {},
   "connections": {
-    "Cron (11:00) - Carrito": {
+    "Cron (11:00) - Unificado": {
       "main": [
         [
           {
-            "node": "Buscar Carritos",
+            "node": "Buscar Interacciones (Unificado)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Buscar Carritos": {
+    "Buscar Interacciones (Unificado)": {
+      "main": [
+        [
+          {
+            "node": "Validar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Payload": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "Switch: Tipo Evento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Tipo Evento": {
       "main": [
         [
           {
             "node": "IA Redactor (Carrito)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA Redactor (Calidad)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA Redactor (Cross)",
             "type": "main",
             "index": 0
           }
@@ -348,40 +320,7 @@
       "main": [
         [
           {
-            "node": "Telegram (Carrito)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Telegram (Carrito)": {
-      "main": [
-        [
-          {
-            "node": "Actualizar DB (Carrito)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Cron (11:05) - Calidad": {
-      "main": [
-        [
-          {
-            "node": "Buscar Post-Ventas",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Buscar Post-Ventas": {
-      "main": [
-        [
-          {
-            "node": "IA Redactor (Calidad)",
+            "node": "Telegram (Unificado)",
             "type": "main",
             "index": 0
           }
@@ -392,40 +331,7 @@
       "main": [
         [
           {
-            "node": "Telegram (Calidad)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Telegram (Calidad)": {
-      "main": [
-        [
-          {
-            "node": "Actualizar DB (Calidad)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Cron (11:10) - Cross": {
-      "main": [
-        [
-          {
-            "node": "Buscar Cross-Selling",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Buscar Cross-Selling": {
-      "main": [
-        [
-          {
-            "node": "IA Redactor (Cross)",
+            "node": "Telegram (Unificado)",
             "type": "main",
             "index": 0
           }
@@ -436,18 +342,29 @@
       "main": [
         [
           {
-            "node": "Telegram (Cross)",
+            "node": "Telegram (Unificado)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Telegram (Cross)": {
+    "Telegram (Unificado)": {
       "main": [
         [
           {
-            "node": "Actualizar DB (Cross)",
+            "node": "Actualizar DB (Unificado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar DB (Unificado)": {
+      "main": [
+        [
+          {
+            "node": "Loop",
             "type": "main",
             "index": 0
           }
