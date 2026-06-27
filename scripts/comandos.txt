@@ -1,37 +1,52 @@
-#!/bin/bash
-# 1. Levantar n8n
+# ========================================================
+# 🤖 GUÍA DE COMANDOS - VENDEDOR IA (n8n + PostgreSQL)
+# ========================================================
+
+# --------------------------------------------------------
+# 1. GESTIÓN DE DOCKER (Contenedores)
+# --------------------------------------------------------
+# Encender el sistema en segundo plano (Recomendado)
 docker compose up -d
 
-# 2. Esperar unos segundos a que la BD inicialice
-sleep 10
+# Ver en tiempo real qué está pasando (Logs)
+docker compose logs -f
 
-# 3. Crear usuario admin
-docker compose exec -T n8n n8n user:create --email "admin@cliente.com" --password "pass123"
+# Apagar el sistema
+docker compose down
 
-# 4. Importar el flujo
-docker compose exec -T n8n n8n import:workflow --input=/data/flujo.json
-
-# 5. Activar el flujo (Publicar versión actual)
-docker compose exec -T n8n n8n publish:workflow --id="mi-flujo-ventas-id"
-
-echo "¡Agente IA desplegado y activo!"
-
-# Crea la carpeta de datos si no existe
-mkdir -p n8n_data
-
-# Inyecta tu script de inicialización en el archivo de base de datos
-sqlite3 n8n_data/negocio.sqlite < db_init.sql
+# Apagar y borrar toda la base de datos (¡CUIDADO!)
+docker compose down -v
 
 
-    Levantar el entorno
-# 1. Copia el archivo de ejemplo para crear tu entorno local
-cp .env.example .env
+# --------------------------------------------------------
+# 2. IMPORTAR FLUJOS A N8N DESDE LA TERMINAL
+# --------------------------------------------------------
+# Importar el flujo principal (flujo.json)
+docker compose exec n8n n8n import:workflow --input=/data/flujo.json
 
-# 1.1 Ejecutar el generador de claves
-./scripts/setup.sh
+# Importar el flujo de seguimiento (flujo_seguimiento.json)
+docker compose exec n8n n8n import:workflow --input=/data/flujo_seguimiento.json
 
-# 2. Edita el archivo .env y ponle una contraseña segura a N8N_ENCRYPTION_KEY
-nano .env
 
-# 3. Levanta el contenedor en segundo plano
-docker compose up -d
+# --------------------------------------------------------
+# 3. BASE DE DATOS (POSTGRESQL)
+# --------------------------------------------------------
+# Entrar a la consola SQL interactiva de Postgres
+# (Una vez adentro, puedes escribir comandos como: SELECT * FROM clientes;)
+docker compose exec db psql -U n8n -d vendedor_ia
+
+# Hacer un backup manual de la base de datos a un archivo
+docker compose exec db pg_dump -U n8n -d vendedor_ia > backup.sql
+
+# Restaurar un backup
+cat backup.sql | docker compose exec -T db psql -U n8n -d vendedor_ia
+
+
+# --------------------------------------------------------
+# 4. SOLUCIÓN DE PROBLEMAS COMUNES
+# --------------------------------------------------------
+# Error: "Mismatching encryption keys" (Ocurre si pierdes tu .env)
+# Solución: Borrar el archivo de config de n8n para que genere uno nuevo.
+# Nota: Tendrás que volver a poner tus contraseñas en los nodos de n8n.
+rm n8n_data/config
+docker compose restart n8n

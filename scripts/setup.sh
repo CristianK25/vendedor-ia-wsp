@@ -30,22 +30,25 @@ else
         echo "📋 Copiando $ENV_EXAMPLE a $ENV_FILE..."
         cp "$ENV_EXAMPLE" "$ENV_FILE"
         
-        # 3. Generar clave aleatoria segura usando openssl (o dev/urandom como fallback)
-        echo "🔑 Generando clave de encriptación segura..."
+        # 3. Generar claves aleatorias seguras usando openssl (o dev/urandom como fallback)
+        echo "🔑 Generando claves de seguridad (n8n y Postgres)..."
         if command -v openssl >/dev/null 2>&1; then
             SECURE_KEY=$(openssl rand -hex 24)
+            DB_PASS=$(openssl rand -hex 16)
         else
             SECURE_KEY=$(head -c 24 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 32)
+            DB_PASS=$(head -c 16 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 24)
         fi
 
-        # 4. Reemplazar la clave temporal en el archivo .env
-        # Usamos sed para buscar la variable N8N_ENCRYPTION_KEY y reemplazar su valor
+        # 4. Reemplazar las claves temporales en el archivo .env
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # Compatibilidad para macOS
             sed -i '' "s/N8N_ENCRYPTION_KEY=.*/N8N_ENCRYPTION_KEY=$SECURE_KEY/g" "$ENV_FILE"
+            sed -i '' "s/POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$DB_PASS/g" "$ENV_FILE"
         else
             # Linux estándar
             sed -i "s/N8N_ENCRYPTION_KEY=.*/N8N_ENCRYPTION_KEY=$SECURE_KEY/g" "$ENV_FILE"
+            sed -i "s/POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$DB_PASS/g" "$ENV_FILE"
         fi
 
         echo "✅ Archivo .env generado exitosamente con una clave segura única."
@@ -55,20 +58,12 @@ else
     fi
 fi
 
-# 5. Inicializar la base de datos SQLite
-echo "📦 Verificando base de datos SQLite..."
-mkdir -p n8n_data
-if [ ! -f "n8n_data/negocio.sqlite" ]; then
-    echo "Creando base de datos inicial..."
-    if command -v sqlite3 >/dev/null 2>&1; then
-        sqlite3 n8n_data/negocio.sqlite < db_init.sql
-        echo "✅ Base de datos creada en n8n_data/negocio.sqlite"
-    else
-        echo "⚠️ sqlite3 no está instalado en este sistema. Omite este paso o instálalo."
-    fi
-else
-    echo "ℹ️ La base de datos ya existe. Omitiendo inicialización."
-fi
+# 5. Preparar directorio para PostgreSQL
+echo "📦 Preparando directorio de PostgreSQL..."
+mkdir -p "$PROJECT_ROOT/postgres_data"
+# Postgres usa internamente el usuario postgres.
+# Dejaremos que Docker asigne los permisos correctos al iniciar, 
+# pero nos aseguramos de que la carpeta exista para evitar conflictos de montaje.
 
 echo "============================================="
 echo "Próximos pasos:"
