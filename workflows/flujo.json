@@ -1,0 +1,159 @@
+{
+  "id": "mi-flujo-ventas-id",
+  "name": "Agente de Ventas IA",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ]
+      },
+      "id": "telegram-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [ 0, 0 ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "Eres un Asistente de Ventas IA experto y amable.\n\nTu ÚNICO propósito es ayudar a los clientes de la empresa con las siguientes tareas:\n1. Consultar disponibilidad de stock de nuestros productos.\n2. Vender productos y procesar pedidos.\n3. Agendar citas, entregas o servicios.\n\nREGLAS ESTRICTAS:\n- NO debes responder a preguntas sobre política, programación, conocimientos generales u otros temas fuera de tu rol de vendedor.\n- Si el usuario te pregunta algo no relacionado con ventas o la empresa, responde amablemente que tu función es exclusivamente ayudarle con nuestro catálogo de productos y servicios.\n- Sé siempre cordial, conciso y orienta la conversación hacia el cierre de la venta o el agendamiento.\n- Utiliza las herramientas a tu disposición para verificar datos reales antes de confirmar algo."
+        }
+      },
+      "id": "ai-agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [ 220, 0 ]
+    },
+    {
+      "parameters": {
+        "model": "llama3-70b-8192",
+        "options": {}
+      },
+      "id": "groq-model",
+      "name": "Groq Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [ 220, 220 ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "id": "memory",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [ 360, 260 ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM inventario WHERE producto LIKE '%{{$fromAI(\"producto\")}}%'"
+      },
+      "id": "tool-stock",
+      "name": "Consultar Stock",
+      "type": "@n8n/n8n-nodes-langchain.toolSql",
+      "typeVersion": 1,
+      "position": [ 500, 180 ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO pedidos (producto, cantidad, chat_id) VALUES ('{{$fromAI(\"producto\")}}', {{$fromAI(\"cantidad\")}}, '{{ $('Telegram Trigger').item.json.message.chat.id }}')"
+      },
+      "id": "tool-pedidos",
+      "name": "Crear Pedido",
+      "type": "@n8n/n8n-nodes-langchain.toolSql",
+      "typeVersion": 1,
+      "position": [ 620, 180 ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-output",
+      "name": "Telegram (Send)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [ 600, 0 ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Send)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Stock": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Pedido": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,32 @@
+#!/bin/bash
+# 1. Levantar n8n
+docker compose up -d
+
+# 2. Esperar unos segundos a que la BD inicialice
+sleep 10
+
+# 3. Crear usuario admin
+docker compose exec -T n8n n8n user:create --email "admin@cliente.com" --password "pass123"
+
+# 4. Importar el flujo
+docker compose exec -T n8n n8n import:workflow --input=/data/flujo.json
+
+# 5. Activar el flujo (Publicar versión actual)
+docker compose exec -T n8n n8n publish:workflow --id="mi-flujo-ventas-id"
+
+echo "¡Agente IA desplegado y activo!"
+
+
+
+    Levantar el entorno
+# 1. Copia el archivo de ejemplo para crear tu entorno local
+cp .env.example .env
+
+# 1.1 Ejecutar el generador de claves
+./scripts/setup.sh
+
+# 2. Edita el archivo .env y ponle una contraseña segura a N8N_ENCRYPTION_KEY
+nano .env
+
+# 3. Levanta el contenedor en segundo plano
+docker compose up -d

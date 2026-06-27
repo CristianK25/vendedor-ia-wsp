@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n-vendedor-ia
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-America/Argentina/Mendoza}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+      - ./workflows:/data:ro
+    # El comando 'start --tunnel' genera una URL temporal publica.
+    # Ideal para pruebas con Telegram. En produccion, quitar '--tunnel'.
+    command: start --tunnel
