@@ -1,0 +1,507 @@
+{
+  "name": "Motor de Seguimiento y Retargeting",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 11 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-carrito",
+      "name": "Cron (11:00) - Carrito",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT i.id, i.telefono, c.nombre, p.nombre AS producto_nombre FROM interacciones i JOIN productos p ON i.producto_id = p.id JOIN clientes c ON i.telefono = c.telefono WHERE i.tipo_evento = 'CONSULTA' AND i.fecha <= datetime('now', '-1 day') AND i.seguimiento_completado = 0 AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= datetime('now', '-7 days')) AND c.ultima_interaccion_cliente <= datetime('now', '-24 hours')"
+      },
+      "id": "sql-carrito",
+      "name": "Buscar Carritos",
+      "type": "@n8n/n8n-nodes-langchain.toolSql",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Redacta un mensaje amable por WhatsApp para {{ $json.nombre }}, quien hace 24 horas consultó por {{ $json.producto_nombre }} pero no finalizó la compra.",
+        "options": {
+          "systemMessage": "Eres un experto en ventas. Tu objetivo es recuperar carritos abandonados. Sé sutil, no presiones, y ofrece ayuda o alternativas. Mantén el mensaje corto."
+        }
+      },
+      "id": "ai-carrito",
+      "name": "IA Redactor (Carrito)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Buscar Carritos').item.json.telefono }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-carrito",
+      "name": "Telegram (Carrito)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        0
+      ],
+      "webhookId": "09a2e6f5-05cf-41f2-a3a5-6abb37e464f6",
+      "credentials": {
+        "telegramApi": {
+          "id": "sNEgRxsnCouQBM1B",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE interacciones SET seguimiento_completado = 1 WHERE id = {{ $('Buscar Carritos').item.json.id }}; UPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $('Buscar Carritos').item.json.telefono }}';"
+      },
+      "id": "update-carrito",
+      "name": "Actualizar DB (Carrito)",
+      "type": "@n8n/n8n-nodes-langchain.toolSql",
+      "typeVersion": 1,
+      "position": [
+        912,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "5 11 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-calidad",
+      "name": "Cron (11:05) - Calidad",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT i.id, i.telefono, c.nombre, p.nombre AS producto_nombre FROM interacciones i JOIN productos p ON i.producto_id = p.id JOIN clientes c ON i.telefono = c.telefono WHERE i.tipo_evento = 'COMPRA' AND i.fecha <= datetime('now', '-3 days') AND i.seguimiento_completado = 0 AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= datetime('now', '-7 days')) AND c.ultima_interaccion_cliente <= datetime('now', '-24 hours')"
+      },
+      "id": "sql-calidad",
+      "name": "Buscar Post-Ventas",
+      "type": "@n8n/n8n-nodes-langchain.toolSql",
+      "typeVersion": 1,
+      "position": [
+        208,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Redacta un mensaje para {{ $json.nombre }}, quien compró {{ $json.producto_nombre }} hace 3 días. Pregúntale si todo llegó bien y qué le pareció.",
+        "options": {
+          "systemMessage": "Eres un asistente de atención al cliente. Tu objetivo es fidelizar y asegurar que la compra fue exitosa. Sé cálido y muy breve."
+        }
+      },
+      "id": "ai-calidad",
+      "name": "IA Redactor (Calidad)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        400,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Buscar Post-Ventas').item.json.telefono }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-calidad",
+      "name": "Telegram (Calidad)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        304
+      ],
+      "webhookId": "2df2e2fb-904d-4918-b27e-ae9a5a8277c7",
+      "credentials": {
+        "telegramApi": {
+          "id": "sNEgRxsnCouQBM1B",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE interacciones SET seguimiento_completado = 1 WHERE id = {{ $('Buscar Post-Ventas').item.json.id }}; UPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $('Buscar Post-Ventas').item.json.telefono }}';"
+      },
+      "id": "update-calidad",
+      "name": "Actualizar DB (Calidad)",
+      "type": "@n8n/n8n-nodes-langchain.toolSql",
+      "typeVersion": 1,
+      "position": [
+        912,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "10 11 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-cross",
+      "name": "Cron (11:10) - Cross",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT i.id, i.telefono, c.nombre, p.nombre AS producto_nombre, p.categoria FROM interacciones i JOIN productos p ON i.producto_id = p.id JOIN clientes c ON i.telefono = c.telefono WHERE i.tipo_evento = 'COMPRA' AND i.fecha <= datetime('now', '-15 days') AND i.seguimiento_completado = 0 AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= datetime('now', '-7 days')) AND c.ultima_interaccion_cliente <= datetime('now', '-24 hours')"
+      },
+      "id": "sql-cross",
+      "name": "Buscar Cross-Selling",
+      "type": "@n8n/n8n-nodes-langchain.toolSql",
+      "typeVersion": 1,
+      "position": [
+        208,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Redacta un mensaje para {{ $json.nombre }}, quien compró {{ $json.producto_nombre }} (Categoría: {{ $json.categoria }}) hace 15 días. Ofrécele sutilmente volver a comprar o ver productos relacionados de la misma categoría.",
+        "options": {
+          "systemMessage": "Eres un vendedor experto en retargeting. Tu objetivo es generar una recompra o cross-selling sin parecer spam. Escribe como si fueras un humano acordándose de él."
+        }
+      },
+      "id": "ai-cross",
+      "name": "IA Redactor (Cross)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        400,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Buscar Cross-Selling').item.json.telefono }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-cross",
+      "name": "Telegram (Cross)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        608
+      ],
+      "webhookId": "1a6b483b-3b94-4ccc-8a8e-5be927177792",
+      "credentials": {
+        "telegramApi": {
+          "id": "sNEgRxsnCouQBM1B",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE interacciones SET seguimiento_completado = 1 WHERE id = {{ $('Buscar Cross-Selling').item.json.id }}; UPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $('Buscar Cross-Selling').item.json.telefono }}';"
+      },
+      "id": "update-cross",
+      "name": "Actualizar DB (Cross)",
+      "type": "@n8n/n8n-nodes-langchain.toolSql",
+      "typeVersion": 1,
+      "position": [
+        912,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        400,
+        144
+      ],
+      "id": "0e752536-9f67-4535-abd7-22807fc8135e",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "YwdS011dGQKiOODW",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        400,
+        448
+      ],
+      "id": "b16af8e0-2c36-46ea-90b5-caaf568a7120",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "YwdS011dGQKiOODW",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        400,
+        752
+      ],
+      "id": "923c575a-9f8c-4d2d-a334-be1def38f5b2",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "YwdS011dGQKiOODW",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron (11:00) - Carrito": {
+      "main": [
+        [
+          {
+            "node": "Buscar Carritos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Carritos": {
+      "main": [
+        [
+          {
+            "node": "IA Redactor (Carrito)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Redactor (Carrito)": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Carrito)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram (Carrito)": {
+      "main": [
+        [
+          {
+            "node": "Actualizar DB (Carrito)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron (11:05) - Calidad": {
+      "main": [
+        [
+          {
+            "node": "Buscar Post-Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Post-Ventas": {
+      "main": [
+        [
+          {
+            "node": "IA Redactor (Calidad)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Redactor (Calidad)": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Calidad)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram (Calidad)": {
+      "main": [
+        [
+          {
+            "node": "Actualizar DB (Calidad)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron (11:10) - Cross": {
+      "main": [
+        [
+          {
+            "node": "Buscar Cross-Selling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Cross-Selling": {
+      "main": [
+        [
+          {
+            "node": "IA Redactor (Cross)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Redactor (Cross)": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Cross)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram (Cross)": {
+      "main": [
+        [
+          {
+            "node": "Actualizar DB (Cross)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA Redactor (Carrito)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA Redactor (Calidad)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA Redactor (Cross)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c157247f-935b-4e45-b4d8-d01255024f6e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d90d229e6f91a1588de750a2f504c3d09357d21735e68d2b6f71c25c84d69d34"
+  },
+  "nodeGroups": [],
+  "id": "seguimiento-retargeting-v1",
+  "tags": []
+}

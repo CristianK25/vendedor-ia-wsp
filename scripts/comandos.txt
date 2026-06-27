@@ -16,6 +16,11 @@ docker compose exec -T n8n n8n publish:workflow --id="mi-flujo-ventas-id"
 
 echo "¡Agente IA desplegado y activo!"
 
+# Crea la carpeta de datos si no existe
+mkdir -p n8n_data
+
+# Inyecta tu script de inicialización en el archivo de base de datos
+sqlite3 n8n_data/negocio.sqlite < db_init.sql
 
 
     Levantar el entorno

@@ -55,6 +55,21 @@ else
     fi
 fi
 
+# 5. Inicializar la base de datos SQLite
+echo "📦 Verificando base de datos SQLite..."
+mkdir -p n8n_data
+if [ ! -f "n8n_data/negocio.sqlite" ]; then
+    echo "Creando base de datos inicial..."
+    if command -v sqlite3 >/dev/null 2>&1; then
+        sqlite3 n8n_data/negocio.sqlite < db_init.sql
+        echo "✅ Base de datos creada en n8n_data/negocio.sqlite"
+    else
+        echo "⚠️ sqlite3 no está instalado en este sistema. Omite este paso o instálalo."
+    fi
+else
+    echo "ℹ️ La base de datos ya existe. Omitiendo inicialización."
+fi
+
 echo "============================================="
 echo "Próximos pasos:"
 echo "1. Ejecuta 'nano .env' para configurar tu GROQ_API_KEY y TELEGRAM_BOT_TOKEN."
