@@ -13,10 +13,11 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
       "position": [
-        0,
+        -272,
         0
       ],
       "webhookId": "df90c7db-b64e-4ee4-82f4-711ae6db46e7",
+      "alwaysOutputData": false,
       "credentials": {
         "telegramApi": {
           "id": "sNEgRxsnCouQBM1B",
@@ -27,9 +28,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.message.text }}",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
         "options": {
-          "systemMessage": "Eres un Asistente de Ventas IA experto y amable.\n\nTu ÚNICO propósito es ayudar a los clientes de la empresa con las siguientes tareas:\n1. Consultar disponibilidad de stock de nuestros productos.\n2. Vender productos y procesar pedidos.\n3. Agendar citas, entregas o servicios.\n\nREGLAS ESTRICTAS:\n- NO debes responder a preguntas sobre política, programación, conocimientos generales u otros temas fuera de tu rol de vendedor.\n- Si el usuario te pregunta algo no relacionado con ventas o la empresa, responde amablemente que tu función es exclusivamente ayudarle con nuestro catálogo de productos y servicios.\n- Sé siempre cordial, conciso y orienta la conversación hacia el cierre de la venta o el agendamiento.\n- Utiliza las herramientas a tu disposición para verificar datos reales antes de confirmar algo."
+          "systemMessage": "=Eres un Asistente de Ventas IA experto y amable.\n\nTu ÚNICO propósito es ayudar a los clientes de la empresa con las siguientes tareas:\n1. Consultar disponibilidad de stock de nuestros productos.\n2. Vender productos y procesar pedidos.\n3. Agendar citas, entregas o servicios.\n\nREGLAS ESTRICTAS:\n- NO debes responder a preguntas sobre política, programación, conocimientos generales u otros temas fuera de tu rol de vendedor.\n- Si el usuario te pregunta algo no relacionado con ventas o la empresa, responde amablemente que tu función es exclusivamente ayudarle con nuestro catálogo de productos y servicios.\n- Sé siempre cordial, conciso y orienta la conversación hacia el cierre de la venta o el agendamiento.\n- Utiliza las herramientas a tu disposición para verificar datos reales antes de confirmar algo.\nINFORMACIÓN DEL SISTEMA (No la compartas con el usuario):\nEstás hablando con el cliente cuyo ID de Telegram (teléfono) es: {{ $('Telegram Trigger').item.json.message.chat.id }}\nCuando uses herramientas que requieran el ID del cliente, DEBES usar este número exacto.\n\"REGLA DE SEGURIDAD CRÍTICA: Cuando uses la herramienta de Crear Pedido, TIENES PROHIBIDO ejecutarla más de una vez en el mismo turno. Ejecútala exactamente UNA SOLA VEZ y luego responde inmediatamente al usuario confirmando el éxito.\"\n\"Antes de usar la herramienta Crear Pedido, siempre debes preguntarle al usuario: 'El total es $X, ¿deseas confirmar la compra?'. Solo ejecuta la herramienta si el usuario dice que sí.\""
         }
       },
       "id": "ai-agent",
@@ -39,11 +40,13 @@
       "position": [
         224,
         0
-      ]
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
     },
     {
       "parameters": {
-        "model": "llama-3.3-70b-versatile",
+        "model": "=llama-3.3-70b-versatile",
         "options": {}
       },
       "id": "groq-model",
@@ -77,34 +80,6 @@
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT * FROM inventario WHERE producto LIKE '%{{$fromAI(\"producto\")}}%'"
-      },
-      "id": "tool-stock",
-      "name": "Consultar Stock",
-      "type": "@n8n/n8n-nodes-langchain.toolSql",
-      "typeVersion": 1,
-      "position": [
-        576,
-        320
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO pedidos (producto, cantidad, chat_id) VALUES ('{{$fromAI(\"producto\")}}', {{$fromAI(\"cantidad\")}}, '{{ $('Telegram Trigger').item.json.message.chat.id }}')"
-      },
-      "id": "tool-pedidos",
-      "name": "Crear Pedido",
-      "type": "@n8n/n8n-nodes-langchain.toolSql",
-      "typeVersion": 1,
-      "position": [
-        704,
-        192
-      ]
-    },
-    {
-      "parameters": {
         "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
         "text": "={{ $json.output }}",
         "additionalFields": {}
@@ -117,7 +92,235 @@
         608,
         0
       ],
-      "webhookId": "ea1aae36-5a3e-4586-a99a-d527e34bda16"
+      "webhookId": "ea1aae36-5a3e-4586-a99a-d527e34bda16",
+      "credentials": {
+        "telegramApi": {
+          "id": "sNEgRxsnCouQBM1B",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "clientes",
+          "mode": "list",
+          "cachedResultName": "clientes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $json.message.chat.id }}",
+            "nombre": "={{ $json.message.chat.first_name }}",
+            "ultima_interaccion_cliente": "={{ DateTime.fromSeconds($json.message.date).toISO() }}"
+          },
+          "matchingColumns": [
+            "telefono"
+          ],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "ultimo_mensaje_bot",
+              "displayName": "ultimo_mensaje_bot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "ultima_interaccion_cliente",
+              "displayName": "ultima_interaccion_cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "3126d9a1-8893-4903-8385-0acabdaf0efd",
+      "name": "Insert or update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "XAlxZzVnXRA3vMZo",
+          "name": "Postgres Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Úsala para obtener el catálogo de productos, ver precios y disponibilidad. Al usarla recibirás el catálogo completo al instante. IMPORTANTE: Ejecútala estrictamente UNA SOLA VEZ por cada pregunta del usuario. Nunca la llames dos veces seguidas porque ya tendrás toda la información en la primera lectura.\"",
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "productos",
+          "mode": "list",
+          "cachedResultName": "productos"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', `Busca productos similares segun lo que el mensaje del usuario pida`, 'boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        656,
+        224
+      ],
+      "id": "23f24977-3c0e-4b08-8a0c-38269e0a1505",
+      "name": "Buscar Productos",
+      "credentials": {
+        "postgres": {
+          "id": "XAlxZzVnXRA3vMZo",
+          "name": "Postgres Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Úsala EXCLUSIVAMENTE para crear y registrar un nuevo pedido cuando el cliente confirme que quiere comprar algo del catálogo.\n\"IMPORTANTE: Úsala una sola vez por orden. No la llames dos veces seguidas.\"",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "pedidos",
+          "mode": "list",
+          "cachedResultName": "pedidos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "cantidad": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('cantidad', `La cantidad de unidades que quiere comprar. Si no lo dice, asume 1.`, 'number') }}",
+            "cliente_telefono": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+            "producto": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('producto', `El nombre exacto del producto o productos que el cliente desea comprar.`, 'string') }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "cliente_telefono",
+              "displayName": "cliente_telefono",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "producto",
+              "displayName": "producto",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cantidad",
+              "displayName": "cantidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fecha_pedido",
+              "displayName": "fecha_pedido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        528,
+        288
+      ],
+      "id": "700c6987-6118-4a87-b8fb-4625aad216c8",
+      "name": "Crear pedido",
+      "credentials": {
+        "postgres": {
+          "id": "XAlxZzVnXRA3vMZo",
+          "name": "Postgres Docker"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -126,7 +329,7 @@
       "main": [
         [
           {
-            "node": "AI Agent",
+            "node": "Insert or update rows in a table",
             "type": "main",
             "index": 0
           }
@@ -166,7 +369,18 @@
         ]
       ]
     },
-    "Consultar Stock": {
+    "Insert or update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Productos": {
       "ai_tool": [
         [
           {
@@ -177,7 +391,7 @@
         ]
       ]
     },
-    "Crear Pedido": {
+    "Crear pedido": {
       "ai_tool": [
         [
           {
@@ -189,13 +403,14 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "ca8efe3e-b7eb-41e8-a841-1b1fe9d07143",
+  "versionId": "d84bca0e-be13-4fe8-abf0-b1db8e505297",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "d90d229e6f91a1588de750a2f504c3d09357d21735e68d2b6f71c25c84d69d34"
   },
   "nodeGroups": [],
