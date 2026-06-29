@@ -1,18 +1,28 @@
 {
-  "id": "mi-flujo-ventas-id",
   "name": "Agente de Ventas IA",
   "nodes": [
     {
       "parameters": {
         "updates": [
           "message"
-        ]
+        ],
+        "additionalFields": {}
       },
       "id": "telegram-trigger",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
-      "position": [ 0, 0 ]
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "df90c7db-b64e-4ee4-82f4-711ae6db46e7",
+      "credentials": {
+        "telegramApi": {
+          "id": "sNEgRxsnCouQBM1B",
+          "name": "Telegram account"
+        }
+      }
     },
     {
       "parameters": {
@@ -26,18 +36,30 @@
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.6,
-      "position": [ 220, 0 ]
+      "position": [
+        224,
+        0
+      ]
     },
     {
       "parameters": {
-        "model": "llama3-70b-8192",
+        "model": "llama-3.3-70b-versatile",
         "options": {}
       },
       "id": "groq-model",
       "name": "Groq Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
-      "position": [ 220, 220 ]
+      "position": [
+        224,
+        224
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "YwdS011dGQKiOODW",
+          "name": "Groq account"
+        }
+      }
     },
     {
       "parameters": {
@@ -48,7 +70,10 @@
       "name": "Window Buffer Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.2,
-      "position": [ 360, 260 ]
+      "position": [
+        368,
+        272
+      ]
     },
     {
       "parameters": {
@@ -59,7 +84,10 @@
       "name": "Consultar Stock",
       "type": "@n8n/n8n-nodes-langchain.toolSql",
       "typeVersion": 1,
-      "position": [ 500, 180 ]
+      "position": [
+        576,
+        320
+      ]
     },
     {
       "parameters": {
@@ -70,7 +98,10 @@
       "name": "Crear Pedido",
       "type": "@n8n/n8n-nodes-langchain.toolSql",
       "typeVersion": 1,
-      "position": [ 620, 180 ]
+      "position": [
+        704,
+        192
+      ]
     },
     {
       "parameters": {
@@ -82,9 +113,14 @@
       "name": "Telegram (Send)",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
-      "position": [ 600, 0 ]
+      "position": [
+        608,
+        0
+      ],
+      "webhookId": "ea1aae36-5a3e-4586-a99a-d527e34bda16"
     }
   ],
+  "pinData": {},
   "connections": {
     "Telegram Trigger": {
       "main": [
@@ -153,7 +189,16 @@
       ]
     }
   },
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
-  }
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ca8efe3e-b7eb-41e8-a841-1b1fe9d07143",
+  "meta": {
+    "instanceId": "d90d229e6f91a1588de750a2f504c3d09357d21735e68d2b6f71c25c84d69d34"
+  },
+  "nodeGroups": [],
+  "id": "mi-flujo-ventas-id",
+  "tags": []
 }

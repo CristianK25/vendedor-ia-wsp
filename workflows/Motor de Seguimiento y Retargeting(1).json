@@ -12,40 +12,47 @@
           ]
         }
       },
-      "id": "cron-unificado",
+      "id": "ce9130e4-8b8f-4dee-bbed-4c06d89eed95",
       "name": "Cron (11:00) - Unificado",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
       "position": [
-        0,
-        448
+        -1904,
+        208
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT \n    i.id, \n    i.telefono, \n    c.nombre, \n    p.nombre AS producto_nombre, \n    p.categoria, \n    i.tipo_evento, \n    i.fecha,\n    CASE \n        WHEN i.tipo_evento = 'CONSULTA' THEN 'CARRITO'\n        WHEN i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '15 days' THEN 'CROSS_SELLING'\n        WHEN i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '7 days' THEN 'CALIDAD'\n    END AS destino_flujo\nFROM interacciones i \nJOIN productos p ON i.producto_id = p.id \nJOIN clientes c ON i.telefono = c.telefono \nWHERE i.seguimiento_completado = false \n  AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= NOW() - INTERVAL '7 days') \n  AND c.ultima_interaccion_cliente <= NOW() - INTERVAL '24 hours'\n  AND (\n      (i.tipo_evento = 'CONSULTA' AND i.fecha <= NOW() - INTERVAL '1 day')\n      OR (i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '7 days') \n  )"
+        "query": "SELECT \n    i.id, \n    i.telefono, \n    c.nombre, \n    p.nombre AS producto_nombre, \n    p.categoria, \n    i.tipo_evento, \n    i.fecha,\n    CASE \n        WHEN i.tipo_evento = 'CONSULTA' THEN 'CARRITO'\n        WHEN i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '15 days' THEN 'CROSS_SELLING'\n        WHEN i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '7 days' THEN 'CALIDAD'\n    END AS destino_flujo\nFROM interacciones i \nJOIN productos p ON i.producto_id = p.id \nJOIN clientes c ON i.telefono = c.telefono \nWHERE i.seguimiento_completado = false \n  AND (c.ultimo_mensaje_bot IS NULL OR c.ultimo_mensaje_bot <= NOW() - INTERVAL '7 days') \n  AND c.ultima_interaccion_cliente <= NOW() - INTERVAL '24 hours'\n  AND (\n      (i.tipo_evento = 'CONSULTA' AND i.fecha <= NOW() - INTERVAL '1 day')\n      OR (i.tipo_evento = 'COMPRA' AND i.fecha <= NOW() - INTERVAL '7 days') \n  )",
+        "options": {}
       },
-      "id": "sql-unificado",
+      "id": "7fae8540-a723-470a-b3f8-3989e079ab31",
       "name": "Buscar Interacciones (Unificado)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        200,
-        448
-      ]
+        -1696,
+        208
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "XAlxZzVnXRA3vMZo",
+          "name": "Postgres Docker"
+        }
+      }
     },
     {
       "parameters": {
         "jsCode": "const validItems = [];\nconst invalidItems = [];\n\nconst items = $input.all();\n\nfor (const item of items) {\n  const data = item.json;\n  \n  const hasId = data.id !== undefined && data.id !== null;\n  const hasPhone = typeof data.telefono === 'string' && data.telefono.trim().length > 6;\n  const hasClientName = typeof data.nombre === 'string';\n  const hasDestino = typeof data.destino_flujo === 'string';\n  \n  if (hasId && hasPhone && hasClientName && hasDestino) {\n    validItems.push(item);\n  } else {\n    invalidItems.push({\n      json: {\n        error: \"Payload inválido o campos faltantes\",\n        timestamp: new Date().toISOString(),\n        originalData: data\n      }\n    });\n  }\n}\n\nreturn [validItems, invalidItems];"
       },
-      "id": "code-validate",
+      "id": "3e9fcbde-6299-479d-bf05-2c3632c9f304",
       "name": "Validar Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        400,
-        448
+        -1504,
+        208
       ],
       "typeOptions": {
         "multipleValues": {
@@ -57,95 +64,86 @@
       "parameters": {
         "options": {}
       },
-      "id": "loop-node",
+      "id": "6f5952de-bfcd-46ea-956b-4382ce81533b",
       "name": "Loop",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        600,
-        448
+        -1296,
+        208
       ]
     },
     {
       "parameters": {
-        "dataType": "string",
-        "value1": "={{ $json.destino_flujo }}",
         "rules": {
-          "rules": [
+          "values": [
             {
-              "value2": "CARRITO",
-              "output": 0
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d5e4df6c-ed8b-472e-a17e-a991757acbc5"
+                  }
+                ],
+                "combinator": "and"
+              }
             },
             {
-              "value2": "CALIDAD",
-              "output": 1
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "79b2583c-7ce8-46ce-9e51-2d0f439040b5",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
             },
             {
-              "value2": "CROSS_SELLING",
-              "output": 2
+              "conditions": {
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
             }
           ]
         },
-        "fallbackOutput": "none"
+        "options": {}
       },
-      "id": "switch-node",
+      "id": "f4bfba57-ddd6-4e1a-adbf-9545020e3f9a",
       "name": "Switch: Tipo Evento",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        800,
-        448
-      ]
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "Redacta un mensaje amable por WhatsApp para {{ $json.nombre }}, quien hace 24 horas consultó por {{ $json.producto_nombre }} pero no finalizó la compra.",
-        "options": {
-          "systemMessage": "Eres un experto en ventas. Tu objetivo es recuperar carritos abandonados. Sé sutil, no presiones, y ofrece ayuda o alternativas. Mantén el mensaje corto."
-        }
-      },
-      "id": "ai-carrito",
-      "name": "IA Redactor (Carrito)",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.6,
-      "position": [
-        1100,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "Redacta un mensaje para {{ $json.nombre }}, quien compró {{ $json.producto_nombre }} hace 3 días. Pregúntale si todo llegó bien y qué le pareció.",
-        "options": {
-          "systemMessage": "Eres un asistente de atención al cliente. Tu objetivo es fidelizar y asegurar que la compra fue exitosa. Sé cálido y muy breve."
-        }
-      },
-      "id": "ai-calidad",
-      "name": "IA Redactor (Calidad)",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.6,
-      "position": [
-        1100,
-        448
-      ]
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "Redacta un mensaje para {{ $json.nombre }}, quien compró {{ $json.producto_nombre }} (Categoría: {{ $json.categoria }}) hace 15 días. Ofrécele sutilmente volver a comprar o ver productos relacionados de la misma categoría.",
-        "options": {
-          "systemMessage": "Eres un vendedor experto en retargeting. Tu objetivo es generar una recompra o cross-selling sin parecer spam. Escribe como si fueras un humano acordándose de él."
-        }
-      },
-      "id": "ai-cross",
-      "name": "IA Redactor (Cross)",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.6,
-      "position": [
-        1100,
-        700
+        -976,
+        224
       ]
     },
     {
@@ -154,14 +152,15 @@
         "text": "={{ $json.output }}",
         "additionalFields": {}
       },
-      "id": "telegram-carrito",
+      "id": "56b6f0aa-a62b-4e4f-adf1-489cebf1a187",
       "name": "Telegram (Unificado)",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        1400,
-        448
+        -32,
+        240
       ],
+      "webhookId": "009d86b0-afeb-4527-9f8a-06639a25e393",
       "credentials": {
         "telegramApi": {
           "id": "sNEgRxsnCouQBM1B",
@@ -172,15 +171,73 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE interacciones SET seguimiento_completado = true WHERE id = {{ $json.id }};\nUPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $json.telefono }}';"
+        "query": "UPDATE interacciones SET seguimiento_completado = true WHERE id = {{ $json.id }};\nUPDATE clientes SET ultimo_mensaje_bot = CURRENT_TIMESTAMP WHERE telefono = '{{ $json.telefono }}';",
+        "options": {}
       },
-      "id": "update-carrito",
+      "id": "9e1cd3c0-cf6a-49a3-b552-5a9317129368",
       "name": "Actualizar DB (Unificado)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        1600,
+        -80,
         448
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "XAlxZzVnXRA3vMZo",
+          "name": "Postgres Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Redacta un mensaje amable por WhatsApp para {{ $json.nombre }}, quien hace 24 horas consultó por {{ $json.producto_nombre }} pero no finalizó la compra.",
+        "options": {
+          "systemMessage": "Eres un experto en ventas. Tu objetivo es recuperar carritos abandonados. Sé sutil, no presiones, y ofrece ayuda o alternativas. Mantén el mensaje corto."
+        }
+      },
+      "id": "81a7e37e-b135-49e7-8cd6-bed2442aa404",
+      "name": "IA Redactor (Carrito)1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -528,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Redacta un mensaje para {{ $json.nombre }}, quien compró {{ $json.producto_nombre }} hace 3 días. Pregúntale si todo llegó bien y qué le pareció.",
+        "options": {
+          "systemMessage": "Eres un asistente de atención al cliente. Tu objetivo es fidelizar y asegurar que la compra fue exitosa. Sé cálido y muy breve."
+        }
+      },
+      "id": "5e2b2511-678a-49e8-b7c1-360c8880e7d7",
+      "name": "IA Redactor (Calidad)1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -544,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Redacta un mensaje para {{ $json.nombre }}, quien compró {{ $json.producto_nombre }} (Categoría: {{ $json.categoria }}) hace 15 días. Ofrécele sutilmente volver a comprar o ver productos relacionados de la misma categoría.",
+        "options": {
+          "systemMessage": "Eres un vendedor experto en retargeting. Tu objetivo es generar una recompra o cross-selling sin parecer spam. Escribe como si fueras un humano acordándose de él."
+        }
+      },
+      "id": "9869f624-0f1f-47c4-805d-3559f69d115e",
+      "name": "IA Redactor (Cross)1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -576,
+        240
       ]
     },
     {
@@ -191,11 +248,11 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        400,
-        144
+        -528,
+        -160
       ],
-      "id": "0e752536-9f67-4535-abd7-22807fc8135e",
-      "name": "Groq Chat Model",
+      "id": "57d6d496-15d1-4d77-a41b-e1e6441e5df8",
+      "name": "Groq Chat Model3",
       "credentials": {
         "groqApi": {
           "id": "YwdS011dGQKiOODW",
@@ -211,11 +268,11 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        400,
-        448
+        -544,
+        80
       ],
-      "id": "b16af8e0-2c36-46ea-90b5-caaf568a7120",
-      "name": "Groq Chat Model1",
+      "id": "167e9064-819f-4e24-9496-c7e0ac81ad2b",
+      "name": "Groq Chat Model4",
       "credentials": {
         "groqApi": {
           "id": "YwdS011dGQKiOODW",
@@ -231,17 +288,31 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        400,
-        752
+        -576,
+        368
       ],
-      "id": "923c575a-9f8c-4d2d-a334-be1def38f5b2",
-      "name": "Groq Chat Model2",
+      "id": "af542e8f-ae95-4173-b017-9c916f5aeb82",
+      "name": "Groq Chat Model5",
       "credentials": {
         "groqApi": {
           "id": "YwdS011dGQKiOODW",
           "name": "Groq account"
         }
       }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        672
+      ],
+      "id": "3ab5f71b-3db1-4bb5-a5d3-18f0e4f1d7ac",
+      "name": "Wait",
+      "webhookId": "af01c35b-9dd6-4d08-b450-2d9be5ed38e4"
     }
   ],
   "pinData": {},
@@ -276,73 +347,15 @@
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     },
     "Loop": {
       "main": [
+        [],
         [
           {
             "node": "Switch: Tipo Evento",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch: Tipo Evento": {
-      "main": [
-        [
-          {
-            "node": "IA Redactor (Carrito)",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "IA Redactor (Calidad)",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "IA Redactor (Cross)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IA Redactor (Carrito)": {
-      "main": [
-        [
-          {
-            "node": "Telegram (Unificado)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IA Redactor (Calidad)": {
-      "main": [
-        [
-          {
-            "node": "Telegram (Unificado)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IA Redactor (Cross)": {
-      "main": [
-        [
-          {
-            "node": "Telegram (Unificado)",
             "type": "main",
             "index": 0
           }
@@ -364,41 +377,110 @@
       "main": [
         [
           {
-            "node": "Loop",
+            "node": "Wait",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Groq Chat Model": {
+    "IA Redactor (Carrito)1": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Unificado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Redactor (Calidad)1": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Unificado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Redactor (Cross)1": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Unificado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
       "ai_languageModel": [
         [
           {
-            "node": "IA Redactor (Carrito)",
+            "node": "IA Redactor (Carrito)1",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Groq Chat Model1": {
+    "Groq Chat Model4": {
       "ai_languageModel": [
         [
           {
-            "node": "IA Redactor (Calidad)",
+            "node": "IA Redactor (Calidad)1",
             "type": "ai_languageModel",
             "index": 0
           }
         ]
       ]
     },
-    "Groq Chat Model2": {
+    "Groq Chat Model5": {
       "ai_languageModel": [
         [
           {
-            "node": "IA Redactor (Cross)",
+            "node": "IA Redactor (Cross)1",
             "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Tipo Evento": {
+      "main": [
+        [
+          {
+            "node": "IA Redactor (Carrito)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA Redactor (Calidad)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA Redactor (Cross)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
             "index": 0
           }
         ]
@@ -408,9 +490,10 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "availableInMCP": true
   },
-  "versionId": "c157247f-935b-4e45-b4d8-d01255024f6e",
+  "versionId": "1e1ce8f1-e6fe-4916-b766-e71877fc4488",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "d90d229e6f91a1588de750a2f504c3d09357d21735e68d2b6f71c25c84d69d34"
