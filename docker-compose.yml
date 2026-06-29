@@ -26,9 +26,9 @@ services:
     environment:
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-America/Argentina/Mendoza}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - WEBHOOK_URL=https://seminocturnal-willena-unbeseeching.ngrok-free.dev
     volumes:
       - ./n8n_data:/home/node/.n8n
       - ./workflows:/data:ro
-    # El comando 'start --tunnel' genera una URL temporal publica.
-    # Ideal para pruebas con Telegram. En produccion, quitar '--tunnel'.
-    command: start --tunnel
+    # Ideal para pruebas con Telegram.
+    command: start
