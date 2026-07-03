@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AutoGestor CRM - Calendario</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#2e3132",
+                        "surface-tint": "#4d44e3",
+                        "on-surface-variant": "#464555",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-primary-fixed": "#0f0069",
+                        "tertiary-container": "#4b4dd8",
+                        "inverse-primary": "#c3c0ff",
+                        "secondary": "#565e74",
+                        "outline-variant": "#c7c4d8",
+                        "primary": "#3525cd",
+                        "surface-container-high": "#e7e8e9",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "outline": "#777587",
+                        "on-surface": "#191c1d",
+                        "surface-container-highest": "#e1e3e4",
+                        "tertiary": "#3130c0",
+                        "surface-container": "#edeeef",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-dim": "#d9dadb",
+                        "on-tertiary-fixed-variant": "#2f2ebe",
+                        "on-background": "#191c1d",
+                        "on-tertiary-container": "#d9d8ff",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#dad7ff",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#dae2fd",
+                        "tertiary-fixed": "#e1e0ff",
+                        "tertiary-fixed-dim": "#c0c1ff",
+                        "surface-variant": "#e1e3e4",
+                        "surface": "#f8f9fa",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#4f46e5",
+                        "primary-fixed": "#e2dfff",
+                        "on-secondary-fixed": "#131b2e",
+                        "background": "#f8f9fa",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#07006c",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#dae2fd",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-container": "#5c647a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "1.5rem",
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "sm": "1rem",
+                        "max-width": "1440px",
+                        "xl": "3rem",
+                        "gutter": "24px",
+                        "margin-desktop": "40px",
+                        "xs": "0.5rem",
+                        "lg": "2rem"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "1", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- Navigation Drawer (Desktop) -->
+<aside class="hidden md:flex fixed inset-y-0 left-0 z-[60] flex flex-col p-4 bg-surface dark:bg-surface-dim h-full w-72 rounded-r-xl shadow-lg dark:shadow-none transition-all duration-200 ease-in-out">
+<div class="flex items-center gap-4 mb-8 px-2">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
+<img class="w-full h-full object-cover" data-alt="A professional high-resolution headshot of a luxury car dealership manager, wearing a crisp navy suit, set against a blurred background of a modern glass-walled automotive showroom with soft, diffused daylight creating a premium, authoritative professional atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGsj4hjpUs3qOLWLUlnOXJ1EbTpKNR8zPPtVOjq4WFRv8RgV_3DHxyH2gpxJW9366SMCjy8DuPOr6UG6gMwcMnnQ8wjsvpNswMXEJ6pJ5R_Uwu8zkpBl4420cfN5sLj-qIdhieHS6KhyTZKxMTF_XUwcdpRSnI4t5rnzMbhLSjDmbxvOVSk2pBpJwKgtQH16342zzJabL1LUQlsTZbb0qP4tQnghKBStuiQ5ajm-oWNRqwAYEfvn7o"/>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim">AutoGestor CRM</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gestión de Concesionario</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-xl font-bold transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Calendario</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">directions_car</span>
+<span class="font-label-md text-label-md">Vehículos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Ventas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span class="font-label-md text-label-md">Promociones</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span class="font-label-md text-label-md">Trabajadores</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-72 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full bg-surface dark:bg-surface-dim docked full-width top-0 sticky z-50 border-b border-outline-variant dark:border-outline">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface-variant active:scale-95 duration-100">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">AutoGestor</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="hidden md:inline font-label-md text-label-md text-on-surface-variant">Mayo 2024</span>
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A close-up portrait of a professional male user in his late 30s, featuring a friendly and confident expression, with studio lighting that emphasizes clarity and detail against a neutral, high-end gray background, maintaining the sleek visual identity of the dealership management system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFto5a0pEvoS65HSyMbWb2Zp-oPH75zUmxleAwwHm0_Boz-4MH8O4Ll-j8LwzrIcjSNQwIXImD3CW_x8L-t9NUhs3u02AAPHSuB0lzadD1bOacwfjKQIeYjAU_7vHohH84-I_NdT1FWARJzNqeUG6N1-h_heDJxPRU3kahw9JbZqM2i4GTdLVLcBdZ9-lawjS2o0jES2JT_DyxIGsKTRklSCRHZhdZS-crT21p-WNF4DLl4TpQ-zLA"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="flex-1 p-margin-mobile md:p-margin-desktop bg-surface-container-low overflow-y-auto">
+<!-- Calendar Section -->
+<div class="max-w-max-width mx-auto space-y-6">
+<!-- Calendar Card -->
+<section class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+<!-- Calendar Header -->
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-white">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Mayo 2024</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">8 citas programadas esta semana</p>
+</div>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Weekdays -->
+<div class="calendar-grid bg-surface-container text-center py-3 border-b border-outline-variant">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Lun</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Mar</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Mié</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Jue</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Vie</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Sáb</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider text-error">Dom</div>
+</div>
+<!-- Days Grid -->
+<div class="calendar-grid bg-white">
+<!-- Empty cells for start of month -->
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 bg-surface-container-low"></div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 bg-surface-container-low"></div>
+<!-- Day 1 -->
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface">1</span>
+</div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface">2</span>
+<div class="bg-primary-container/10 border-l-4 border-primary p-1.5 rounded-r">
+<p class="text-[10px] font-bold text-primary truncate">Entrega BMW X5</p>
+</div>
+</div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface">3</span>
+</div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 bg-surface-container-low">
+<span class="font-label-md text-label-md text-on-surface-variant">4</span>
+</div>
+<div class="min-h-[100px] border-b border-outline-variant p-2 flex flex-col gap-1 bg-surface-container-low">
+<span class="font-label-md text-label-md text-on-surface-variant">5</span>
+</div>
+<!-- Row 2 -->
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface">6</span>
+</div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface">7</span>
+</div>
+<!-- Current Day -->
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 bg-primary/5">
+<div class="flex justify-between items-start">
+<span class="flex items-center justify-center w-7 h-7 bg-primary text-on-primary rounded-full font-label-md text-label-md">8</span>
+<span class="w-2 h-2 bg-error rounded-full"></span>
+</div>
+<div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg shadow-sm">
+<p class="text-[10px] font-bold truncate">Cita: Juan Pérez</p>
+<p class="text-[9px] opacity-80">10:30 AM</p>
+</div>
+</div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface">9</span>
+<div class="bg-secondary-container/30 border-l-4 border-secondary p-1.5 rounded-r">
+<p class="text-[10px] font-bold text-on-secondary-container truncate">Revisión Taller</p>
+</div>
+</div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface">10</span>
+</div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 bg-surface-container-low">
+<span class="font-label-md text-label-md text-on-surface-variant">11</span>
+</div>
+<div class="min-h-[100px] border-b border-outline-variant p-2 flex flex-col gap-1 bg-surface-container-low">
+<span class="font-label-md text-label-md text-on-surface-variant">12</span>
+</div>
+<!-- More days (simplified for layout) -->
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 opacity-50"><span class="font-label-md text-label-md text-on-surface">13</span></div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 opacity-50"><span class="font-label-md text-label-md text-on-surface">14</span></div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 opacity-50"><span class="font-label-md text-label-md text-on-surface">15</span></div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 opacity-50"><span class="font-label-md text-label-md text-on-surface">16</span></div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 opacity-50"><span class="font-label-md text-label-md text-on-surface">17</span></div>
+<div class="min-h-[100px] border-r border-b border-outline-variant p-2 flex flex-col gap-1 bg-surface-container-low opacity-50"></div>
+<div class="min-h-[100px] border-b border-outline-variant p-2 flex flex-col gap-1 bg-surface-container-low opacity-50"></div>
+</div>
+</section>
+<!-- Quick Summary / Next Appointment -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-24 md:pb-0">
+<!-- Next Appointment -->
+<div class="bg-white rounded-2xl p-6 border border-outline-variant flex items-center gap-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+<div class="w-16 h-16 rounded-2xl bg-primary-container flex flex-col items-center justify-center text-on-primary-container">
+<span class="font-bold text-xl">10:30</span>
+<span class="text-[10px] uppercase font-medium">Hoy</span>
+</div>
+<div class="flex-1">
+<span class="font-label-sm text-label-sm text-primary mb-1 block">Próxima Cita con cliente</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Juan Pérez García</h3>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">directions_car</span>
+<span class="text-sm">Audi A4 S-Line</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-sm">Showroom A</span>
+</div>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Client Insights / Stats -->
+<div class="bg-white rounded-2xl p-6 border border-outline-variant grid grid-cols-2 gap-4 shadow-sm">
+<div class="p-3 bg-surface-container-low rounded-xl">
+<span class="text-on-surface-variant font-label-sm text-label-sm">Citas hoy</span>
+<p class="text-2xl font-bold text-primary mt-1">4</p>
+</div>
+<div class="p-3 bg-surface-container-low rounded-xl">
+<span class="text-on-surface-variant font-label-sm text-label-sm">Ventas Mayo</span>
+<p class="text-2xl font-bold text-on-surface mt-1">12</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Floating Action Button (FAB) -->
+<button class="fixed right-6 bottom-20 md:bottom-10 bg-primary text-on-primary w-14 h-14 rounded-2xl shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40">
+<span class="material-symbols-outlined font-bold text-2xl">add</span>
+</button>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-16 px-4 pb-safe bg-surface/90 backdrop-blur-md border-t border-outline-variant dark:border-outline z-50">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-90 duration-150 transition-transform" href="#">
+<span class="material-symbols-outlined">event</span>
+<span class="font-label-sm text-label-sm">Agenda</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined">minor_crash</span>
+<span class="font-label-sm text-label-sm">Coches</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="font-label-sm text-label-sm">Ventas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Clientes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest" href="#">
+<span class="material-symbols-outlined">more_horiz</span>
+<span class="font-label-sm text-label-sm">Más</span>
+</a>
+</nav>
+</main>
+<script>
+        // Simple Micro-interaction for Calendar Days
+        document.querySelectorAll('.calendar-grid > div').forEach(day => {
+            if (!day.classList.contains('bg-surface-container') && !day.classList.contains('bg-surface-container-low')) {
+                day.addEventListener('click', () => {
+                    // Reset others
+                    document.querySelectorAll('.calendar-grid > div').forEach(d => d.classList.remove('ring-2', 'ring-inset', 'ring-primary'));
+                    // Set current
+                    day.classList.add('ring-2', 'ring-inset', 'ring-primary');
+                });
+            }
+        });
+
+        // Mobile drawer toggle (mock)
+        const menuBtn = document.querySelector('header button');
+        menuBtn.addEventListener('click', () => {
+            alert('En una implementación real, esto abriría el NavigationDrawer lateral en móvil.');
+        });
+    </script>
+</body></html>

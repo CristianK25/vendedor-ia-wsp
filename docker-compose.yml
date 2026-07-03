@@ -13,7 +13,7 @@ services:
       - ./postgres_data:/var/lib/postgresql/data
       - ./db_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
@@ -32,3 +32,5 @@ services:
       - ./workflows:/data:ro
     # Ideal para pruebas con Telegram.
     command: start
+
+
