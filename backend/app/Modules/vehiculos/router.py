@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form, File, UploadFile
 from sqlmodel import Session
 from typing import List
 from app.Core.database import get_session
@@ -19,9 +19,14 @@ def get_catalogo_n8n(session: Session = Depends(get_session)):
     return service.get_disponibles()
 
 @router.post("/", response_model=VehiculoResponse)
-def create_vehiculo(vehiculo: VehiculoCreate, session: Session = Depends(get_session)):
+async def create_vehiculo(
+    vehiculo: str = Form(...),
+    imagenes: List[UploadFile] = File([]),
+    session: Session = Depends(get_session)
+):
     service = VehiculoService(session)
-    return service.create_vehiculo(vehiculo)
+    vehiculo_data = VehiculoCreate.model_validate_json(vehiculo)
+    return await service.create_vehiculo_con_imagenes(vehiculo_data, imagenes)
 
 @router.get("/{vehiculo_id}", response_model=VehiculoResponse)
 def get_vehiculo(vehiculo_id: int, session: Session = Depends(get_session)):

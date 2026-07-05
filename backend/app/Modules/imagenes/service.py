@@ -1,0 +1,75 @@
+import os
+import io
+import uuid
+from typing import List
+from fastapi import UploadFile
+from sqlmodel import Session
+from PIL import Image
+from app.Modules.imagenes.model import Imagen
+
+UPLOAD_DIR = "fotos"
+
+class ImagenesService:
+    def __init__(self, session: Session):
+        self.session = session
+
+    async def procesar_y_guardar_imagenes(self, vehiculo_id: int, imagenes: List[UploadFile]) -> List[Imagen]:
+        rutas_guardadas = []
+        imagenes_creadas = []
+        
+        try:
+            for idx, file in enumerate(imagenes):
+                if not file.filename:
+                    continue
+                
+                # Leer bytes
+                content = await file.read()
+                
+                # Abrir con Pillow
+                img = Image.open(io.BytesIO(content))
+                
+                # Convertir a RGB para evitar problemas al guardar WebP
+                if img.mode in ("RGBA", "P"):
+                    img = img.convert("RGB")
+                    
+                # Redimensionar si es muy grande (máx 1200px ancho)
+                max_width = 1200
+                if img.width > max_width:
+                    ratio = max_width / img.width
+                    new_size = (max_width, int(img.height * ratio))
+                    img = img.resize(new_size, Image.Resampling.LANCZOS)
+                
+                # Generar nombre único
+                filename = f"{vehiculo_id}_{uuid.uuid4().hex[:8]}.webp"
+                filepath = os.path.join(UPLOAD_DIR, filename)
+                
+                # Guardar optimizado
+                img.save(filepath, "WEBP", quality=80)
+                rutas_guardadas.append(filepath)
+                
+                # Crear registro SQLModel
+                nueva_imagen = Imagen(
+                    vehiculo_id=vehiculo_id,
+                    ruta=f"/fotos/{filename}",
+                    es_principal=(idx == 0),
+                    orden=idx
+                )
+                self.session.add(nueva_imagen)
+                imagenes_creadas.append(nueva_imagen)
+                
+            return imagenes_creadas
+            
+        except Exception as e:
+            # Limpieza en caso de fallo intermedio en disco
+            for path in rutas_guardadas:
+                if os.path.exists(path):
+                    os.remove(path)
+            raise e
+
+    def limpiar_archivos(self, imagenes_creadas: List[Imagen]):
+        """Utilidad para limpiar archivos si la transacción de BD falla después"""
+        for img in imagenes_creadas:
+            if img.ruta.startswith("/fotos/"):
+                filepath = os.path.join(UPLOAD_DIR, img.ruta.replace("/fotos/", ""))
+                if os.path.exists(filepath):
+                    os.remove(filepath)

@@ -1,5 +1,5 @@
-from typing import Optional
-from sqlmodel import Field, SQLModel
+from typing import Optional, List
+from sqlmodel import Field, SQLModel, Relationship
 
 class Vehiculo(SQLModel, table=True):
     __tablename__ = "vehiculos"
@@ -7,8 +7,9 @@ class Vehiculo(SQLModel, table=True):
     modelo: str
     precio: float
     kilometraje: int
-    imagenes: Optional[str] = None
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
     informacion_extra: Optional[str] = None
     estado: str = Field(default="disponible")
+    
+    imagenes: List["Imagen"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})

@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel
 from app.Core.database import engine
@@ -7,6 +9,7 @@ app = FastAPI(title="Vendedor IA API", description="API para el sistema de Vende
 
 @app.on_event("startup")
 def on_startup():
+    os.makedirs("fotos", exist_ok=True)
     SQLModel.metadata.create_all(engine)
 
 # Configure CORS for frontend access
@@ -17,6 +20,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Servir imágenes subidas
+app.mount("/fotos", StaticFiles(directory="fotos"), name="fotos")
 
 @app.get("/")
 def read_root():

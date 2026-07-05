@@ -72,3 +72,18 @@ Backend:
     - Cada modules tendra router, service, reposityory, model, schema.
     - Funcionalidades para cubrir el frontend.
     - Vista la posibilidad de crearlo en supabase para rapidez. Pero tiene que tener compatibilidad con la postgres que ya esta creada.
+
+
+Sistemas:
+    Citas (flujo):
+        - Clientes hablan por wsp, n8n los escucha
+        - Cliente es avisado, o inicia la conversacion con la ia de n8n para agendar una cita
+        - Cliene confirma la cita a la ia
+        - La ia guarda en la base de datos la cita y tambien hacia google calendario
+        - Luego envia un mensaje a cada empleado de la empresa para que sepa. el empleado tiene que estar habilitado para saber. Se habilita o no mediante el front y back
+        Luego:
+        - 24hs antes, la ia le pide una segunda confirmacion al cliente para cambiar el estado a confirmada (o mantenerle el estado, hay que pensarlo)
+        Otro:
+        - Cliente habla con la ia, o le responde a la confirmacion, negando la cita y cancelandola
+        - La ia inicia otro flujo, busca en la db, cambia el estado de la cita, y en google calendar la cancelandola
+        
