@@ -60,8 +60,15 @@ export default function VehiculosView() {
             vehiculos.map(v => (
               <div key={v.id} className="premium-card-hover bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col group cursor-pointer">
                 <div className="relative h-48 w-full overflow-hidden bg-surface-container flex items-center justify-center text-outline">
-                  {/* Using an ImageOff icon as placeholder since we don't have images yet */}
-                  <ImageOff size={48} className="opacity-20" />
+                  {v.imagenes && v.imagenes.length > 0 ? (
+                    <img 
+                      src={v.imagenes[0].ruta.startsWith('http') ? v.imagenes[0].ruta : `http://localhost:8000${v.imagenes[0].ruta}`}
+                      alt={v.modelo}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <ImageOff size={48} className="opacity-20" />
+                  )}
                   <div className="absolute top-3 right-3">
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
                       {v.estado === 'disponible' ? 'Disponible' : 'Vendido'}
