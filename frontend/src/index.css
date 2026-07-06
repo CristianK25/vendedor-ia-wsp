@@ -77,7 +77,46 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  min-height: max(884px, 100dvh);
+  min-height: 100dvh;
   background-color: var(--color-background);
   color: var(--color-on-surface);
+}
+
+/* FullCalendar Customizations */
+.fc .fc-button-primary {
+  background-color: var(--color-surface-container-high) !important;
+  border-color: transparent !important;
+  color: var(--color-on-surface-variant) !important;
+  font-weight: 500 !important;
+  border-radius: 0.5rem !important; /* Tailwind rounded-lg */
+  text-transform: capitalize;
+  box-shadow: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.fc .fc-button-primary:hover {
+  background-color: var(--color-surface-variant) !important;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: var(--color-secondary-container) !important;
+  color: var(--color-on-secondary-container) !important;
+  font-weight: 700 !important;
+}
+
+.fc-direction-ltr .fc-button-group > .fc-button:not(:first-child) {
+  margin-left: 0.25rem !important; /* Tailwind gap-1 */
+  border-top-left-radius: 0.5rem !important;
+  border-bottom-left-radius: 0.5rem !important;
+}
+
+.fc-direction-ltr .fc-button-group > .fc-button:not(:last-child) {
+  border-top-right-radius: 0.5rem !important;
+  border-bottom-right-radius: 0.5rem !important;
+}
+
+.fc .fc-toolbar-title {
+  font-weight: 600 !important;
+  color: var(--color-on-surface) !important;
 }

@@ -50,3 +50,18 @@ cat backup.sql | docker compose exec -T db psql -U n8n -d vendedor_ia
 # Nota: Tendrás que volver a poner tus contraseñas en los nodos de n8n.
 rm n8n_data/config
 docker compose restart n8n
+
+
+
+# --------------------------------------------------------
+# 5. DESARROLLO LOCAL (Backend & Frontend)
+# --------------------------------------------------------
+
+# Iniciar el backend (FastAPI con entorno virtual)
+cd backend
+source venv/bin/activate
+uvicorn main:app --reload
+
+# Iniciar el frontend (Vite + React)
+cd frontend
+npm run dev

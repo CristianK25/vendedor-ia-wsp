@@ -9,7 +9,6 @@ app = FastAPI(title="Vendedor IA API", description="API para el sistema de Vende
 
 @app.on_event("startup")
 def on_startup():
-    os.makedirs("fotos", exist_ok=True)
     SQLModel.metadata.create_all(engine)
 
 # Configure CORS for frontend access
@@ -22,6 +21,7 @@ app.add_middleware(
 )
 
 # Servir imágenes subidas
+os.makedirs("fotos", exist_ok=True)
 app.mount("/fotos", StaticFiles(directory="fotos"), name="fotos")
 
 @app.get("/")
