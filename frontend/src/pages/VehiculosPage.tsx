@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { vehiculosApi } from '../api/vehiculos'
 import { Plus, Search, ListFilter, ArrowUpDown, MoreVertical, Gauge, Settings2, ImageOff } from 'lucide-react'
 export default function VehiculosView() {
+  const navigate = useNavigate()
   const [vehiculos, setVehiculos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -24,7 +26,10 @@ export default function VehiculosView() {
           <h2 className="text-2xl md:text-3xl font-semibold text-on-surface">Vehículos</h2>
           <p className="text-base text-on-surface-variant mt-1">Gestiona el inventario de tu concesionario en tiempo real.</p>
         </div>
-        <button className="bg-primary hover:bg-primary-container text-on-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95">
+        <button 
+          onClick={() => navigate('/vehiculos/nuevo')}
+          className="bg-primary hover:bg-primary-container text-on-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
+        >
           <Plus size={20} />
           Agregar Vehículo
         </button>

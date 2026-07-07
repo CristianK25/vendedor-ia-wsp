@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { promocionesApi } from '../api/promociones'
 import { Plus, Edit2, Ban, Search } from 'lucide-react'
 export default function PromocionesView() {
+  const navigate = useNavigate()
   const [promociones, setPromociones] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -24,7 +26,10 @@ export default function PromocionesView() {
           <h2 className="text-2xl md:text-3xl font-semibold text-on-surface">Promociones y Campañas</h2>
           <p className="text-base text-on-surface-variant mt-1">Administra las campañas activas y promociones para clientes.</p>
         </div>
-        <button className="bg-primary hover:bg-primary-container text-on-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95">
+        <button 
+          onClick={() => navigate('/promociones/nuevo')}
+          className="bg-primary hover:bg-primary-container text-on-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
+        >
           <Plus size={20} />
           Crear Promoción
         </button>

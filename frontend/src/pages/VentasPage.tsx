@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ventasApi } from '../api/ventas'
 import { Plus, Search, ListFilter, Download } from 'lucide-react'
 export default function VentasView() {
+  const navigate = useNavigate()
   const [ventas, setVentas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -24,7 +26,10 @@ export default function VentasView() {
           <h2 className="text-2xl md:text-3xl font-semibold text-on-surface">Ventas</h2>
           <p className="text-base text-on-surface-variant mt-1">Historial y registro inmutable de transacciones.</p>
         </div>
-        <button className="bg-primary hover:bg-primary-container text-on-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95">
+        <button 
+          onClick={() => navigate('/ventas/nuevo')}
+          className="bg-primary hover:bg-primary-container text-on-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
+        >
           <Plus size={20} />
           Registrar Venta
         </button>

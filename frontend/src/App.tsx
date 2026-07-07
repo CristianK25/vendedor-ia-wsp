@@ -1,41 +1,29 @@
-import { useState } from 'react'
 import { Calendar, Car, Users, ClipboardList, Megaphone, UserCircle2 } from 'lucide-react'
-import CalendarView from './components/CalendarView'
-import VehiculosView from './components/VehiculosView'
-import VentasView from './components/VentasView'
-import ClientesView from './components/ClientesView'
-import TrabajadoresView from './components/TrabajadoresView'
-import PromocionesView from './components/PromocionesView'
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
+import CalendarPage from './pages/CalendarPage'
+import VehiculosPage from './pages/VehiculosPage'
+import VentasPage from './pages/VentasPage'
+import ClientesPage from './pages/ClientesPage'
+import TrabajadoresPage from './pages/TrabajadoresPage'
+import PromocionesPage from './pages/PromocionesPage'
+
+import VehiculoForm from './components/forms/VehiculoForm'
+import VentaForm from './components/forms/VentaForm'
+import ClienteForm from './components/forms/ClienteForm'
+import PromocionForm from './components/forms/PromocionForm'
+import TrabajadorForm from './components/forms/TrabajadorForm'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('calendario')
-
-  const renderTab = () => {
-    switch (activeTab) {
-      case 'calendario':
-        return <CalendarView />
-      case 'vehiculos':
-        return <VehiculosView />
-      case 'ventas':
-        return <VentasView />
-      case 'clientes':
-        return <ClientesView />
-      case 'promociones':
-        return <PromocionesView />
-      case 'trabajadores':
-        return <TrabajadoresView />
-      default:
-        return null
-    }
-  }
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const tabs = [
-    { id: 'calendario', icon: Calendar, label: 'Calendario' },
-    { id: 'vehiculos', icon: Car, label: 'Vehículos' },
-    { id: 'ventas', icon: ClipboardList, label: 'Ventas' },
-    { id: 'clientes', icon: Users, label: 'Clientes' },
-    { id: 'promociones', icon: Megaphone, label: 'Promociones' },
-    { id: 'trabajadores', icon: UserCircle2, label: 'Trabajadores' },
+    { path: '/calendario', icon: Calendar, label: 'Calendario' },
+    { path: '/vehiculos', icon: Car, label: 'Vehículos' },
+    { path: '/ventas', icon: ClipboardList, label: 'Ventas' },
+    { path: '/clientes', icon: Users, label: 'Clientes' },
+    { path: '/promociones', icon: Megaphone, label: 'Promociones' },
+    { path: '/trabajadores', icon: UserCircle2, label: 'Trabajadores' },
   ]
 
   return (
@@ -48,21 +36,20 @@ function App() {
             <Car className="text-primary" size={24} />
             <span className="text-xl font-bold text-primary">AutoGestor</span>
           </div>
-          
+
           {/* Desktop Tabs */}
           <nav className="hidden md:flex items-center justify-center flex-1 mx-8 gap-1 overflow-x-auto hide-scrollbar">
             {tabs.map((tab) => {
               const Icon = tab.icon
-              const isActive = activeTab === tab.id
+              const isActive = location.pathname.startsWith(tab.path)
               return (
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap ${
-                    isActive 
-                      ? 'bg-secondary-container text-on-secondary-container font-bold' 
+                  key={tab.path}
+                  onClick={() => navigate(tab.path)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap ${isActive
+                      ? 'bg-secondary-container text-on-secondary-container font-bold'
                       : 'text-on-surface-variant hover:bg-surface-container-high font-medium'
-                  }`}
+                    }`}
                 >
                   <Icon size={18} />
                   <span className="text-sm">{tab.label}</span>
@@ -82,19 +69,19 @@ function App() {
             </div>
           </div>
         </div>
-        
+
         {/* Mobile Tabs */}
         <div className="md:hidden flex overflow-x-auto bg-surface border-t border-outline-variant hide-scrollbar">
           {tabs.map((tab) => {
-            const isActive = activeTab === tab.id
+            const isActive = location.pathname.startsWith(tab.path)
             return (
-               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+              <button
+                key={tab.path}
+                onClick={() => navigate(tab.path)}
                 className={`flex-shrink-0 px-4 py-3 text-sm transition-colors border-b-2 ${isActive ? 'border-primary text-primary font-bold' : 'border-transparent text-on-surface-variant'}`}
-               >
-                 {tab.label}
-               </button>
+              >
+                {tab.label}
+              </button>
             )
           })}
         </div>
@@ -103,7 +90,26 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 w-full pb-6 flex flex-col">
         <div className="max-w-[1600px] mx-auto w-full flex-1 flex flex-col">
-          {renderTab()}
+          <Routes>
+            <Route path="/calendario" element={<CalendarPage />} />
+
+            <Route path="/vehiculos" element={<VehiculosPage />} />
+            <Route path="/vehiculos/nuevo" element={<VehiculoForm />} />
+
+            <Route path="/ventas" element={<VentasPage />} />
+            <Route path="/ventas/nuevo" element={<VentaForm />} />
+
+            <Route path="/clientes" element={<ClientesPage />} />
+            <Route path="/clientes/nuevo" element={<ClienteForm />} />
+
+            <Route path="/promociones" element={<PromocionesPage />} />
+            <Route path="/promociones/nuevo" element={<PromocionForm />} />
+
+            <Route path="/trabajadores" element={<TrabajadoresPage />} />
+            <Route path="/trabajadores/nuevo" element={<TrabajadorForm />} />
+
+            <Route path="*" element={<Navigate to="/calendario" replace />} />
+          </Routes>
         </div>
       </main>
     </div>

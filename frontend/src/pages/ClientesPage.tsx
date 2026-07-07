@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { clientesApi } from '../api/clientes'
 import { Plus, Search, ListFilter, Download, ChevronRight } from 'lucide-react'
 export default function ClientesView() {
+  const navigate = useNavigate()
   const [clientes, setClientes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -26,9 +28,12 @@ export default function ClientesView() {
           <p className="text-base text-on-surface-variant mt-1">Gestione sus relaciones y transacciones comerciales.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="bg-primary text-on-primary rounded-xl px-6 py-3 text-sm font-semibold flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all">
+          <button 
+            onClick={() => navigate('/clientes/nuevo')}
+            className="bg-primary text-on-primary rounded-xl px-6 py-3 text-sm font-semibold flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all"
+          >
             <Plus size={20} />
-            Nueva Venta
+            Nuevo Cliente
           </button>
         </div>
       </div>

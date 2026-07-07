@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { trabajadoresApi } from '../api/trabajadores'
 import { Plus, Search, MoreVertical, Edit2, Trash2 } from 'lucide-react'
 export default function TrabajadoresView() {
+  const navigate = useNavigate()
   const [trabajadores, setTrabajadores] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -24,7 +26,10 @@ export default function TrabajadoresView() {
           <h2 className="text-2xl md:text-3xl font-semibold text-on-surface">Equipo de Trabajo</h2>
           <p className="text-base text-on-surface-variant mt-1">Gestiona el personal y los permisos de acceso al sistema.</p>
         </div>
-        <button className="bg-primary hover:bg-primary-container text-on-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95">
+        <button 
+          onClick={() => navigate('/trabajadores/nuevo')}
+          className="bg-primary hover:bg-primary-container text-on-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
+        >
           <Plus size={20} />
           Agregar Trabajador
         </button>
