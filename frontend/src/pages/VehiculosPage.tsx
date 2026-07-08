@@ -19,6 +19,17 @@ export default function VehiculosView() {
       })
   }, [])
 
+  const handleMarcarVendido = async (id: number, vehiculo: any) => {
+    try {
+      const dataToUpdate = { ...vehiculo, estado: 'vendido' }
+      await vehiculosApi.update(id, dataToUpdate)
+      setVehiculos(prev => prev.map(v => v.id === id ? { ...v, estado: 'vendido' } : v))
+    } catch (error) {
+      console.error('Error al marcar como vendido:', error)
+      alert('Hubo un error al actualizar el estado.')
+    }
+  }
+
   return (
     <section className="px-4 md:px-10 py-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -97,7 +108,16 @@ export default function VehiculosView() {
                   </div>
                   <div className="mt-auto flex items-center justify-between">
                     <span className="text-primary font-bold text-xl">${v.precio.toLocaleString()}</span>
-                    <span className="text-xs text-on-surface-variant uppercase font-semibold">Venta</span>
+                    {v.estado === 'disponible' ? (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v.id, v); }}
+                        className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors"
+                      >
+                        Marcar Vendido
+                      </button>
+                    ) : (
+                      <span className="text-xs text-on-surface-variant uppercase font-semibold">Vendido</span>
+                    )}
                   </div>
                 </div>
               </div>
