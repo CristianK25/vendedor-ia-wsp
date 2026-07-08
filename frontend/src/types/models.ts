@@ -81,3 +81,18 @@ export interface TrabajadorCreate {
   telefono: string
   rol?: string
 }
+
+export interface Cita {
+  id: number
+  cliente_telefono: string
+  cliente_nombre?: string
+  fecha: string
+  fecha_creacion: string
+  estado: string
+}
+
+export interface CitaCreate {
+  cliente_telefono: string
+  fecha: string
+  estado?: string
+}

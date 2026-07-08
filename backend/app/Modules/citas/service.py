@@ -12,7 +12,7 @@ class CitaService:
         return self.repository.get_all()
 
     def get_cita(self, cita_id: int):
-        cita = self.repository.get_by_id(cita_id)
+        cita = self.repository.get_by_id_with_name(cita_id)
         if not cita:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada")
         return cita
@@ -22,13 +22,17 @@ class CitaService:
         return self.repository.create(cita)
 
     def update_cita(self, cita_id: int, cita_data: CitaUpdate):
-        cita = self.get_cita(cita_id)
+        cita = self.repository.get_by_id_model(cita_id)
+        if not cita:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada")
         update_data = cita_data.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(cita, key, value)
         return self.repository.update(cita)
 
     def delete_cita(self, cita_id: int):
-        cita = self.get_cita(cita_id)
+        cita = self.repository.get_by_id_model(cita_id)
+        if not cita:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cita no encontrada")
         self.repository.delete(cita)
         return {"message": "Cita eliminada exitosamente"}
