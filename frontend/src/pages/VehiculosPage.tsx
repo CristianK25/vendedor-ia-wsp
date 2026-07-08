@@ -74,7 +74,11 @@ export default function VehiculosView() {
             <p className="text-on-surface-variant">No hay vehículos registrados.</p>
           ) : (
             vehiculos.map(v => (
-              <div key={v.id} className="premium-card-hover bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col group cursor-pointer">
+              <div 
+                key={v.id} 
+                onClick={() => navigate(`/vehiculos/${v.id}`)}
+                className="premium-card-hover bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col group cursor-pointer"
+              >
                 <div className="relative h-48 w-full overflow-hidden bg-surface-container flex items-center justify-center text-outline">
                   {v.imagenes && v.imagenes.length > 0 ? (
                     <img 
