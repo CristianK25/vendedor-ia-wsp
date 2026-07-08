@@ -46,9 +46,9 @@ function App() {
                 <button
                   key={tab.path}
                   onClick={() => navigate(tab.path)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap ${isActive
-                      ? 'bg-secondary-container text-on-secondary-container font-bold'
-                      : 'text-on-surface-variant hover:bg-surface-container-high font-medium'
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ease-in-out whitespace-nowrap font-medium ${isActive
+                      ? 'bg-secondary-container text-on-secondary-container'
+                      : 'text-on-surface-variant hover:bg-surface-container-high'
                     }`}
                 >
                   <Icon size={18} />
@@ -78,7 +78,7 @@ function App() {
               <button
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
-                className={`flex-shrink-0 px-4 py-3 text-sm transition-colors border-b-2 ${isActive ? 'border-primary text-primary font-bold' : 'border-transparent text-on-surface-variant'}`}
+                className={`flex-shrink-0 px-4 py-3 text-sm transition-colors border-b-2 font-medium ${isActive ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant'}`}
               >
                 {tab.label}
               </button>
