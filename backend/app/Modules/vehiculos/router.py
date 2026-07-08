@@ -3,14 +3,33 @@ from sqlmodel import Session
 from typing import List
 from app.Core.database import get_session
 from app.Modules.vehiculos.service import VehiculoService
-from app.Modules.vehiculos.schema import VehiculoCreate, VehiculoUpdate, VehiculoResponse
+from app.Modules.vehiculos.schema import VehiculoCreate, VehiculoUpdate, VehiculoResponse, PaginatedVehiculosResponse
+import math
 
 router = APIRouter(prefix="/vehiculos", tags=["Vehiculos"])
 
-@router.get("/", response_model=List[VehiculoResponse])
-def get_vehiculos(session: Session = Depends(get_session)):
+@router.get("/", response_model=PaginatedVehiculosResponse)
+def get_vehiculos(
+    page: int = 1, 
+    size: int = 50, 
+    search: str = "",
+    sort_by: str = "",
+    sort_dir: str = "asc",
+    session: Session = Depends(get_session)
+):
     service = VehiculoService(session)
-    return service.get_all_vehiculos()
+    skip = (page - 1) * size
+    items, total = service.get_all_vehiculos(skip=skip, limit=size, search=search, sort_by=sort_by, sort_dir=sort_dir)
+    
+    total_pages = math.ceil(total / size) if total > 0 else 1
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+        "total_pages": total_pages
+    }
 
 @router.get("/catalogo", response_model=List[VehiculoResponse])
 def get_catalogo_n8n(session: Session = Depends(get_session)):

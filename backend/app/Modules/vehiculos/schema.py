@@ -34,3 +34,10 @@ class VehiculoResponse(BaseModel):
     informacion_extra: Optional[str] = None
     estado: str
     imagenes: List[ImagenResponse] = []
+
+class PaginatedVehiculosResponse(BaseModel):
+    items: List[VehiculoResponse]
+    total: int
+    page: int
+    size: int
+    total_pages: int

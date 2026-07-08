@@ -62,7 +62,6 @@ export default function VentasView() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-                  <th className="py-4 px-6">ID</th>
                   <th className="py-4 px-6">Vehículo ID</th>
                   <th className="py-4 px-6">Cliente (Tel)</th>
                   <th className="py-4 px-6">Fecha</th>
@@ -72,12 +71,11 @@ export default function VentasView() {
               <tbody className="divide-y divide-outline-variant">
                 {ventas.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-on-surface-variant">No hay ventas registradas.</td>
+                    <td colSpan={4} className="py-8 text-center text-on-surface-variant">No hay ventas registradas.</td>
                   </tr>
                 ) : (
                   ventas.map(v => (
                     <tr key={v.id} className="hover:bg-surface-container-low transition-colors">
-                      <td className="py-4 px-6 font-semibold text-on-surface">#{v.id}</td>
                       <td className="py-4 px-6 text-on-surface-variant">{v.vehiculo_id}</td>
                       <td className="py-4 px-6 text-on-surface-variant">{v.cliente_telefono}</td>
                       <td className="py-4 px-6 text-on-surface-variant">{new Date(v.fecha).toLocaleDateString()}</td>
