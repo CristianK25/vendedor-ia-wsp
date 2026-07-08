@@ -121,3 +121,8 @@ body {
   font-weight: 600 !important;
   color: var(--color-on-surface) !important;
 }
+
+/* Color de fondo para el día actual (Hoy) */
+.fc .fc-day-today {
+  background-color: var(--color-secondary-container) !important;
+}
