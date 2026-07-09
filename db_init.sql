@@ -14,6 +14,8 @@ DROP TABLE IF EXISTS vehiculo_imagenes CASCADE;
 
 DROP TABLE IF EXISTS vehiculos CASCADE;
 
+DROP TABLE IF EXISTS mensajes_programados CASCADE;
+
 DROP TABLE IF EXISTS clientes CASCADE;
 
 -- 1. Tabla de Clientes
@@ -22,7 +24,9 @@ CREATE TABLE IF NOT EXISTS clientes (
     nombre TEXT,
     ultimo_mensaje_bot TIMESTAMP,
     ultima_interaccion_cliente TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    cantidad_compras INTEGER DEFAULT 0
+    cantidad_compras INTEGER DEFAULT 0,
+    estado_conversacion TEXT DEFAULT 'NORMAL',
+    id_mensaje_esperado INTEGER DEFAULT NULL
 );
 
 -- 2. Tabla de Vehículos
@@ -101,4 +105,20 @@ CREATE TABLE IF NOT EXISTS promociones (
     estado TEXT DEFAULT 'activa' CHECK (
         estado IN ('activa', 'inactiva')
     )
+);
+
+-- 7. Tabla de Mensajes Programados
+CREATE TABLE IF NOT EXISTS mensajes_programados (
+    id SERIAL PRIMARY KEY,
+    cliente_telefono TEXT NOT NULL,
+    tipo_mensaje TEXT NOT NULL CHECK (
+        tipo_mensaje IN ('RECORDATORIO_PAGO', 'CALIDAD_RESEÑA', 'CROSS_SELLING', 'SALUDO_FESTIVO')
+    ),
+    fecha_programada TIMESTAMP NOT NULL,
+    estado TEXT DEFAULT 'PENDIENTE' CHECK (
+        estado IN ('PENDIENTE', 'ENVIADO', 'RESPONDIDO', 'CANCELADO')
+    ),
+    contexto_json JSONB,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cliente_telefono) REFERENCES clientes (telefono) ON DELETE CASCADE
 );

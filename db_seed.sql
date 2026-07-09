@@ -1,6 +1,6 @@
 -- === SCRIPT DE DATOS DE PRUEBA (SEED) ===
 -- Limpiar datos previos antes de insertar
-TRUNCATE TABLE ventas, citas, vehiculo_imagenes, vehiculos, clientes, trabajadores, promociones RESTART IDENTITY CASCADE;
+TRUNCATE TABLE mensajes_programados, ventas, citas, vehiculo_imagenes, vehiculos, clientes, trabajadores, promociones RESTART IDENTITY CASCADE;
 
 -- 1. Insertar Clientes
 INSERT INTO clientes (telefono, nombre, ultimo_mensaje_bot, ultima_interaccion_cliente, cantidad_compras) VALUES
@@ -104,3 +104,14 @@ INSERT INTO promociones (titulo, descripcion, fecha_inicio, fecha_fin, estado) V
 ('Test Drive con Regalo', 'Vení a probar cualquier modelo y llevate un kit exclusivo de la marca.', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP + INTERVAL '9 days', 'activa'),
 ('Fin de Año Liquidación', 'Liquidamos todo el inventario restante del año anterior a precios de costo.', CURRENT_TIMESTAMP - INTERVAL '200 days', CURRENT_TIMESTAMP - INTERVAL '180 days', 'inactiva'),
 ('Cyber Car Promo', 'Descuentos exclusivos en reserva online a través de la web.', CURRENT_TIMESTAMP - INTERVAL '40 days', CURRENT_TIMESTAMP - INTERVAL '35 days', 'inactiva');
+
+-- 7. Insertar Mensajes Programados (Cola de n8n)
+INSERT INTO mensajes_programados (cliente_telefono, tipo_mensaje, fecha_programada, estado, contexto_json) VALUES
+-- Cliente compró hace unos días, le toca reseña HOY (para que n8n lo recoja ya mismo)
+('+5491123456789', 'CALIDAD_RESEÑA', CURRENT_TIMESTAMP - INTERVAL '1 hour', 'PENDIENTE', '{"vehiculo_id": 9, "modelo": "BMW 320i ActiveFlex", "precio": 36500}'),
+-- Cliente compró hace más tiempo, le toca cross-selling HOY
+('+5491156789012', 'CROSS_SELLING', CURRENT_TIMESTAMP - INTERVAL '2 hours', 'PENDIENTE', '{"vehiculo_id": 1, "modelo": "Toyota Corolla 1.8 SEG"}'),
+-- Cliente tiene cita cancelada, recordatorio
+('+5491145678901', 'RECORDATORIO_PAGO', CURRENT_TIMESTAMP + INTERVAL '1 day', 'PENDIENTE', '{"motivo": "Cita cancelada"}'),
+-- Cliente cualquiera para saludo festivo HOY
+('+5491189012345', 'SALUDO_FESTIVO', CURRENT_TIMESTAMP - INTERVAL '5 hours', 'PENDIENTE', '{"festividad": "Día del Amigo"}');
