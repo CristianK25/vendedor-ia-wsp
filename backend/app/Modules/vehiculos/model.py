@@ -1,5 +1,11 @@
+import enum
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship
+
+class EstadoVehiculo(str, enum.Enum):
+    disponible = "disponible"
+    vendido = "vendido"
+    reservado = "reservado"
 
 class Vehiculo(SQLModel, table=True):
     __tablename__ = "vehiculos"
@@ -10,6 +16,6 @@ class Vehiculo(SQLModel, table=True):
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
     informacion_extra: Optional[str] = None
-    estado: str = Field(default="disponible")
+    estado: EstadoVehiculo = Field(default=EstadoVehiculo.disponible)
     
     imagenes: List["Imagen"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})

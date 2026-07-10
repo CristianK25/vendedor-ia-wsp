@@ -32,5 +32,24 @@ services:
       - ./workflows:/data:ro
     # Ideal para pruebas con Telegram.
     command: start
+  backend:
+    build: ./backend
+    container_name: backend-vendedor-ia
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-n8n}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-vendedor_ia}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
 
-
+  frontend:
+    build: ./frontend
+    container_name: frontend-vendedor-ia
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"

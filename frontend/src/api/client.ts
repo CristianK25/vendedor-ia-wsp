@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000/api' // URL del Backend FastAPI
+const BASE_URL = '/api' // Redirigido por Nginx en prod o Vite en dev
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   const isFormData = options.body instanceof FormData;

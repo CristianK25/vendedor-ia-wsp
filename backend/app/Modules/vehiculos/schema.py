@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from app.Modules.vehiculos.model import EstadoVehiculo
 
 class ImagenResponse(BaseModel):
     id: int
@@ -22,7 +23,7 @@ class VehiculoUpdate(BaseModel):
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
     informacion_extra: Optional[str] = None
-    estado: Optional[str] = None
+    estado: Optional[EstadoVehiculo] = None
 
 class VehiculoResponse(BaseModel):
     id: int
@@ -32,7 +33,7 @@ class VehiculoResponse(BaseModel):
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
     informacion_extra: Optional[str] = None
-    estado: str
+    estado: EstadoVehiculo
     imagenes: List[ImagenResponse] = []
 
 class PaginatedVehiculosResponse(BaseModel):
