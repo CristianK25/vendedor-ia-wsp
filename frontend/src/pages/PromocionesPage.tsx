@@ -6,18 +6,86 @@ export default function PromocionesView() {
   const navigate = useNavigate()
   const [promociones, setPromociones] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const size = 50;
 
   useEffect(() => {
-    promocionesApi.getAll()
-      .then(data => {
-        setPromociones(data)
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setLoading(true)
+    promocionesApi.getAll(currentPage, size, debouncedSearch)
+      .then((data: any) => {
+        setPromociones(data.items)
+        setTotalPages(data.total_pages)
         setLoading(false)
       })
       .catch(err => {
         console.error(err)
         setLoading(false)
       })
-  }, [])
+  }, [currentPage, debouncedSearch])
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    let pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+        pages.push(i);
+      } else if (i === currentPage - 2 || i === currentPage + 2) {
+        pages.push('...');
+      }
+    }
+    pages = pages.filter((page, index, self) => page !== '...' || self[index - 1] !== '...');
+
+    return (
+      <div className="mt-8 flex justify-center items-center gap-1 text-sm pb-8">
+        <button 
+          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 text-on-surface-variant hover:text-primary disabled:opacity-30 disabled:hover:text-on-surface-variant transition-colors font-semibold"
+        >
+          &lt; Anterior
+        </button>
+        
+        {pages.map((page, idx) => (
+          page === '...' ? (
+            <span key={`dots-${idx}`} className="px-2 text-on-surface-variant">...</span>
+          ) : (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page as number)}
+              className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors font-semibold ${
+                currentPage === page 
+                  ? 'bg-primary/10 text-primary' 
+                  : 'text-on-surface hover:bg-surface-container'
+              }`}
+            >
+              {page}
+            </button>
+          )
+        ))}
+
+        <button 
+          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 text-on-surface-variant hover:text-primary disabled:opacity-30 disabled:hover:text-on-surface-variant transition-colors font-semibold"
+        >
+          Siguiente &gt;
+        </button>
+      </div>
+    );
+  };
 
   return (
     <section className="px-4 md:px-10 py-8">
@@ -42,6 +110,8 @@ export default function PromocionesView() {
             className="w-full pl-10 pr-4 h-11 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" 
             placeholder="Buscar promoción..." 
             type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -80,6 +150,8 @@ export default function PromocionesView() {
           )}
         </div>
       )}
+      
+      {renderPagination()}
     </section>
   )
 }

@@ -22,3 +22,11 @@ class PromocionResponse(BaseModel):
     fecha_inicio: datetime
     fecha_fin: datetime
     estado: str
+    
+from typing import List
+class PaginatedPromocionesResponse(BaseModel):
+    items: List[PromocionResponse]
+    total: int
+    page: int
+    size: int
+    total_pages: int

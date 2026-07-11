@@ -23,3 +23,12 @@ class ClienteResponse(BaseModel):
     cantidad_compras: int
     estado_conversacion: EstadoConversacion
     id_mensaje_esperado: Optional[int] = None
+    tiene_cita_pendiente: bool = False
+
+from typing import List
+class PaginatedClientesResponse(BaseModel):
+    items: List[ClienteResponse]
+    total: int
+    page: int
+    size: int
+    total_pages: int

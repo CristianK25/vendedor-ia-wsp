@@ -1,23 +1,140 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clientesApi } from '../api/clientes'
-import { Plus, Search, ListFilter, Download, ChevronRight } from 'lucide-react'
+import { Plus, Search, ListFilter, Download, ChevronDown, ChevronUp, Tag } from 'lucide-react'
+
+const WhatsAppIcon = ({ size = 24, className = "" }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className}
+  >
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+  </svg>
+)
+
 export default function ClientesView() {
   const navigate = useNavigate()
   const [clientes, setClientes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const size = 50;
+
+  type SortConfig = {
+    key: 'nombre' | 'telefono' | 'ultima_interaccion_cliente' | 'cantidad_compras' | null;
+    direction: 'asc' | 'desc';
+  }
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
+
+  const handleSort = (key: SortConfig['key']) => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  }
+
+  const renderSortIcon = (key: string) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
+    }
+    return <ChevronDown size={14} className="opacity-30" />;
+  };
+
   useEffect(() => {
-    clientesApi.getAll()
-      .then(data => {
-        setClientes(data)
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setLoading(true)
+    clientesApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction)
+      .then((data: any) => {
+        setClientes(data.items)
+        setTotalPages(data.total_pages)
         setLoading(false)
       })
       .catch(err => {
         console.error(err)
         setLoading(false)
       })
-  }, [])
+  }, [currentPage, debouncedSearch, sortConfig])
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    let pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+        pages.push(i);
+      } else if (i === currentPage - 2 || i === currentPage + 2) {
+        pages.push('...');
+      }
+    }
+    pages = pages.filter((page, index, self) => page !== '...' || self[index - 1] !== '...');
+
+    return (
+      <div className="mt-8 flex justify-center items-center gap-1 text-sm pb-8">
+        <button 
+          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 text-on-surface-variant hover:text-primary disabled:opacity-30 disabled:hover:text-on-surface-variant transition-colors font-semibold"
+        >
+          &lt; Anterior
+        </button>
+        
+        {pages.map((page, idx) => (
+          page === '...' ? (
+            <span key={`dots-${idx}`} className="px-2 text-on-surface-variant">...</span>
+          ) : (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page as number)}
+              className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors font-semibold ${
+                currentPage === page 
+                  ? 'bg-primary/10 text-primary' 
+                  : 'text-on-surface hover:bg-surface-container'
+              }`}
+            >
+              {page}
+            </button>
+          )
+        ))}
+
+        <button 
+          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 text-on-surface-variant hover:text-primary disabled:opacity-30 disabled:hover:text-on-surface-variant transition-colors font-semibold"
+        >
+          Siguiente &gt;
+        </button>
+      </div>
+    );
+  };
+
+  const getRelativeTime = (dateString: string | null) => {
+    if (!dateString) return 'Ninguna';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Hace un momento';
+    if (diffInSeconds < 3600) return `Hace ${Math.floor(diffInSeconds / 60)} min`;
+    if (diffInSeconds < 86400) return `Hace ${Math.floor(diffInSeconds / 3600)} horas`;
+    if (diffInSeconds < 172800) return 'Ayer';
+    return date.toLocaleDateString();
+  };
 
   return (
     <section className="px-4 md:px-10 py-8">
@@ -80,6 +197,8 @@ export default function ClientesView() {
               className="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all text-sm" 
               placeholder="Buscar cliente por nombre o teléfono..." 
               type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto">
@@ -101,10 +220,16 @@ export default function ClientesView() {
           <div className="divide-y divide-outline-variant">
             {/* Subtle List Headers (Desktop Only) */}
             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-surface-container-low text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <div className="col-span-4">Cliente</div>
-              <div className="col-span-3">Contacto</div>
-              <div className="col-span-2">Última Interacción</div>
-              <div className="col-span-2">Estado</div>
+              <div className="col-span-4 flex items-center gap-1 cursor-pointer hover:text-on-surface w-max select-none" onClick={() => handleSort('nombre')}>
+                Cliente {renderSortIcon('nombre')}
+              </div>
+              <div className="col-span-3">Estado del Lead</div>
+              <div className="col-span-2 flex items-center gap-1 cursor-pointer hover:text-on-surface w-max select-none" onClick={() => handleSort('ultima_interaccion_cliente')}>
+                Última Interacción {renderSortIcon('ultima_interaccion_cliente')}
+              </div>
+              <div className="col-span-2 flex items-center gap-1 cursor-pointer hover:text-on-surface w-max select-none" onClick={() => handleSort('cantidad_compras')}>
+                Historial {renderSortIcon('cantidad_compras')}
+              </div>
               <div className="col-span-1 text-right">Acción</div>
             </div>
 
@@ -114,8 +239,8 @@ export default function ClientesView() {
               clientes.map(c => {
                 const initials = c.nombre ? c.nombre.substring(0, 2).toUpperCase() : 'NN';
                 return (
-                  <div key={c.telefono} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 hover:bg-surface-container-low transition-colors cursor-pointer group">
-                    <div className="col-span-1 md:col-span-4 flex items-center gap-4">
+                  <div key={c.telefono} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 hover:bg-surface-container-low transition-colors group">
+                    <div className="col-span-1 md:col-span-4 flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/clientes/${c.telefono}`)}>
                       <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
                         {initials}
                       </div>
@@ -125,20 +250,53 @@ export default function ClientesView() {
                       </div>
                     </div>
                     <div className="col-span-1 md:col-span-3 flex items-center">
-                      <span className="text-base text-on-surface-variant">{c.telefono}</span>
+                      {c.tiene_cita_pendiente ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200 shadow-sm">
+                          CON CITA PENDIENTE
+                        </span>
+                      ) : c.estado_conversacion === 'ESPERANDO_RESEÑA' ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                          ESPERANDO RESEÑA
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant border border-outline-variant">
+                          NORMAL
+                        </span>
+                      )}
                     </div>
                     <div className="col-span-1 md:col-span-2 flex items-center">
-                      <span className="text-base text-on-surface-variant">
-                        {c.ultima_interaccion_cliente ? new Date(c.ultima_interaccion_cliente).toLocaleDateString() : 'Ninguna'}
+                      <span className="text-base font-medium text-on-surface-variant">
+                        {getRelativeTime(c.ultima_interaccion_cliente)}
                       </span>
                     </div>
                     <div className="col-span-1 md:col-span-2 flex items-center">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary-container/10 text-primary-container border border-primary-container/20">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${
+                        c.cantidad_compras > 0 
+                          ? 'bg-green-100 text-green-700 border-green-200' 
+                          : 'bg-surface-container text-on-surface-variant border-outline-variant'
+                      }`}>
                         Compras: {c.cantidad_compras}
                       </span>
                     </div>
                     <div className="col-span-1 md:col-span-1 flex items-center justify-end">
-                      <ChevronRight className="text-on-surface-variant group-hover:text-primary transition-colors" />
+                      <div className="flex items-center gap-2">
+                        <a 
+                          href={`https://wa.me/${c.telefono.replace('+', '')}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors"
+                          title="WhatsApp"
+                        >
+                          <WhatsAppIcon size={20} />
+                        </a>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigate('/ventas/nuevo', { state: { telefono: c.telefono }}); }}
+                          className="p-2 text-primary hover:bg-primary-container rounded-full transition-colors"
+                          title="Nueva Venta"
+                        >
+                          <Tag size={20} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
@@ -146,6 +304,7 @@ export default function ClientesView() {
             )}
           </div>
         )}
+        {renderPagination()}
       </div>
     </section>
   )

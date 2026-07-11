@@ -1,14 +1,25 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from app.Modules.promociones.model import Promocion
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 class PromocionRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_all(self) -> List[Promocion]:
-        statement = select(Promocion)
-        return self.session.exec(statement).all()
+    def get_all(self, skip: int = 0, limit: int = 50, search: str = "") -> Tuple[List[Promocion], int]:
+        query = select(Promocion)
+        
+        if search:
+            query = query.where(
+                (Promocion.titulo.ilike(f"%{search}%")) |
+                (Promocion.descripcion.ilike(f"%{search}%"))
+            )
+            
+        total = self.session.exec(select(func.count()).select_from(query.subquery())).one()
+        
+        query = query.offset(skip).limit(limit)
+        items = self.session.exec(query).all()
+        return items, total
 
     def get_activas(self) -> List[Promocion]:
         statement = select(Promocion).where(Promocion.estado == "activa")

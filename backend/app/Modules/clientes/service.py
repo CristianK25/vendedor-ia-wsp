@@ -8,8 +8,8 @@ class ClienteService:
     def __init__(self, session: Session):
         self.repository = ClienteRepository(session)
 
-    def get_all_clientes(self):
-        return self.repository.get_all()
+    def get_all_clientes(self, skip: int = 0, limit: int = 50, search: str = "", sort_by: str = "", sort_dir: str = "asc"):
+        return self.repository.get_all(skip, limit, search, sort_by, sort_dir)
 
     def get_cliente(self, telefono: str):
         cliente = self.repository.get_by_telefono(telefono)
