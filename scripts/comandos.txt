@@ -33,7 +33,7 @@ docker compose exec n8n n8n import:workflow --input=/data/flujo_seguimiento.json
 # --------------------------------------------------------
 # Entrar a la consola SQL interactiva de Postgres
 # (Una vez adentro, puedes escribir comandos como: SELECT * FROM clientes;)
-docker compose exec db psql -U n8n -d vendedor_ia
+docker compose exec db psql -U n8n -d vendedor_ia|
 
 # Hacer un backup manual de la base de datos a un archivo
 docker compose exec db pg_dump -U n8n -d vendedor_ia > backup.sql

@@ -1,0 +1,59 @@
+COSTOS Y VALORES DE MERCADO PARA SISTEMA AUTOGESTOR IA (CRM + N8N + IA)
+Fuente 1: Investigación de mercado por Agente IA Antigravity (Gemini 3.1 Pro) - 2024/2026.
+Fuente 2: Tarifario Público de NexoSmart (Agencia de Automatización IA en Argentina).
+
+1. COSTO DE DESARROLLO A MEDIDA (INVERSION INICIAL)
+Al ser un software propietario y no un "SaaS enlatado", el cliente paga por el sistema una sola vez y no por licencias mensuales por usuario.
+- CRM Básico (MVP): $2.500 a $4.000 USD.
+- CRM Avanzado con IA y N8N (Tu sistema): $4.000 a $6.000+ USD.
+Justificación: Integra arquitectura compleja (FastAPI, React, PostgreSQL), orquestación de flujos con n8n, conexión a la API oficial de Meta y motor de Inteligencia Artificial.
+
+2. COSTOS OPERATIVOS MENSUALES (Infraestructura y APIs)
+Estos son los costos reales de mantener el sistema "encendido".
+- Servidor VPS (Linux, Docker): $10 a $25 USD / mes (Proveedores como DigitalOcean, Hetzner, AWS).
+- API de Inteligencia Artificial (OpenAI / Anthropic): $5 a $15 USD / mes. El cobro es por token. Usando modelos eficientes como GPT-4o-mini o Claude 3.5 Haiku, el costo por millón de tokens oscila entre $0.15 y $1 USD, haciéndolo extremadamente barato.
+- WhatsApp Cloud API (Meta): 
+  * Responder al cliente (Ventana de 24hs): GRATIS.
+  * Mensajes proactivos (Retargeting): Costo por plantilla enviada. En Argentina ronda los $0.035 USD (Utilidad) y $0.06 USD (Marketing).
+
+3. FEE DE MANTENIMIENTO Y SOPORTE TECNICO (Cobro mensual)
+Honorarios cobrados al cliente por administrar el servidor, monitorear caídas, ajustar la IA y garantizar operatividad 24/7.
+- Abono Mensual Sugerido: $150 a $300 USD / mes.
+Nota: Este abono suele incluir el costo de la VPS. Los costos variables de Meta y OpenAI se suelen debitar de forma directa de la tarjeta corporativa de la concesionaria.
+
+RESUMEN DE PRESUPUESTO SUGERIDO PARA VENDER EL SISTEMA:
+- Creación e instalación del sistema: $3.500 a $5.000 USD.
+- Abono mensual recurrente por soporte: $150 a $300 USD.
+
+--------------------------------------------------------------------------------
+
+COMPARATIVA CON OTRAS AGENCIAS (Ejemplo: NexoSmart Argentina)
+Según los valores publicados por agencias locales de IA (como NexoSmart), los costos de armar un bot se desglosan de la siguiente manera:
+- Agente Autónomo (Que toma acciones, reservas): USD 2.000 (Pago único).
+- Integraciones (Conectar con CRM, Calendario o Base de Datos propia): Suma entre USD 2.000 y USD 5.000 adicionales.
+- Operación Mensual (Mantenimiento): USD 200 a USD 400 / mes.
+Conclusión: Si una concesionaria contratara a una agencia como NexoSmart para hacer lo que tú hiciste (Agente Autónomo + Integración con Base de Datos/Calendario propia), les cobrarían entre $4.000 y $7.000 USD de setup, validando exactamente el rango de $4.000 a $6.000 USD que estimamos en la Fuente 1.
+
+--------------------------------------------------------------------------------
+
+NOMBRE FORMAL DEL PROYECTO
+- Opción Principal: Sistema Integral de Gestión Empresarial (CRM/DMS) con Automatización e Inteligencia Artificial Corporativa.
+- Opción Corta: Plataforma Integral de Ventas, Stock y Automatización con IA.
+
+CARACTERÍSTICAS FORMALES DEL PROYECTO (Para tu propuesta)
+
+1. Arquitectura y Exclusividad
+- Desarrollo Exclusivo a Medida: Software personalizado y optimizado para las necesidades específicas de la organización, garantizando un activo digital propio y sin costos de licencias por usuario.
+- Infraestructura Cloud Independiente: Despliegue centralizado en Servidor Virtual Privado (VPS) propio de la empresa, bajo dominio institucional y con bases de datos aisladas para máxima seguridad de la información.
+- Diseño Mobile-First / Responsivo: Interfaz de usuario adaptada para una visualización y gestión óptima desde dispositivos móviles y computadoras de escritorio.
+
+2. Módulo de Gestión Interna (Panel Administrativo / CRM)
+- Control de Inventario y Stock en Tiempo Real: Interfaz centralizada para el registro, edición, baja y auditoría de existencias disponibles.
+- Módulo de Gestión de Ventas: Registro histórico de transacciones comerciales y trazabilidad de ingresos.
+- Panel de Control de Citas y Calendario: Visualizador central de la agenda corporativa con asignación automática de turnos.
+- Sistema de Permisos y Roles: Restricción de accesos según el perfil del empleado (ej. Administrador, Vendedor, Supervisor).
+
+3. Módulo de Automatización e Inteligencia Artificial (Canal de Ventas)
+- Agente Conversacional Avanzado en WhatsApp: Integración con la API oficial de Meta para atención automatizada, fluida y con lenguaje natural las 24 horas del día.
+- Vendedor Automatizado Experto: Entrenamiento de la IA con el catálogo real de la empresa para responder dudas, calificar potenciales compradores y guiar el proceso comercial de forma autónoma.
+- Asignador de Citas Automatizado: Sincronización directa entre las solicitudes de los clientes en WhatsApp y el calendario interno del sistema, bloqueando horarios de forma automática y enviando confirmaciones.

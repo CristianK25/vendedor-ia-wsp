@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Cita, Cliente } from '../types/models';
 import { clientesApi } from '../api/clientes';

@@ -8,8 +8,8 @@ class VentaService:
     def __init__(self, session: Session):
         self.repository = VentaRepository(session)
 
-    def get_all_ventas(self):
-        return self.repository.get_all()
+    def get_all_ventas(self, skip: int = 0, limit: int = 50, search: str = "", sort_by: str = "", sort_dir: str = "asc"):
+        return self.repository.get_all(skip, limit, search, sort_by, sort_dir)
 
     def get_venta(self, venta_id: int):
         venta = self.repository.get_by_id(venta_id)

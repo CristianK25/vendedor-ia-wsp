@@ -1,0 +1,3 @@
+seccion vehiculos:
+    - boton para marcar como vendido, muestra un cliente relacionado con ese auto si encuentra una cita ese mismo dia.
+    - modal para buscar clientes y relacionarlos con la venta.

@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { ClipboardList } from 'lucide-react'
 
 export default function VentaForm() {
