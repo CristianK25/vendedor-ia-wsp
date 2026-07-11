@@ -16,3 +16,11 @@ class TrabajadorResponse(BaseModel):
     nombre: str
     telefono: str
     rol: str
+    
+from typing import List
+class PaginatedTrabajadoresResponse(BaseModel):
+    items: List[TrabajadorResponse]
+    total: int
+    page: int
+    size: int
+    total_pages: int

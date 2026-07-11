@@ -8,8 +8,8 @@ class TrabajadorService:
     def __init__(self, session: Session):
         self.repository = TrabajadorRepository(session)
 
-    def get_all_trabajadores(self):
-        return self.repository.get_all()
+    def get_all_trabajadores(self, skip: int = 0, limit: int = 50, search: str = ""):
+        return self.repository.get_all(skip, limit, search)
 
     def get_trabajador(self, trabajador_id: int):
         trabajador = self.repository.get_by_id(trabajador_id)
