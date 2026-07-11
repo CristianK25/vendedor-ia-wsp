@@ -13,7 +13,9 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.detail || 'Ocurrió un error en la petición');
+    const error: any = new Error(errorBody.detail || 'Ocurrió un error en la petición');
+    error.status = response.status;
+    throw error;
   }
 
   // Si no hay contenido (ej: DELETE), retornamos null

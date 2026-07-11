@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { vehiculosApi } from '../api/vehiculos'
 import { Plus, Search, ListFilter, MoreVertical, Gauge, Settings2, ImageOff, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
+import MarcarVendidoModal from '../components/modals/MarcarVendidoModal'
 export default function VehiculosView() {
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
@@ -9,6 +10,7 @@ export default function VehiculosView() {
   })
   const [vehiculos, setVehiculos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [vehiculoParaVender, setVehiculoParaVender] = useState<any>(null)
 
   // Paginación y Búsqueda
   const [currentPage, setCurrentPage] = useState(1);
@@ -120,15 +122,8 @@ export default function VehiculosView() {
     localStorage.setItem('vehiculosViewMode', mode)
   }
 
-  const handleMarcarVendido = async (id: number, vehiculo: any) => {
-    try {
-      const dataToUpdate = { ...vehiculo, estado: 'vendido' }
-      await vehiculosApi.update(id, dataToUpdate)
-      setVehiculos(prev => prev.map(v => v.id === id ? { ...v, estado: 'vendido' } : v))
-    } catch (error) {
-      console.error('Error al marcar como vendido:', error)
-      alert('Hubo un error al actualizar el estado.')
-    }
+  const handleMarcarVendido = async (vehiculo: any) => {
+    setVehiculoParaVender(vehiculo)
   }
 
   return (
@@ -200,7 +195,7 @@ export default function VehiculosView() {
                     <div className="relative h-48 w-full overflow-hidden bg-surface-container flex items-center justify-center text-outline">
                       {v.imagenes && v.imagenes.length > 0 ? (
                         <img 
-                          src={v.imagenes[0].ruta.startsWith('http') ? v.imagenes[0].ruta : `http://localhost:8000${v.imagenes[0].ruta}`}
+                          src={v.imagenes[0].ruta.trim().startsWith('http') ? v.imagenes[0].ruta.trim() : `http://localhost:8000${v.imagenes[0].ruta.trim()}`}
                           alt={v.modelo}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
@@ -232,7 +227,7 @@ export default function VehiculosView() {
                         <span className="text-primary font-bold text-xl">${v.precio.toLocaleString()}</span>
                         {v.estado === 'disponible' ? (
                           <button 
-                            onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v.id, v); }}
+                            onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
                             className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors"
                           >
                             Marcar Vendido
@@ -312,7 +307,7 @@ export default function VehiculosView() {
                           <div className="flex items-center justify-center gap-2">
                             {v.estado === 'disponible' ? (
                               <button 
-                                onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v.id, v); }}
+                                onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
                                 className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors w-32 whitespace-nowrap text-center"
                               >
                                 Marcar Vendido
@@ -337,6 +332,27 @@ export default function VehiculosView() {
           )}
           {renderPagination()}
         </>
+      )}
+
+      {vehiculoParaVender && (
+        <MarcarVendidoModal
+          vehiculo={vehiculoParaVender}
+          onClose={() => setVehiculoParaVender(null)}
+          onSuccess={() => {
+            setVehiculoParaVender(null);
+            setLoading(true);
+            vehiculosApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction)
+              .then((data: any) => {
+                setVehiculos(data.items);
+                setTotalPages(data.total_pages);
+                setLoading(false);
+              })
+              .catch(err => {
+                console.error(err);
+                setLoading(false);
+              });
+          }}
+        />
       )}
     </section>
   )

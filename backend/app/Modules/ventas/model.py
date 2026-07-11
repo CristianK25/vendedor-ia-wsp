@@ -9,3 +9,5 @@ class Venta(SQLModel, table=True):
     cliente_telefono: str = Field(foreign_key="clientes.telefono")
     fecha: Optional[datetime] = Field(default_factory=datetime.utcnow)
     precio_final: float
+    metodo_pago: str = Field(default="Efectivo")
+    notas: Optional[str] = None

@@ -6,6 +6,8 @@ class VentaCreate(BaseModel):
     vehiculo_id: int
     cliente_telefono: str
     precio_final: float
+    metodo_pago: Optional[str] = "Efectivo"
+    notas: Optional[str] = None
 
 class VentaResponse(BaseModel):
     id: int
@@ -15,6 +17,8 @@ class VentaResponse(BaseModel):
     cliente_nombre: Optional[str] = None
     fecha: datetime
     precio_final: float
+    metodo_pago: str
+    notas: Optional[str]
 
 class PaginatedVentasResponse(BaseModel):
     items: List[VentaResponse]

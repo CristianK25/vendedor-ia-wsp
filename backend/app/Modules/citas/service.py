@@ -11,6 +11,9 @@ class CitaService:
     def get_all_citas(self):
         return self.repository.get_all()
 
+    def get_cita_hoy_por_vehiculo(self, vehiculo_id: int):
+        return self.repository.get_hoy_by_vehiculo(vehiculo_id)
+
     def get_cita(self, cita_id: int):
         cita = self.repository.get_by_id_with_name(cita_id)
         if not cita:

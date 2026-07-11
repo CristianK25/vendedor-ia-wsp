@@ -12,6 +12,15 @@ def get_citas(session: Session = Depends(get_session)):
     service = CitaService(session)
     return service.get_all_citas()
 
+@router.get("/vehiculo/{vehiculo_id}/hoy", response_model=CitaResponse)
+def get_cita_hoy_vehiculo(vehiculo_id: int, session: Session = Depends(get_session)):
+    service = CitaService(session)
+    cita = service.get_cita_hoy_por_vehiculo(vehiculo_id)
+    if not cita:
+        from fastapi import HTTPException, status
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No hay cita para este vehículo hoy")
+    return cita
+
 @router.post("/", response_model=CitaResponse)
 def create_cita(cita: CitaCreate, session: Session = Depends(get_session)):
     service = CitaService(session)

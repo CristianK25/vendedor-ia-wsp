@@ -18,7 +18,23 @@ class VentaService:
         return venta
 
     def create_venta(self, venta_data: VentaCreate):
-        # NOTA: Aqui se deberia validar que el vehiculo existe y esta disponible
-        # y que el cliente existe. Además, cambiar el estado del vehiculo a 'vendido'.
+        from app.Modules.vehiculos.repository import VehiculoRepository
+        from app.Modules.vehiculos.model import EstadoVehiculo
+        vehiculo_repo = VehiculoRepository(self.session)
+        vehiculo = vehiculo_repo.get_by_id(venta_data.vehiculo_id)
+        if not vehiculo:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Vehiculo no encontrado")
+        if vehiculo.estado != EstadoVehiculo.disponible:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El vehiculo no está disponible para venta")
+            
+        from app.Modules.clientes.repository import ClienteRepository
+        cliente_repo = ClienteRepository(self.session)
+        cliente = cliente_repo.get_by_telefono(venta_data.cliente_telefono)
+        if not cliente:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente no encontrado")
+
+        vehiculo.estado = EstadoVehiculo.vendido
+        vehiculo_repo.update(vehiculo)
+
         venta = Venta(**venta_data.model_dump())
         return self.repository.create(venta)

@@ -1,4 +1,4 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from app.Modules.citas.model import Cita
 from app.Modules.clientes.model import Cliente
 from typing import List, Optional
@@ -21,6 +21,20 @@ class CitaRepository:
     def get_by_id(self):
         # get_by_id is not changed because it's only used for internal operations in service
         pass
+
+    def get_hoy_by_vehiculo(self, vehiculo_id: int):
+        from datetime import date
+        statement = select(Cita, Cliente.nombre).join(Cliente, Cita.cliente_telefono == Cliente.telefono, isouter=True).where(
+            Cita.vehiculo_id == vehiculo_id,
+            func.date(Cita.fecha) == date.today()
+        )
+        result = self.session.exec(statement).first()
+        if not result:
+            return None
+        cita, nombre = result
+        cita_dict = cita.model_dump()
+        cita_dict['cliente_nombre'] = nombre or cita.cliente_telefono
+        return cita_dict
 
     def get_by_id_with_name(self, cita_id: int):
         statement = select(Cita, Cliente.nombre).join(Cliente, Cita.cliente_telefono == Cliente.telefono, isouter=True).where(Cita.id == cita_id)

@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS trabajadores (
 CREATE TABLE IF NOT EXISTS citas (
     id SERIAL PRIMARY KEY,
     cliente_telefono TEXT NOT NULL,
+    vehiculo_id INTEGER,
     fecha TIMESTAMP NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     estado TEXT DEFAULT 'pendiente' CHECK (
@@ -75,7 +76,8 @@ CREATE TABLE IF NOT EXISTS citas (
             'cancelada'
         )
     ),
-    FOREIGN KEY (cliente_telefono) REFERENCES clientes (telefono)
+    FOREIGN KEY (cliente_telefono) REFERENCES clientes (telefono),
+    FOREIGN KEY (vehiculo_id) REFERENCES vehiculos (id)
 );
 
 -- REGLA: Un cliente solo puede tener una cita por día
@@ -91,6 +93,8 @@ CREATE TABLE IF NOT EXISTS ventas (
     cliente_telefono TEXT NOT NULL,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     precio_final REAL NOT NULL,
+    metodo_pago TEXT DEFAULT 'Efectivo',
+    notas TEXT,
     FOREIGN KEY (vehiculo_id) REFERENCES vehiculos (id),
     FOREIGN KEY (cliente_telefono) REFERENCES clientes (telefono)
 );

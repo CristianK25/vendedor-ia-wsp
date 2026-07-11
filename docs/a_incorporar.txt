@@ -1,3 +1,14 @@
 seccion vehiculos:
     - boton para marcar como vendido, muestra un cliente relacionado con ese auto si encuentra una cita ese mismo dia.
+    - Sino encuentra una cita ese mismo dia, tendria que tener un buscador para buscar con que cliente esta relacionado en un modal
     - modal para buscar clientes y relacionarlos con la venta.
+seccion ventas (flujo):
+    - buscar el boton de registrar una venta
+    - que te lleve a la pagina de venta nueva
+    - tener un formulario para:
+        - buscar el auto vendido
+        - buscar el cliente al que se lo vende. 
+        - Un buscador como el que tenemos en las respectivas tablas
+
+pendientes (para revisar más adelante):
+    - manejo de citas futuras: cuando un vehículo se vende, definir qué hacer con las citas programadas a futuro para ese mismo vehículo (cancelarlas, notificarlas, etc.).
