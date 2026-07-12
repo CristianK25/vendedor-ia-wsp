@@ -1,4 +1,4 @@
-import { Calendar, Car, Users, ClipboardList, Megaphone, UserCircle2 } from 'lucide-react'
+import { Calendar, Car, Users, ClipboardList, Megaphone, UserCircle2, LogOut } from 'lucide-react'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import CalendarPage from './pages/CalendarPage'
 import VehiculosPage from './pages/VehiculosPage'
@@ -14,9 +14,23 @@ import ClienteForm from './components/forms/ClienteForm'
 import PromocionForm from './components/forms/PromocionForm'
 import TrabajadorForm from './components/forms/TrabajadorForm'
 
+import { useAuthStore } from './store/authStore'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import LoginPage from './pages/LoginPage'
+
 function App() {
+  const { usuario, logout } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
+
+  if (location.pathname === '/login') {
+    return (
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    )
+  }
 
   const tabs = [
     { path: '/calendario', icon: Calendar, label: 'Calendario' },
@@ -62,12 +76,23 @@ function App() {
           {/* User Profile Snippet */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="hidden md:flex flex-col text-right">
-              <span className="text-sm font-semibold text-on-surface">Juan Delgado</span>
-              <span className="text-[11px] text-on-surface-variant uppercase tracking-wider">Administrador</span>
+              <span className="text-sm font-semibold text-on-surface">
+                {usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Admin'}
+              </span>
+              <span className="text-[11px] text-on-surface-variant uppercase tracking-wider">
+                {usuario?.rol || 'Administrador'}
+              </span>
             </div>
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs md:text-sm">
-              JD
+              {usuario ? `${usuario.nombre[0]}${usuario.apellido[0]}`.toUpperCase() : 'A'}
             </div>
+            <button
+              onClick={() => logout()}
+              title="Cerrar sesión"
+              className="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-lg transition-all cursor-pointer flex items-center justify-center"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
 
@@ -92,24 +117,26 @@ function App() {
       <main className="flex-1 w-full pb-6 flex flex-col">
         <div className="max-w-[1600px] mx-auto w-full flex-1 flex flex-col">
           <Routes>
-            <Route path="/calendario" element={<CalendarPage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/calendario" element={<CalendarPage />} />
 
-            <Route path="/vehiculos" element={<VehiculosPage />} />
-            <Route path="/vehiculos/nuevo" element={<VehiculoForm />} />
-            <Route path="/vehiculos/editar/:id" element={<VehiculoForm />} />
-            <Route path="/vehiculos/:id" element={<VehiculoDetailPage />} />
+              <Route path="/vehiculos" element={<VehiculosPage />} />
+              <Route path="/vehiculos/nuevo" element={<VehiculoForm />} />
+              <Route path="/vehiculos/editar/:id" element={<VehiculoForm />} />
+              <Route path="/vehiculos/:id" element={<VehiculoDetailPage />} />
 
-            <Route path="/ventas" element={<VentasPage />} />
-            <Route path="/ventas/nuevo" element={<VentaForm />} />
+              <Route path="/ventas" element={<VentasPage />} />
+              <Route path="/ventas/nuevo" element={<VentaForm />} />
 
-            <Route path="/clientes" element={<ClientesPage />} />
-            <Route path="/clientes/nuevo" element={<ClienteForm />} />
+              <Route path="/clientes" element={<ClientesPage />} />
+              <Route path="/clientes/nuevo" element={<ClienteForm />} />
 
-            <Route path="/promociones" element={<PromocionesPage />} />
-            <Route path="/promociones/nuevo" element={<PromocionForm />} />
+              <Route path="/promociones" element={<PromocionesPage />} />
+              <Route path="/promociones/nuevo" element={<PromocionForm />} />
 
-            <Route path="/trabajadores" element={<TrabajadoresPage />} />
-            <Route path="/trabajadores/nuevo" element={<TrabajadorForm />} />
+              <Route path="/trabajadores" element={<TrabajadoresPage />} />
+              <Route path="/trabajadores/nuevo" element={<TrabajadorForm />} />
+            </Route>
 
             <Route path="*" element={<Navigate to="/calendario" replace />} />
           </Routes>

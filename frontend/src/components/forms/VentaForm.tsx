@@ -30,7 +30,7 @@ export default function VentaForm() {
   // Buscador Vehículos
   useEffect(() => {
     if (vehiculoSearch.length > 2 && !selectedVehiculo) {
-      vehiculosApi.getAll(1, 10, vehiculoSearch).then((data: any) => {
+      vehiculosApi.getAll({ page: 1, size: 10, search: vehiculoSearch }).then((data: any) => {
         // Filtrar solo disponibles
         setVehiculosResults(data.items.filter((v: any) => v.estado === 'disponible'));
       });
