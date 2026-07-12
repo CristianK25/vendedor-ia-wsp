@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 import os
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,6 +39,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Middleware CSRF personalizado
+@app.middleware("http")
+async def csrf_middleware(request: Request, call_next):
+    # Protegemos métodos que modifican estado (POST, PUT, DELETE, PATCH)
+    if request.method in ["POST", "PUT", "DELETE", "PATCH"]:
+        # Solo bajo el prefijo /api
+        if request.url.path.startswith("/api"):
+            # Excluimos login público
+            if not request.url.path.endswith("/auth/login"):
+                csrf_header = request.headers.get("x-vendedoria-crm-vehiculos")
+                if csrf_header != "true":
+                    return JSONResponse(
+                        status_code=403,
+                        content={"detail": "Petición rechazada por validación de seguridad (CSRF)."}
+                    )
+    return await call_next(request)
 
 # Servir imágenes subidas
 os.makedirs("fotos", exist_ok=True)
