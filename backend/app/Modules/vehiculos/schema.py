@@ -15,6 +15,8 @@ class VehiculoCreate(BaseModel):
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
     informacion_extra: Optional[str] = None
+    anio: Optional[int] = None
+    transmision: Optional[str] = None
 
 class VehiculoUpdate(BaseModel):
     modelo: Optional[str] = None
@@ -23,6 +25,8 @@ class VehiculoUpdate(BaseModel):
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
     informacion_extra: Optional[str] = None
+    anio: Optional[int] = None
+    transmision: Optional[str] = None
     estado: Optional[EstadoVehiculo] = None
 
 class VehiculoResponse(BaseModel):
@@ -33,6 +37,8 @@ class VehiculoResponse(BaseModel):
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
     informacion_extra: Optional[str] = None
+    anio: Optional[int] = None
+    transmision: Optional[str] = None
     estado: EstadoVehiculo
     imagenes: List[ImagenResponse] = []
 

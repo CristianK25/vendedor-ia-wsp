@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { vehiculosApi } from '../api/vehiculos'
 import { Plus, Search, ListFilter, MoreVertical, Gauge, Settings2, ImageOff, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 import MarcarVendidoModal from '../components/modals/MarcarVendidoModal'
 export default function VehiculosView() {
   const navigate = useNavigate()
@@ -19,6 +21,14 @@ export default function VehiculosView() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterEstado, setFilterEstado] = useState<'todos' | 'disponible' | 'vendido'>('todos');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  // Advanced Filters State
+  const [stats, setStats] = useState<any>(null);
+  const [precioRango, setPrecioRango] = useState<[number, number]>([0, 100000]);
+  const [kmRango, setKmRango] = useState<[number, number]>([0, 200000]);
+  const [anioRango, setAnioRango] = useState<[number, number]>([2000, new Date().getFullYear()]);
+  const [filterTransmision, setFilterTransmision] = useState<string>('');
+  
   const size = 50;
 
   type SortConfig = {
@@ -52,11 +62,36 @@ export default function VehiculosView() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  // Cargar estadísticas
+  useEffect(() => {
+    vehiculosApi.getStats().then((data: any) => {
+      setStats(data);
+      setPrecioRango([data.precio_min || 0, data.precio_max || 100000]);
+      setKmRango([data.km_min || 0, data.km_max || 200000]);
+      setAnioRango([data.anio_min || 2000, data.anio_max || new Date().getFullYear()]);
+    }).catch(console.error);
+  }, []);
+
   // Cargar datos
   useEffect(() => {
     setLoading(true);
     const estadoQuery = filterEstado === 'todos' ? '' : filterEstado;
-    vehiculosApi.getAll(currentPage, size, debouncedSearch, estadoQuery, sortConfig.key || '', sortConfig.direction)
+    const filters = {
+      page: currentPage,
+      size,
+      search: debouncedSearch,
+      estado: estadoQuery,
+      precio_min: precioRango[0],
+      precio_max: precioRango[1],
+      km_min: kmRango[0],
+      km_max: kmRango[1],
+      anio_min: anioRango[0],
+      anio_max: anioRango[1],
+      transmision: filterTransmision === 'Todas' ? '' : filterTransmision,
+      sortBy: sortConfig.key || '',
+      sortDir: sortConfig.direction
+    };
+    vehiculosApi.getAll(filters)
       .then((data: any) => {
         setVehiculos(data.items);
         setTotalPages(data.total_pages);
@@ -217,52 +252,126 @@ export default function VehiculosView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             
             {/* Filtro: Rango de Precio */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Precio Máximo ($)</label>
-              <input 
-                type="number"
-                placeholder="Ej. 25000"
-                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
-              />
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                <span>Precio Mínimo</span>
+                <span>Máximo</span>
+              </div>
+              <div className="px-2">
+                {stats && (
+                  <Slider
+                    range
+                    min={stats.precio_min || 0}
+                    max={stats.precio_max || 100000}
+                    value={precioRango}
+                    onChange={(val) => setPrecioRango(val as [number, number])}
+                    trackStyle={[{ backgroundColor: '#4F46E5' }]}
+                    handleStyle={[
+                      { borderColor: '#4F46E5' },
+                      { borderColor: '#4F46E5' }
+                    ]}
+                  />
+                )}
+              </div>
+              <div className="flex justify-between text-sm font-medium text-surface-900 mt-1">
+                <span>${precioRango[0].toLocaleString()}</span>
+                <span>${precioRango[1].toLocaleString()}</span>
+              </div>
             </div>
 
-            {/* Filtro: Kilometraje Máximo */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Kilometraje Max.</label>
-              <input 
-                type="number"
-                placeholder="Ej. 50000"
-                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
-              />
+            {/* Filtro: Kilometraje */}
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                <span>Kilometraje Min</span>
+                <span>Max</span>
+              </div>
+              <div className="px-2">
+                {stats && (
+                  <Slider
+                    range
+                    min={stats.km_min || 0}
+                    max={stats.km_max || 200000}
+                    value={kmRango}
+                    onChange={(val) => setKmRango(val as [number, number])}
+                    trackStyle={[{ backgroundColor: '#4F46E5' }]}
+                    handleStyle={[
+                      { borderColor: '#4F46E5' },
+                      { borderColor: '#4F46E5' }
+                    ]}
+                  />
+                )}
+              </div>
+              <div className="flex justify-between text-sm font-medium text-surface-900 mt-1">
+                <span>{kmRango[0].toLocaleString()} km</span>
+                <span>{kmRango[1].toLocaleString()} km</span>
+              </div>
             </div>
 
-            {/* Filtro: Año Mínimo */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Año Desde</label>
-              <input 
-                type="number"
-                placeholder="Ej. 2015"
-                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
-              />
+            {/* Filtro: Año */}
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                <span>Año Desde</span>
+                <span>Hasta</span>
+              </div>
+              <div className="px-2">
+                {stats && (
+                  <Slider
+                    range
+                    min={stats.anio_min || 2000}
+                    max={stats.anio_max || new Date().getFullYear()}
+                    value={anioRango}
+                    onChange={(val) => setAnioRango(val as [number, number])}
+                    trackStyle={[{ backgroundColor: '#4F46E5' }]}
+                    handleStyle={[
+                      { borderColor: '#4F46E5' },
+                      { borderColor: '#4F46E5' }
+                    ]}
+                  />
+                )}
+              </div>
+              <div className="flex justify-between text-sm font-medium text-surface-900 mt-1">
+                <span>{anioRango[0]}</span>
+                <span>{anioRango[1]}</span>
+              </div>
             </div>
 
             {/* Filtro: Transmisión */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Transmisión</label>
-              <select className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm">
-                <option value="">Todas</option>
-                <option value="automática">Automática</option>
-                <option value="manual">Manual</option>
+            <div className="flex flex-col gap-1.5 justify-end">
+              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Transmisión</label>
+              <select 
+                value={filterTransmision}
+                onChange={(e) => setFilterTransmision(e.target.value)}
+                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              >
+                <option value="Todas">Todas</option>
+                <option value="Automática">Automática</option>
+                <option value="Manual">Manual</option>
               </select>
             </div>
 
           </div>
           
           <div className="flex justify-end items-center gap-3 mt-5 pt-4 border-t border-outline-variant/50">
-            <button className="text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors">
+            <button 
+              onClick={() => {
+                if (stats) {
+                  setPrecioRango([stats.precio_min || 0, stats.precio_max || 100000]);
+                  setKmRango([stats.km_min || 0, stats.km_max || 200000]);
+                  setAnioRango([stats.anio_min || 2000, stats.anio_max || new Date().getFullYear()]);
+                }
+                setFilterTransmision('Todas');
+                setFilterEstado('todos');
+                setSearchTerm('');
+                setCurrentPage(1);
+              }}
+              className="text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors"
+            >
               Limpiar Filtros
             </button>
-            <button className="px-5 py-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container rounded-lg text-sm font-bold transition-colors shadow-sm">
+            <button 
+              onClick={() => setCurrentPage(1)}
+              className="px-5 py-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container rounded-lg text-sm font-bold transition-colors shadow-sm"
+            >
               Aplicar
             </button>
           </div>
@@ -433,7 +542,23 @@ export default function VehiculosView() {
           onSuccess={() => {
             setVehiculoParaVender(null);
             setLoading(true);
-            vehiculosApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction)
+            const estadoQuery = filterEstado === 'todos' ? '' : filterEstado;
+            const filters = {
+              page: currentPage,
+              size,
+              search: debouncedSearch,
+              estado: estadoQuery,
+              precio_min: precioRango[0],
+              precio_max: precioRango[1],
+              km_min: kmRango[0],
+              km_max: kmRango[1],
+              anio_min: anioRango[0],
+              anio_max: anioRango[1],
+              transmision: filterTransmision === 'Todas' ? '' : filterTransmision,
+              sortBy: sortConfig.key || '',
+              sortDir: sortConfig.direction
+            };
+            vehiculosApi.getAll(filters)
               .then((data: any) => {
                 setVehiculos(data.items);
                 setTotalPages(data.total_pages);

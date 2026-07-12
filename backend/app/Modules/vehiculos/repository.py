@@ -6,7 +6,22 @@ class VehiculoRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_all(self, skip: int = 0, limit: int = 50, search: str = "", estado: str = "", sort_by: str = "", sort_dir: str = "asc") -> Tuple[List[Vehiculo], int]:
+    def get_all(
+        self, 
+        skip: int = 0, 
+        limit: int = 50, 
+        search: str = "", 
+        estado: str = "", 
+        precio_min: Optional[float] = None,
+        precio_max: Optional[float] = None,
+        km_min: Optional[int] = None,
+        km_max: Optional[int] = None,
+        anio_min: Optional[int] = None,
+        anio_max: Optional[int] = None,
+        transmision: str = "",
+        sort_by: str = "", 
+        sort_dir: str = "asc"
+    ) -> Tuple[List[Vehiculo], int]:
         query = select(Vehiculo)
         
         if search:
@@ -14,6 +29,24 @@ class VehiculoRepository:
             
         if estado:
             query = query.where(Vehiculo.estado == estado)
+            
+        if precio_min is not None:
+            query = query.where(Vehiculo.precio >= precio_min)
+        if precio_max is not None:
+            query = query.where(Vehiculo.precio <= precio_max)
+            
+        if km_min is not None:
+            query = query.where(Vehiculo.kilometraje >= km_min)
+        if km_max is not None:
+            query = query.where(Vehiculo.kilometraje <= km_max)
+            
+        if anio_min is not None:
+            query = query.where(Vehiculo.anio >= anio_min)
+        if anio_max is not None:
+            query = query.where(Vehiculo.anio <= anio_max)
+            
+        if transmision:
+            query = query.where(Vehiculo.transmision == transmision)
             
         if sort_by:
             column = getattr(Vehiculo, sort_by, None)
@@ -29,6 +62,26 @@ class VehiculoRepository:
         items = self.session.exec(query).all()
         
         return items, total
+
+    def get_stats(self) -> dict:
+        statement = select(
+            func.min(Vehiculo.precio).label("precio_min"),
+            func.max(Vehiculo.precio).label("precio_max"),
+            func.min(Vehiculo.kilometraje).label("km_min"),
+            func.max(Vehiculo.kilometraje).label("km_max"),
+            func.min(Vehiculo.anio).label("anio_min"),
+            func.max(Vehiculo.anio).label("anio_max"),
+        )
+        result = self.session.exec(statement).first()
+        
+        return {
+            "precio_min": result.precio_min or 0,
+            "precio_max": result.precio_max or 100000,
+            "km_min": result.km_min or 0,
+            "km_max": result.km_max or 200000,
+            "anio_min": result.anio_min or 2000,
+            "anio_max": result.anio_max or 2025,
+        }
 
     def get_by_id(self, vehiculo_id: int) -> Optional[Vehiculo]:
         return self.session.get(Vehiculo, vehiculo_id)

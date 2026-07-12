@@ -11,8 +11,30 @@ class VehiculoService:
         self.session = session
         self.repository = VehiculoRepository(session)
 
-    def get_all_vehiculos(self, skip: int = 0, limit: int = 50, search: str = "", estado: str = "", sort_by: str = "", sort_dir: str = "asc"):
-        return self.repository.get_all(skip, limit, search, estado, sort_by, sort_dir)
+    def get_all_vehiculos(
+        self, 
+        skip: int = 0, 
+        limit: int = 50, 
+        search: str = "", 
+        estado: str = "", 
+        precio_min: Optional[float] = None,
+        precio_max: Optional[float] = None,
+        km_min: Optional[int] = None,
+        km_max: Optional[int] = None,
+        anio_min: Optional[int] = None,
+        anio_max: Optional[int] = None,
+        transmision: str = "",
+        sort_by: str = "", 
+        sort_dir: str = "asc"
+    ):
+        return self.repository.get_all(
+            skip, limit, search, estado, 
+            precio_min, precio_max, km_min, km_max, anio_min, anio_max, transmision,
+            sort_by, sort_dir
+        )
+    
+    def get_stats(self):
+        return self.repository.get_stats()
     
     def get_disponibles(self):
         return self.repository.get_disponibles()

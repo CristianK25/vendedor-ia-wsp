@@ -1,17 +1,27 @@
 import { fetchApi } from './client'
 
 export const vehiculosApi = {
-  getAll: (page = 1, size = 50, search = '', estado = '', sortBy = '', sortDir = 'asc') => {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      search,
-      estado,
-      sort_by: sortBy,
-      sort_dir: sortDir
-    });
+  getAll: (filters: any = {}) => {
+    const params = new URLSearchParams();
+    
+    // Solo agregamos los parámetros que existen
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.size) params.append('size', filters.size.toString());
+    if (filters.search) params.append('search', filters.search);
+    if (filters.estado) params.append('estado', filters.estado);
+    if (filters.precio_min) params.append('precio_min', filters.precio_min.toString());
+    if (filters.precio_max) params.append('precio_max', filters.precio_max.toString());
+    if (filters.km_min) params.append('km_min', filters.km_min.toString());
+    if (filters.km_max) params.append('km_max', filters.km_max.toString());
+    if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+    if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+    if (filters.transmision) params.append('transmision', filters.transmision);
+    if (filters.sortBy) params.append('sort_by', filters.sortBy);
+    if (filters.sortDir) params.append('sort_dir', filters.sortDir);
+    
     return fetchApi(`/vehiculos/?${params.toString()}`);
   },
+  getStats: () => fetchApi('/vehiculos/stats'),
   getCatalogo: () => fetchApi('/vehiculos/catalogo'),
   getById: (id: number) => fetchApi(`/vehiculos/${id}`),
   create: (data: any) => {
