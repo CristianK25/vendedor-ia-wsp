@@ -8,3 +8,4 @@ python-multipart
 Pillow
 passlib[bcrypt]
 python-jose[cryptography]
+email-validator

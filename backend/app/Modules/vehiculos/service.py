@@ -1,6 +1,6 @@
 from sqlmodel import Session
 from fastapi import HTTPException, status, UploadFile
-from typing import List
+from typing import List, Optional
 from app.Modules.vehiculos.repository import VehiculoRepository
 from app.Modules.vehiculos.model import Vehiculo
 from app.Modules.vehiculos.schema import VehiculoCreate, VehiculoUpdate

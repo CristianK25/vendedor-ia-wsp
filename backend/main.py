@@ -1,16 +1,34 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
 import os
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Session, select
 from app.Core.database import engine
-from app.Modules.usuarios.model import Usuario
+from app.Modules.usuarios.model import Usuario, RefreshToken, UserRole
+from app.Core.Security.jwt import get_password_hash
+from app.Modules.usuarios.router import router as auth_router
+from app.Core.Security.deps import require_admin
 
 app = FastAPI(title="Vendedor IA API", description="API para el sistema de Vendedor IA y CRM de vehículos")
 
 @app.on_event("startup")
 def on_startup():
     SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        has_users = session.exec(select(Usuario)).first()
+        if not has_users:
+            print("Seeding default admin user...")
+            admin_user = Usuario(
+                nombre="Admin",
+                apellido="Sistema",
+                email="admin@vendedor.com",
+                password_hash=get_password_hash("admin123"),
+                rol=UserRole.ADMIN,
+                is_active=True
+            )
+            session.add(admin_user)
+            session.commit()
+            print("Default admin user seeded successfully!")
 
 # Configure CORS for frontend access
 app.add_middleware(
@@ -36,9 +54,10 @@ from app.Modules.ventas.router import router as ventas_router
 from app.Modules.citas.router import router as citas_router
 from app.Modules.promociones.router import router as promociones_router
 
-app.include_router(vehiculos_router, prefix="/api")
-app.include_router(clientes_router, prefix="/api")
-app.include_router(trabajadores_router, prefix="/api")
-app.include_router(ventas_router, prefix="/api")
-app.include_router(citas_router, prefix="/api")
-app.include_router(promociones_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+app.include_router(vehiculos_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(clientes_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(trabajadores_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(ventas_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(citas_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(promociones_router, prefix="/api", dependencies=[Depends(require_admin)])
