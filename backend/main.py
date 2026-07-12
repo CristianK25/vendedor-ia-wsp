@@ -4,6 +4,7 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel
 from app.Core.database import engine
+from app.Modules.usuarios.model import Usuario
 
 app = FastAPI(title="Vendedor IA API", description="API para el sistema de Vendedor IA y CRM de vehículos")
 

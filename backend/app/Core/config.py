@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "vendedor_ia"
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5433"
+    SECRET_KEY: str = "supersecretkey_change_me_in_production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     model_config = {
         "env_file": "../.env",
