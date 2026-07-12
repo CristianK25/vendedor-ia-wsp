@@ -18,6 +18,7 @@ export default function VehiculosView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterEstado, setFilterEstado] = useState<'todos' | 'disponible' | 'vendido'>('todos');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const size = 50;
 
   type SortConfig = {
@@ -156,7 +157,10 @@ export default function VehiculosView() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <button className="px-4 h-11 bg-white border border-outline-variant rounded-lg flex items-center gap-2 hover:bg-surface-container-low transition-colors text-sm font-semibold text-on-surface">
+        <button 
+          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          className={`px-4 h-11 border rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold ${showAdvancedFilters ? 'bg-primary-container text-on-primary-container border-primary/20' : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low'}`}
+        >
           <ListFilter size={20} />
           Filtros
         </button>
@@ -200,6 +204,68 @@ export default function VehiculosView() {
           >
             <LayoutGrid size={20} />
           </button>
+        </div>
+      </div>
+
+      {/* Panel de Filtros Avanzados (Acordeón) */}
+      <div 
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          showAdvancedFilters ? 'max-h-[500px] mt-4 opacity-100' : 'max-h-0 mt-0 opacity-0'
+        }`}
+      >
+        <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            
+            {/* Filtro: Rango de Precio */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Precio Máximo ($)</label>
+              <input 
+                type="number"
+                placeholder="Ej. 25000"
+                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              />
+            </div>
+
+            {/* Filtro: Kilometraje Máximo */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Kilometraje Max.</label>
+              <input 
+                type="number"
+                placeholder="Ej. 50000"
+                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              />
+            </div>
+
+            {/* Filtro: Año Mínimo */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Año Desde</label>
+              <input 
+                type="number"
+                placeholder="Ej. 2015"
+                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              />
+            </div>
+
+            {/* Filtro: Transmisión */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Transmisión</label>
+              <select className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm">
+                <option value="">Todas</option>
+                <option value="automática">Automática</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+
+          </div>
+          
+          <div className="flex justify-end items-center gap-3 mt-5 pt-4 border-t border-outline-variant/50">
+            <button className="text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors">
+              Limpiar Filtros
+            </button>
+            <button className="px-5 py-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container rounded-lg text-sm font-bold transition-colors shadow-sm">
+              Aplicar
+            </button>
+          </div>
         </div>
       </div>
 
