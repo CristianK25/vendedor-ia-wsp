@@ -12,11 +12,12 @@ export default function VehiculosView() {
   const [loading, setLoading] = useState(true)
   const [vehiculoParaVender, setVehiculoParaVender] = useState<any>(null)
 
-  // Paginación y Búsqueda
+  // Paginación, Búsqueda y Filtros
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filterEstado, setFilterEstado] = useState<'todos' | 'disponible' | 'vendido'>('todos');
   const size = 50;
 
   type SortConfig = {
@@ -53,7 +54,8 @@ export default function VehiculosView() {
   // Cargar datos
   useEffect(() => {
     setLoading(true);
-    vehiculosApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction)
+    const estadoQuery = filterEstado === 'todos' ? '' : filterEstado;
+    vehiculosApi.getAll(currentPage, size, debouncedSearch, estadoQuery, sortConfig.key || '', sortConfig.direction)
       .then((data: any) => {
         setVehiculos(data.items);
         setTotalPages(data.total_pages);
@@ -63,7 +65,7 @@ export default function VehiculosView() {
         console.error(err);
         setLoading(false);
       });
-  }, [currentPage, debouncedSearch, sortConfig])
+  }, [currentPage, debouncedSearch, sortConfig, filterEstado])
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -159,7 +161,31 @@ export default function VehiculosView() {
           Filtros
         </button>
 
-        <div className="ml-auto flex items-center bg-surface-container-low border border-outline-variant rounded-lg p-1">
+        {/* Tabs de Filtro de Estado */}
+        <div className="flex bg-surface-container-low border border-outline-variant rounded-lg p-1 h-11">
+          <button 
+            onClick={() => setFilterEstado('todos')}
+            className={`px-4 rounded-md transition-colors text-sm font-semibold flex items-center gap-1 ${filterEstado === 'todos' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            Todos
+          </button>
+          <button 
+            onClick={() => setFilterEstado('disponible')}
+            className={`px-4 rounded-md transition-colors text-sm font-semibold flex items-center gap-1.5 ${filterEstado === 'disponible' ? 'bg-white shadow-sm text-emerald-600' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            <span className={`w-2 h-2 rounded-full ${filterEstado === 'disponible' ? 'bg-emerald-500' : 'bg-emerald-500/50'}`}></span>
+            Disponibles
+          </button>
+          <button 
+            onClick={() => setFilterEstado('vendido')}
+            className={`px-4 rounded-md transition-colors text-sm font-semibold flex items-center gap-1.5 ${filterEstado === 'vendido' ? 'bg-white shadow-sm text-red-600' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            <span className={`w-2 h-2 rounded-full ${filterEstado === 'vendido' ? 'bg-red-500' : 'bg-red-500/50'}`}></span>
+            Vendidos
+          </button>
+        </div>
+
+        <div className="ml-auto flex items-center bg-surface-container-low border border-outline-variant rounded-lg p-1 h-11">
           <button 
             onClick={() => handleViewModeChange('list')}
             className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}

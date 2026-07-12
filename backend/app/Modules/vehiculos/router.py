@@ -13,13 +13,14 @@ def get_vehiculos(
     page: int = 1, 
     size: int = 50, 
     search: str = "",
+    estado: str = "",
     sort_by: str = "",
     sort_dir: str = "asc",
     session: Session = Depends(get_session)
 ):
     service = VehiculoService(session)
     skip = (page - 1) * size
-    items, total = service.get_all_vehiculos(skip=skip, limit=size, search=search, sort_by=sort_by, sort_dir=sort_dir)
+    items, total = service.get_all_vehiculos(skip=skip, limit=size, search=search, estado=estado, sort_by=sort_by, sort_dir=sort_dir)
     
     total_pages = math.ceil(total / size) if total > 0 else 1
     

@@ -6,11 +6,14 @@ class VehiculoRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_all(self, skip: int = 0, limit: int = 50, search: str = "", sort_by: str = "", sort_dir: str = "asc") -> Tuple[List[Vehiculo], int]:
+    def get_all(self, skip: int = 0, limit: int = 50, search: str = "", estado: str = "", sort_by: str = "", sort_dir: str = "asc") -> Tuple[List[Vehiculo], int]:
         query = select(Vehiculo)
         
         if search:
             query = query.where(Vehiculo.modelo.ilike(f"%{search}%"))
+            
+        if estado:
+            query = query.where(Vehiculo.estado == estado)
             
         if sort_by:
             column = getattr(Vehiculo, sort_by, None)
