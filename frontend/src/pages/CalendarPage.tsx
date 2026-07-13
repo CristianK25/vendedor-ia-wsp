@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { RefreshCw } from 'lucide-react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -35,26 +36,52 @@ export default function CalendarView() {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
+  
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [cooldown, setCooldown] = useState(() => {
+    const last = sessionStorage.getItem('calendar_last_refresh');
+    if (!last) return 0;
+    const passedSeconds = Math.floor((Date.now() - parseInt(last)) / 1000);
+    return passedSeconds < 20 ? 20 - passedSeconds : 0;
+  });
+
+  const fetchCitas = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      const data = await citasApi.getAll();
+      setCitas(data);
+    } catch (error) {
+      console.error("Error fetching citas:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchCitas = async () => {
-      try {
-        const data = await citasApi.getAll();
-        setCitas(data);
-      } catch (error) {
-        console.error("Error fetching citas:", error);
-      }
-    };
+    // Carga inicial (solo si no estamos en cooldown)
+    if (cooldown === 0 && citas.length === 0) {
+        fetchCitas();
+    } else if (citas.length === 0) {
+        // Si hay cooldown pero no hay citas (re-entrada rápida), hacer fetch silencioso sin afectar cooldown
+        fetchCitas();
+    }
+  }, [fetchCitas]); // Se removió cooldown como dependencia para no re-fetchear
 
-    // Carga inicial
-    fetchCitas();
+  // Manejo del temporizador de 20 segundos
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
-    // Polling cada 10 segundos
-    const intervalId = setInterval(fetchCitas, 10000);
-    
-    // Limpiar intervalo al desmontar el componente
-    return () => clearInterval(intervalId);
-  }, []);
+  const handleManualRefresh = () => {
+    if (cooldown === 0 && !isRefreshing) {
+      fetchCitas();
+      setCooldown(20);
+      sessionStorage.setItem('calendar_last_refresh', Date.now().toString());
+    }
+  };
 
   const handleDateClick = () => {
     // Aquí puedes abrir un modal para crear una cita en la fecha seleccionada en el futuro
@@ -80,6 +107,20 @@ export default function CalendarView() {
 
   return (
     <section className="px-4 md:px-10 pt-4 pb-4 flex-1 flex flex-col h-full min-h-0">
+      <div className="flex justify-end mb-3">
+        <button 
+          onClick={handleManualRefresh}
+          disabled={cooldown > 0 || isRefreshing}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm
+            ${cooldown > 0 || isRefreshing 
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200' 
+              : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50 hover:shadow'}`}
+        >
+          <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+          {cooldown > 0 ? `Espera ${cooldown}s` : 'Actualizar Calendario'}
+        </button>
+      </div>
+
       <div className="flex-1 bg-white p-6 rounded-2xl border border-outline-variant shadow-sm overflow-hidden flex flex-col min-h-0 relative">
         <div className="flex-1 relative">
           <div className="absolute inset-0">
