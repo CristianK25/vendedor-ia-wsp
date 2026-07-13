@@ -33,3 +33,23 @@ class UsuarioRepository:
         self.session.add(refresh_token)
         self.session.commit()
         return refresh_token
+
+    def create_password_reset_token(self, token_model: 'PasswordResetToken') -> 'PasswordResetToken':
+        self.session.add(token_model)
+        self.session.commit()
+        return token_model
+
+    def get_password_reset_token(self, token_hash: str) -> Optional['PasswordResetToken']:
+        from app.Modules.usuarios.model import PasswordResetToken
+        statement = select(PasswordResetToken).where(PasswordResetToken.token_hash == token_hash)
+        return self.session.exec(statement).first()
+
+    def update_password_reset_token(self, token_model: 'PasswordResetToken') -> 'PasswordResetToken':
+        self.session.add(token_model)
+        self.session.commit()
+        return token_model
+
+    def update_usuario(self, usuario: Usuario) -> Usuario:
+        self.session.add(usuario)
+        self.session.commit()
+        return usuario

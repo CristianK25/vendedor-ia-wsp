@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from app.Core.database import get_session
 from app.Core.Security.deps import get_current_active_user
 from app.Modules.usuarios.model import Usuario
-from app.Modules.usuarios.schema import LoginRequest, TokenResponse, UserProfile
+from app.Modules.usuarios.schema import LoginRequest, TokenResponse, UserProfile, ForgotPasswordRequest, ResetPasswordRequest
 from app.Modules.usuarios.service import UsuarioService
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
@@ -62,3 +62,13 @@ def refresh(response: Response, data: RefreshRequest, session: Session = Depends
 @router.get("/me", response_model=UserProfile)
 def me(current_user: Usuario = Depends(get_current_active_user)):
     return current_user
+
+@router.post("/forgot-password")
+def forgot_password(data: ForgotPasswordRequest, session: Session = Depends(get_session)):
+    service = UsuarioService(session)
+    return service.forgot_password(data.email)
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordRequest, session: Session = Depends(get_session)):
+    service = UsuarioService(session)
+    return service.reset_password(data.token, data.new_password)

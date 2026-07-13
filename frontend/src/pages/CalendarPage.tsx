@@ -45,7 +45,15 @@ export default function CalendarView() {
         console.error("Error fetching citas:", error);
       }
     };
+
+    // Carga inicial
     fetchCitas();
+
+    // Polling cada 10 segundos
+    const intervalId = setInterval(fetchCitas, 10000);
+    
+    // Limpiar intervalo al desmontar el componente
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleDateClick = () => {

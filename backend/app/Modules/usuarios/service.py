@@ -2,10 +2,11 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, status
 from sqlmodel import Session
+import requests
 
 from app.Core.Security.jwt import get_password_hash, verify_password, create_access_token
 from app.Core.config import settings
-from app.Modules.usuarios.model import Usuario, RefreshToken, UserRole
+from app.Modules.usuarios.model import Usuario, RefreshToken, UserRole, PasswordResetToken
 from app.Modules.usuarios.repository import UsuarioRepository
 from app.Modules.usuarios.schema import LoginRequest, RegisterRequest
 
@@ -127,3 +128,83 @@ class UsuarioService:
             "user_email": user.email,
             "rol": user.rol.value
         }
+
+    def forgot_password(self, email: str):
+        user = self.repository.get_by_email(email)
+        if not user or not user.is_active:
+            # Por seguridad, no revelamos si el correo existe o no
+            return {"message": "Si el correo existe, se ha enviado un enlace de recuperación."}
+
+        # Generar token de recuperación
+        reset_token = secrets.token_urlsafe(32)
+        expire_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+
+        token_model = PasswordResetToken(
+            token_hash=reset_token,
+            user_id=user.id,
+            expires_at=expire_at
+        )
+        self.repository.create_password_reset_token(token_model)
+
+        # Enviar a n8n
+        webhook_url = settings.N8N_WEBHOOK_URL
+        frontend_url = "http://localhost:5173/reset-password"
+        reset_link = f"{frontend_url}?token={reset_token}"
+        
+        payload = {
+            "email": user.email,
+            "reset_link": reset_link,
+            "nombre": user.nombre
+        }
+
+        try:
+            response = requests.post(webhook_url, json=payload, timeout=5)
+            response.raise_for_status()
+        except Exception as e:
+            # Rollback: invalidamos el token si falló el envío
+            print(f"Error al enviar correo por n8n: {e}")
+            token_model.is_used = True
+            self.repository.update_password_reset_token(token_model)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No se pudo enviar el correo de recuperación en este momento. Intente más tarde."
+            )
+
+        return {"message": "Si el correo existe, se ha enviado un enlace de recuperación."}
+
+    def reset_password(self, token: str, new_password: str):
+        token_model = self.repository.get_password_reset_token(token)
+        
+        if not token_model or token_model.is_used:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El enlace de recuperación es inválido o ya fue utilizado."
+            )
+
+        # Normalizar tzinfo para comparación
+        expires_at_utc = token_model.expires_at
+        if expires_at_utc.tzinfo is None:
+            expires_at_utc = expires_at_utc.replace(tzinfo=timezone.utc)
+
+        if expires_at_utc < datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El enlace de recuperación ha expirado."
+            )
+
+        user = self.repository.get_by_id(token_model.user_id)
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Usuario inválido."
+            )
+
+        # Actualizar contraseña
+        user.password_hash = get_password_hash(new_password)
+        self.repository.update_usuario(user)
+
+        # Invalidar el token
+        token_model.is_used = True
+        self.repository.update_password_reset_token(token_model)
+
+        return {"message": "Contraseña actualizada exitosamente."}

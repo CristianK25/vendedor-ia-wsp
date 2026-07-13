@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Car, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 
@@ -98,6 +98,11 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline bg-background/50 text-on-surface text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
+            </div>
+            <div className="flex justify-end mt-1">
+              <Link to="/forgot-password" className="text-xs text-primary hover:underline transition-colors font-medium">
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
           </div>
 

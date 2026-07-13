@@ -58,17 +58,30 @@ export default function ClientesView() {
   }, [searchTerm]);
 
   useEffect(() => {
-    setLoading(true)
-    clientesApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction)
-      .then((data: any) => {
-        setClientes(data.items)
-        setTotalPages(data.total_pages)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error(err)
-        setLoading(false)
-      })
+    const fetchClientes = (isSilent = false) => {
+      if (!isSilent) setLoading(true);
+      
+      clientesApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction)
+        .then((data: any) => {
+          setClientes(data.items)
+          setTotalPages(data.total_pages)
+          if (!isSilent) setLoading(false)
+        })
+        .catch(err => {
+          console.error(err)
+          if (!isSilent) setLoading(false)
+        })
+    };
+
+    // 1. Carga inicial (con pantalla de carga si aplica)
+    fetchClientes(false);
+
+    // 2. Polling silencioso cada 10 segundos
+    const intervalId = setInterval(() => {
+      fetchClientes(true);
+    }, 10000);
+
+    return () => clearInterval(intervalId);
   }, [currentPage, debouncedSearch, sortConfig])
 
   const renderPagination = () => {
