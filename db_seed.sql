@@ -18,17 +18,17 @@ INSERT INTO clientes (telefono, nombre, ultimo_mensaje_bot, ultima_interaccion_c
 ('+5491188888888', 'Elena Torres', CURRENT_TIMESTAMP - INTERVAL '12 days', CURRENT_TIMESTAMP - INTERVAL '11 days', 2);
 
 -- 2. Insertar Vehículos
-INSERT INTO vehiculos (id, modelo, precio, kilometraje, detalle_interior, detalle_exterior, informacion_extra, estado) VALUES
-(1, 'Toyota Corolla 1.8 SEG', 22500, 45000, 'Asientos de cuero, Pantalla táctil 9", Climatizador bi-zona', 'Color Gris Plata, Llantas de aleación 17", Luces LED', 'Único dueño, todos los servicios oficiales', 'disponible'),
-(2, 'Honda Civic 2.0 EXL', 24000, 38000, 'Tapizado en cuero negro, Techo solar corredizo, Apple CarPlay', 'Color Negro Cristal, Faros antiniebla, Excelente pintura', 'Garantía vigente de fábrica', 'disponible'),
-(3, 'Toyota Hilux 2.8 SRX 4x4', 42000, 75000, 'Interior premium, Butacas eléctricas ventiladas', 'Color Blanco Perlado, Estribos, Barra antivuelco', 'Ideal para trabajo o recreación rural', 'disponible'),
-(4, 'Volkswagen Golf GTI 2.0 TSI', 29500, 60000, 'Volante deportivo, Butacas con diseño tartán, Cockpit digital', 'Color Rojo Tornado, Doble salida de escape, Llantas Milton Keynes', 'Stage 1 conservador, excelente estado mecánico', 'disponible'),
-(5, 'Ford Ranger 3.2 Limited 4x4', 38500, 89000, 'Sistema SYNC 3, Navegador satelital, Asistente pre-colisión', 'Color Azul Belice, Cobertor de caja, Lona marítima', 'Services al día oficiales', 'disponible'),
-(6, 'Peugeot 208 1.6 Feline', 16800, 22000, 'Techo panorámico, Tablero i-Cockpit 3D, Tapizado alcántara', 'Color Gris Grafito, Firma lumínica LED garras de león', 'Ideal para ciudad, muy bajo consumo', 'disponible'),
-(7, 'Chevrolet Cruze 1.4T Premier', 19200, 51000, 'Cargador inalámbrico de celular, Wi-Fi nativo, Asiento conductor eléctrico', 'Color Blanco Summit, Detalles cromados', 'Sedán espacioso con gran baúl', 'disponible'),
-(8, 'Jeep Compass 1.3T Series', 31000, 15000, 'Audio Beats premium, Techo solar panorámico doble', 'Color Gris Granite, Llantas oscurecidas 19"', 'Poco uso, prácticamente nuevo', 'disponible'),
-(9, 'BMW 320i ActiveFlex', 37000, 65000, 'Interior Sensatec beige, Modos de conducción Sport/Comfort', 'Color Azul Imperial, Faros Bi-Xenón', 'Impecable andar y cuidado obsesivo', 'vendido'),
-(10, 'Hyundai Tucson 2.0 GL', 25500, 82000, 'Interior amplio de tela negra, Control de descenso', 'Color Plata Metalizado, Auxilio con llanta original', 'Muy familiar, cómoda y segura', 'vendido');
+INSERT INTO vehiculos (id, modelo, precio, kilometraje, detalle_interior, detalle_exterior, informacion_extra, anio, transmision, estado) VALUES
+(1, 'Toyota Corolla 1.8 SEG', 22500, 45000, 'Asientos de cuero, Pantalla táctil 9", Climatizador bi-zona', 'Color Gris Plata, Llantas de aleación 17", Luces LED', 'Único dueño, todos los servicios oficiales', 2021, 'Automática', 'disponible'),
+(2, 'Honda Civic 2.0 EXL', 24000, 38000, 'Tapizado en cuero negro, Techo solar corredizo, Apple CarPlay', 'Color Negro Cristal, Faros antiniebla, Excelente pintura', 'Garantía vigente de fábrica', 2020, 'Automática', 'disponible'),
+(3, 'Toyota Hilux 2.8 SRX 4x4', 42000, 75000, 'Interior premium, Butacas eléctricas ventiladas', 'Color Blanco Perlado, Estribos, Barra antivuelco', 'Ideal para trabajo o recreación rural', 2019, 'Manual', 'disponible'),
+(4, 'Volkswagen Golf GTI 2.0 TSI', 29500, 60000, 'Volante deportivo, Butacas con diseño tartán, Cockpit digital', 'Color Rojo Tornado, Doble salida de escape, Llantas Milton Keynes', 'Stage 1 conservador, excelente estado mecánico', 2018, 'Automática', 'disponible'),
+(5, 'Ford Ranger 3.2 Limited 4x4', 38500, 89000, 'Sistema SYNC 3, Navegador satelital, Asistente pre-colisión', 'Color Azul Belice, Cobertor de caja, Lona marítima', 'Services al día oficiales', 2020, 'Automática', 'disponible'),
+(6, 'Peugeot 208 1.6 Feline', 16800, 22000, 'Techo panorámico, Tablero i-Cockpit 3D, Tapizado alcántara', 'Color Gris Grafito, Firma lumínica LED garras de león', 'Ideal para ciudad, muy bajo consumo', 2022, 'Manual', 'disponible'),
+(7, 'Chevrolet Cruze 1.4T Premier', 19200, 51000, 'Cargador inalámbrico de celular, Wi-Fi nativo, Asiento conductor eléctrico', 'Color Blanco Summit, Detalles cromados', 'Sedán espacioso con gran baúl', 2021, 'Automática', 'disponible'),
+(8, 'Jeep Compass 1.3T Series', 31000, 15000, 'Audio Beats premium, Techo solar panorámico doble', 'Color Gris Granite, Llantas oscurecidas 19"', 'Poco uso, prácticamente nuevo', 2022, 'Automática', 'disponible'),
+(9, 'BMW 320i ActiveFlex', 37000, 65000, 'Interior Sensatec beige, Modos de conducción Sport/Comfort', 'Color Azul Imperial, Faros Bi-Xenón', 'Impecable andar y cuidado obsesivo', 2017, 'Automática', 'vendido'),
+(10, 'Hyundai Tucson 2.0 GL', 25500, 82000, 'Interior amplio de tela negra, Control de descenso', 'Color Plata Metalizado, Auxilio con llanta original', 'Muy familiar, cómoda y segura', 2016, 'Manual', 'vendido');
 
 -- Reiniciar la secuencia de IDs de vehículos para futuros inserts
 SELECT setval('vehiculos_id_seq', (SELECT MAX(id) FROM vehiculos));
