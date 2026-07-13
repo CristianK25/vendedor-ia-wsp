@@ -79,3 +79,8 @@ def update_vehiculo(vehiculo_id: int, vehiculo: VehiculoUpdate, session: Session
 def delete_vehiculo(vehiculo_id: int, session: Session = Depends(get_session)):
     service = VehiculoService(session)
     return service.delete_vehiculo(vehiculo_id)
+
+@router.delete("/{vehiculo_id}/venta_y_vehiculo")
+def anular_venta_y_eliminar_vehiculo(vehiculo_id: int, session: Session = Depends(get_session)):
+    service = VehiculoService(session)
+    return service.anular_venta_y_eliminar_vehiculo(vehiculo_id)

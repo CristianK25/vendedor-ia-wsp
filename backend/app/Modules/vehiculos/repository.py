@@ -22,7 +22,7 @@ class VehiculoRepository:
         sort_by: str = "", 
         sort_dir: str = "asc"
     ) -> Tuple[List[Vehiculo], int]:
-        query = select(Vehiculo)
+        query = select(Vehiculo).where(Vehiculo.activo == True)
         
         if search:
             query = query.where(Vehiculo.modelo.ilike(f"%{search}%"))
@@ -71,7 +71,7 @@ class VehiculoRepository:
             func.max(Vehiculo.kilometraje).label("km_max"),
             func.min(Vehiculo.anio).label("anio_min"),
             func.max(Vehiculo.anio).label("anio_max"),
-        )
+        ).where(Vehiculo.activo == True)
         result = self.session.exec(statement).first()
         
         return {
@@ -84,10 +84,11 @@ class VehiculoRepository:
         }
 
     def get_by_id(self, vehiculo_id: int) -> Optional[Vehiculo]:
-        return self.session.get(Vehiculo, vehiculo_id)
+        vehiculo = self.session.get(Vehiculo, vehiculo_id)
+        return vehiculo if vehiculo and vehiculo.activo else None
 
     def get_disponibles(self) -> List[Vehiculo]:
-        statement = select(Vehiculo).where(Vehiculo.estado == "disponible")
+        statement = select(Vehiculo).where(Vehiculo.estado == "disponible").where(Vehiculo.activo == True)
         return self.session.exec(statement).all()
 
     def create(self, vehiculo: Vehiculo) -> Vehiculo:

@@ -83,15 +83,57 @@ class VehiculoService:
     def delete_vehiculo(self, vehiculo_id: int):
         vehiculo = self.get_vehiculo(vehiculo_id)
         
-        # Extraer las rutas ANTES de borrar el registro (porque commit vacía la sesión y 'vehiculo' expira)
-        rutas_imagenes = [img.ruta for img in vehiculo.imagenes] if vehiculo.imagenes else []
-        
-        # 1. Borrar de BD
-        self.repository.delete(vehiculo)
-        
-        # 2. Borrar físico
-        if rutas_imagenes:
-            img_service = ImagenesService(self.session)
-            img_service.limpiar_archivos_por_ruta(rutas_imagenes)
+        try:
+            # 1. Soft Delete en DB
+            vehiculo.activo = False
             
-        return {"message": "Vehiculo eliminado exitosamente"}
+            # Extraer las rutas y desvincular imágenes
+            rutas_imagenes = [img.ruta for img in vehiculo.imagenes] if vehiculo.imagenes else []
+            vehiculo.imagenes.clear() # El cascade delete-orphan borrará los registros de imágenes en BD
+            
+            self.session.add(vehiculo)
+            self.session.flush() # Verificamos que Postgres acepte los cambios
+            
+            # 2. Borrar físico
+            if rutas_imagenes:
+                img_service = ImagenesService(self.session)
+                img_service.limpiar_archivos_por_ruta(rutas_imagenes)
+                
+            self.session.commit()
+            return {"message": "Vehiculo eliminado exitosamente"}
+        except Exception as e:
+            self.session.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al eliminar el vehículo: {str(e)}")
+
+    def anular_venta_y_eliminar_vehiculo(self, vehiculo_id: int):
+        vehiculo = self.get_vehiculo(vehiculo_id)
+        
+        try:
+            # 1. Buscar la Venta y anularla (Soft Delete)
+            from app.Modules.ventas.repository import VentaRepository
+            venta_repo = VentaRepository(self.session)
+            venta = venta_repo.get_by_vehiculo_id(vehiculo_id)
+            if venta:
+                venta.activo = False
+                self.session.add(venta)
+
+            # 2. Soft Delete del Vehículo
+            vehiculo.activo = False
+            
+            # 3. Extraer las rutas y desvincular imágenes
+            rutas_imagenes = [img.ruta for img in vehiculo.imagenes] if vehiculo.imagenes else []
+            vehiculo.imagenes.clear()
+            
+            self.session.add(vehiculo)
+            self.session.flush()
+            
+            # 4. Borrar físico
+            if rutas_imagenes:
+                img_service = ImagenesService(self.session)
+                img_service.limpiar_archivos_por_ruta(rutas_imagenes)
+                
+            self.session.commit()
+            return {"message": "Venta anulada y vehiculo eliminado exitosamente"}
+        except Exception as e:
+            self.session.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error en el borrado conjunto: {str(e)}")

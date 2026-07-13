@@ -18,6 +18,21 @@ class VentaService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venta no encontrada")
         return venta
 
+    def get_venta_por_vehiculo(self, vehiculo_id: int):
+        venta = self.repository.get_by_vehiculo_id(vehiculo_id)
+        if not venta:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venta asociada al vehículo no encontrada")
+        
+        from app.Modules.clientes.repository import ClienteRepository
+        cliente_repo = ClienteRepository(self.session)
+        cliente = cliente_repo.get_by_telefono(venta.cliente_telefono)
+        
+        venta_dict = venta.model_dump()
+        if cliente:
+            venta_dict["cliente_nombre"] = cliente.nombre
+            
+        return venta_dict
+
     def create_venta(self, venta_data: VentaCreate):
         from app.Modules.vehiculos.repository import VehiculoRepository
         from app.Modules.vehiculos.model import EstadoVehiculo

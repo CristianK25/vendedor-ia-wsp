@@ -11,3 +11,4 @@ class Venta(SQLModel, table=True):
     precio_final: float
     metodo_pago: str = Field(default="Efectivo")
     notas: Optional[str] = None
+    activo: bool = Field(default=True)

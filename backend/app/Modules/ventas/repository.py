@@ -13,7 +13,7 @@ class VentaRepository:
             Vehiculo, Venta.vehiculo_id == Vehiculo.id
         ).join(
             Cliente, Venta.cliente_telefono == Cliente.telefono
-        )
+        ).where(Venta.activo == True)
         
         if search:
             query = query.where(
@@ -53,7 +53,12 @@ class VentaRepository:
         return items, total
 
     def get_by_id(self, venta_id: int) -> Optional[Venta]:
-        return self.session.get(Venta, venta_id)
+        venta = self.session.get(Venta, venta_id)
+        return venta if venta and venta.activo else None
+
+    def get_by_vehiculo_id(self, vehiculo_id: int) -> Optional[Venta]:
+        statement = select(Venta).where(Venta.vehiculo_id == vehiculo_id).where(Venta.activo == True)
+        return self.session.exec(statement).first()
 
     def create(self, venta: Venta) -> Venta:
         self.session.add(venta)

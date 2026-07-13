@@ -40,3 +40,8 @@ def create_venta(venta: VentaCreate, session: Session = Depends(get_session)):
 def get_venta(venta_id: int, session: Session = Depends(get_session)):
     service = VentaService(session)
     return service.get_venta(venta_id)
+
+@router.get("/vehiculo/{vehiculo_id}", response_model=VentaResponse)
+def get_venta_por_vehiculo(vehiculo_id: int, session: Session = Depends(get_session)):
+    service = VentaService(session)
+    return service.get_venta_por_vehiculo(vehiculo_id)

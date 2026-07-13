@@ -12,5 +12,6 @@ export const ventasApi = {
     return fetchApi(`/ventas/?${params.toString()}`);
   },
   getById: (id: number) => fetchApi(`/ventas/${id}`),
+  getByVehiculoId: (id: number) => fetchApi(`/ventas/vehiculo/${id}`),
   create: (data: any) => fetchApi('/ventas/', { method: 'POST', body: JSON.stringify(data) }),
 }

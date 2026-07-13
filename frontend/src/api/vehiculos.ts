@@ -49,4 +49,5 @@ export const vehiculosApi = {
   },
   update: (id: number, data: any) => fetchApi(`/vehiculos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (id: number) => fetchApi(`/vehiculos/${id}`, { method: 'DELETE' }),
+  deleteUnified: (id: number) => fetchApi(`/vehiculos/${id}/venta_y_vehiculo`, { method: 'DELETE' }),
 }
