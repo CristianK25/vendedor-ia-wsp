@@ -13,6 +13,12 @@ class OAuth2PasswordBearerWithCookie(OAuth2PasswordBearer):
         # Extraer el token de la cookie HttpOnly
         token = request.cookies.get("access_token")
         if not token:
+            # Fallback a buscar en el header Authorization
+            authorization = request.headers.get("Authorization")
+            if authorization and authorization.startswith("Bearer "):
+                token = authorization.split("Bearer ")[1]
+
+        if not token:
             if self.auto_error:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -73,3 +79,6 @@ def require_role(allowed_roles: list[UserRole]):
 
 # Dependencia para requerir rol de administrador
 require_admin = require_role([UserRole.ADMIN])
+
+# Dependencia para requerir rol de bot o admin (n8n)
+require_bot_or_admin = require_role([UserRole.ADMIN, UserRole.BOT])

@@ -21,6 +21,20 @@ class CitaService:
         return cita
 
     def create_cita(self, cita_data: CitaCreate):
+        # Validación 1: Múltiples citas del mismo cliente en el mismo día
+        if self.repository.check_client_has_cita_on_date(cita_data.cliente_telefono, cita_data.fecha):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="El cliente ya tiene un turno reservado para este día."
+            )
+            
+        # Validación 2: Solapamiento de horarios (margen de 1 hora)
+        if self.repository.check_overlap_exists(cita_data.fecha, margin_hours=1):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="El horario solicitado no está disponible. Debe haber al menos 1 hora de diferencia con otros turnos."
+            )
+
         cita = Cita(**cita_data.model_dump())
         return self.repository.create(cita)
 

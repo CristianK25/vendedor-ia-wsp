@@ -30,6 +30,21 @@ def on_startup():
             session.add(admin_user)
             session.commit()
             print("Default admin user seeded successfully!")
+            
+        bot_user = session.exec(select(Usuario).where(Usuario.email == "bot@vendedor.com")).first()
+        if not bot_user:
+            print("Seeding default bot user...")
+            bot_user = Usuario(
+                nombre="Bot",
+                apellido="n8n",
+                email="bot@vendedor.com",
+                password_hash=get_password_hash("bot1234"),
+                rol=UserRole.BOT,
+                is_active=True
+            )
+            session.add(bot_user)
+            session.commit()
+            print("Default bot user seeded successfully!")
 
 # Configure CORS for frontend access
 app.add_middleware(
@@ -71,6 +86,7 @@ from app.Modules.trabajadores.router import router as trabajadores_router
 from app.Modules.ventas.router import router as ventas_router
 from app.Modules.citas.router import router as citas_router
 from app.Modules.promociones.router import router as promociones_router
+from app.Modules.n8n.router import router as n8n_router
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(vehiculos_router, prefix="/api", dependencies=[Depends(require_admin)])
@@ -79,3 +95,4 @@ app.include_router(trabajadores_router, prefix="/api", dependencies=[Depends(req
 app.include_router(ventas_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(citas_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(promociones_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(n8n_router, prefix="/api")

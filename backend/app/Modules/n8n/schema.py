@@ -1,0 +1,12 @@
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+class N8NCitaCreate(BaseModel):
+    vehiculo_id: int
+    cliente_telefono: str
+    fecha: datetime
+    notas: Optional[str] = None
+
+class N8NCitaCancel(BaseModel):
+    cita_id: int

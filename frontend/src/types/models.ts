@@ -92,6 +92,9 @@ export interface Cita {
   id: number
   cliente_telefono: string
   cliente_nombre?: string
+  vehiculo_id?: number
+  vehiculo_modelo?: string
+  vehiculo_patente?: string
   fecha: string
   fecha_creacion: string
   estado: string
@@ -99,6 +102,7 @@ export interface Cita {
 
 export interface CitaCreate {
   cliente_telefono: string
+  vehiculo_id?: number
   fecha: string
   estado?: string
 }

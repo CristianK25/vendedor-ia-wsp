@@ -2,16 +2,19 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Cita, Cliente } from '../types/models';
 import { clientesApi } from '../api/clientes';
+import { citasApi } from '../api/citas';
 
 interface CitaModalProps {
   isOpen: boolean;
   onClose: () => void;
   cita: Cita | null;
+  onUpdate: (updatedCita: Cita) => void;
 }
 
-export default function CitaModal({ isOpen, onClose, cita }: CitaModalProps) {
+export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModalProps) {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (isOpen && cita?.cliente_telefono) {
@@ -26,6 +29,20 @@ export default function CitaModal({ isOpen, onClose, cita }: CitaModalProps) {
   }, [isOpen, cita]);
 
   if (!isOpen || !cita) return null;
+
+  const handleUpdateEstado = async (nuevoEstado: 'confirmada' | 'cancelada') => {
+    try {
+      setIsUpdating(true);
+      const updated = await citasApi.update(cita.id, { estado: nuevoEstado });
+      onUpdate(updated);
+      onClose();
+    } catch (err) {
+      console.error("Error al actualizar la cita:", err);
+      alert("No se pudo actualizar el estado de la cita. Inténtalo de nuevo.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const fechaCita = new Date(cita.fecha);
   const fechaCreacion = new Date(cita.fecha_creacion);
@@ -42,7 +59,18 @@ export default function CitaModal({ isOpen, onClose, cita }: CitaModalProps) {
       >
         {/* Header */}
         <div className="bg-blue-50 px-4 py-3 flex justify-between items-center border-b border-blue-100">
-          <h2 className="text-lg font-bold text-blue-900">Detalles de la Cita</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-blue-900">Detalles de la Cita</h2>
+            {cita.estado === 'pendiente' && (
+              <span className="text-[10px] bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 rounded-full uppercase">Pendiente</span>
+            )}
+            {cita.estado === 'confirmada' && (
+              <span className="text-[10px] bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded-full uppercase">Confirmada</span>
+            )}
+            {cita.estado === 'cancelada' && (
+              <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full uppercase">Cancelada</span>
+            )}
+          </div>
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-700 bg-white rounded-full p-1 transition-colors"
@@ -131,10 +159,69 @@ export default function CitaModal({ isOpen, onClose, cita }: CitaModalProps) {
               ) : null}
             </div>
           </div>
+
+          {/* Vehículo Info */}
+          <div className="flex flex-col gap-2">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Vehículo de Interés</h3>
+            <div className={`p-3 rounded-lg border text-sm flex flex-col gap-2 ${cita.vehiculo_id ? 'bg-orange-50/50 border-orange-100' : 'bg-gray-50 border-gray-100'}`}>
+              {cita.vehiculo_id ? (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-orange-800 font-medium">Modelo:</span>
+                    <span className="font-bold text-orange-900 truncate">{cita.vehiculo_modelo}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[12px] pt-2 border-t border-orange-100/50 mt-1">
+                    <span className="text-orange-700">Patente:</span>
+                    <span className="font-semibold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-md">{cita.vehiculo_patente}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-gray-500 italic py-1 text-xs">
+                  Cita General (Sin vehículo específico)
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-5 py-3 flex justify-end gap-2 border-t border-gray-200 mt-auto">
+        <div className="bg-gray-50 px-4 py-3 flex justify-between items-center gap-2 border-t border-gray-200 mt-auto">
+          {/* Botones de acción basados en el estado */}
+          <div className="flex gap-2">
+            {cita.estado === 'pendiente' && (
+              <>
+                <button
+                  onClick={() => handleUpdateEstado('confirmada')}
+                  disabled={isUpdating}
+                  className="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50"
+                >
+                  Confirmar
+                </button>
+                <button
+                  onClick={() => handleUpdateEstado('cancelada')}
+                  disabled={isUpdating}
+                  className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                >
+                  Cancelar Cita
+                </button>
+              </>
+            )}
+            {cita.estado === 'confirmada' && (
+              <button
+                onClick={() => handleUpdateEstado('cancelada')}
+                disabled={isUpdating}
+                className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+              >
+                Cancelar Cita
+              </button>
+            )}
+            {cita.estado === 'cancelada' && (
+              <span className="text-xs text-red-600 font-semibold bg-red-50 px-2.5 py-1 rounded-md border border-red-100">
+                Esta cita está cancelada
+              </span>
+            )}
+          </div>
+
           <button 
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"

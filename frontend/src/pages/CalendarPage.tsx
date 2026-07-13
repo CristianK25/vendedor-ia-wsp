@@ -12,10 +12,16 @@ function renderEventContent(eventInfo: any) {
   const { event, view } = eventInfo;
   const type = event.extendedProps.type || 'Cita';
   const time = event.start ? event.start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + 'hs' : '';
+  const estado = event.extendedProps.citaData?.estado || 'pendiente';
+  
+  let dotColor = 'bg-yellow-500';
+  if (estado === 'confirmada') dotColor = 'bg-green-500';
+  if (estado === 'cancelada') dotColor = 'bg-gray-400';
   
   if (view.type === 'dayGridMonth') {
     return (
-      <div className="flex items-center gap-1.5 overflow-hidden text-[11px] w-full px-1 cursor-pointer hover:bg-gray-100/50 rounded transition-colors">
+      <div className="flex items-center gap-1.5 overflow-hidden text-[11px] w-full px-1 py-0.5 cursor-pointer rounded transition-colors">
+        <span className={`w-2 h-2 rounded-full shrink-0 ${dotColor}`} />
         <span className="font-bold shrink-0">{type}</span>
         <span className="opacity-75 shrink-0">{time}</span>
         <span className="truncate">{event.title}</span>
@@ -26,7 +32,10 @@ function renderEventContent(eventInfo: any) {
   // Para vistas semanales y diarias
   return (
     <div className="flex flex-col h-full overflow-hidden text-xs p-1 cursor-pointer">
-      <div className="font-bold text-[10px] uppercase tracking-wider opacity-90 mb-0.5">{type} • {time}</div>
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
+        <div className="font-bold text-[10px] uppercase tracking-wider opacity-90">{type} • {time}</div>
+      </div>
       <div className="font-semibold leading-tight">{event.title}</div>
     </div>
   );
@@ -87,6 +96,10 @@ export default function CalendarView() {
     // Aquí puedes abrir un modal para crear una cita en la fecha seleccionada en el futuro
   }
 
+  const handleCitaUpdate = (updatedCita: Cita) => {
+    setCitas(prev => prev.map(c => c.id === updatedCita.id ? updatedCita : c));
+  };
+
   const handleEventClick = (arg: any) => {
     const citaData = arg.event.extendedProps.citaData;
     if (citaData) {
@@ -95,15 +108,43 @@ export default function CalendarView() {
     }
   }
 
-  const calendarEvents = citas.map(cita => ({
-    id: cita.id.toString(),
-    title: cita.cliente_nombre || cita.cliente_telefono,
-    date: cita.fecha,
-    extendedProps: { 
-      type: 'Reunión', 
-      citaData: cita 
+  const getEventColors = (estado: string) => {
+    switch (estado) {
+      case 'confirmada':
+        return {
+          backgroundColor: '#dcfce7',
+          borderColor: '#22c55e',
+          textColor: '#14532d'
+        };
+      case 'cancelada':
+        return {
+          backgroundColor: '#f3f4f6',
+          borderColor: '#d1d5db',
+          textColor: '#6b7280'
+        };
+      case 'pendiente':
+      default:
+        return {
+          backgroundColor: '#fef3c7',
+          borderColor: '#f59e0b',
+          textColor: '#78350f'
+        };
     }
-  }));
+  };
+
+  const calendarEvents = citas.map(cita => {
+    const colors = getEventColors(cita.estado);
+    return {
+      id: cita.id.toString(),
+      title: cita.cliente_nombre || cita.cliente_telefono,
+      date: cita.fecha,
+      ...colors,
+      extendedProps: { 
+        type: 'Reunión', 
+        citaData: cita 
+      }
+    };
+  });
 
   return (
     <section className="px-4 md:px-10 pt-4 pb-4 flex-1 flex flex-col h-full min-h-0">
@@ -158,6 +199,7 @@ export default function CalendarView() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         cita={selectedCita} 
+        onUpdate={handleCitaUpdate}
       />
     </section>
   )

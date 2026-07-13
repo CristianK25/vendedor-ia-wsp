@@ -5,6 +5,7 @@ from typing import Optional
 
 class UserRole(str, Enum):
     ADMIN = "admin"
+    BOT = "bot"
 
 class Usuario(SQLModel, table=True):
     __tablename__ = "usuarios"

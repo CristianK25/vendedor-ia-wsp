@@ -18,6 +18,8 @@ class CitaResponse(BaseModel):
     cliente_telefono: str
     cliente_nombre: Optional[str] = None
     vehiculo_id: Optional[int] = None
+    vehiculo_modelo: Optional[str] = None
+    vehiculo_patente: Optional[str] = None
     fecha: datetime
     fecha_creacion: Optional[datetime]
     estado: str
