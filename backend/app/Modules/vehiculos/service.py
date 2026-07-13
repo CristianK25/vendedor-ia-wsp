@@ -46,31 +46,32 @@ class VehiculoService:
         return vehiculo
 
     async def create_vehiculo_con_imagenes(self, vehiculo_data: VehiculoCreate, imagenes: List[UploadFile]):
-        # 1. Crear el vehículo en BD
         from sqlalchemy.exc import IntegrityError
         
         vehiculo = Vehiculo(**vehiculo_data.model_dump())
         try:
-            vehiculo_creado = self.repository.create(vehiculo)
+            # Añadir y hacer flush (sin commit) para obtener el ID
+            self.session.add(vehiculo)
+            self.session.flush()
         except IntegrityError as e:
             self.session.rollback()
             if "patente" in str(e).lower():
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ya existe un vehículo registrado con esta patente.")
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Error de integridad de datos al guardar el vehículo.")
         
-        # 2. Guardar las imágenes usando el servicio de Imágenes
         if imagenes:
             img_service = ImagenesService(self.session)
             try:
-                await img_service.procesar_y_guardar_imagenes(vehiculo_creado.id, imagenes)
-                self.session.commit()
-                self.session.refresh(vehiculo_creado)
+                # procesar_y_guardar_imagenes hace add(imagen) pero no commit
+                await img_service.procesar_y_guardar_imagenes(vehiculo.id, imagenes)
             except Exception as e:
-                # Si fallan las imágenes, borramos el vehículo para evitar registros incompletos (compensación manual)
-                self.repository.delete(vehiculo_creado)
+                self.session.rollback()
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al procesar las imágenes: {str(e)}")
-
-        return vehiculo_creado
+        
+        # Confirmar toda la transacción atómicamente
+        self.session.commit()
+        self.session.refresh(vehiculo)
+        return vehiculo
 
     def update_vehiculo(self, vehiculo_id: int, vehiculo_data: VehiculoUpdate):
         vehiculo = self.get_vehiculo(vehiculo_id)
@@ -80,17 +81,17 @@ class VehiculoService:
         return self.repository.update(vehiculo)
 
     def delete_vehiculo(self, vehiculo_id: int):
-        # Como hay cascade='all, delete-orphan', borrar el vehículo borrará las imágenes en BD.
-        # PERO necesitamos borrar los archivos físicos.
         vehiculo = self.get_vehiculo(vehiculo_id)
-        imagenes = vehiculo.imagenes
         
-        # 1. Borrar BD
+        # Extraer las rutas ANTES de borrar el registro (porque commit vacía la sesión y 'vehiculo' expira)
+        rutas_imagenes = [img.ruta for img in vehiculo.imagenes] if vehiculo.imagenes else []
+        
+        # 1. Borrar de BD
         self.repository.delete(vehiculo)
         
         # 2. Borrar físico
-        if imagenes:
+        if rutas_imagenes:
             img_service = ImagenesService(self.session)
-            img_service.limpiar_archivos(imagenes)
+            img_service.limpiar_archivos_por_ruta(rutas_imagenes)
             
         return {"message": "Vehiculo eliminado exitosamente"}

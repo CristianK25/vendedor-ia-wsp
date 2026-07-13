@@ -1,23 +1,32 @@
-Ideas sueltas
-conectar wsp
-crear db de clientes
-poder generar citas en el calendarios y mandar mensajes
-mandar mensajes a contactos agendados
+# Implementaciones Futuras (Ideas)
 
+## 1. 💰 Gestión Financiera y de Ventas (Cálculos Dinámicos)
+- Simulador de Financiación: Calcular valores de cuotas mensuales según precio fijo, entrega inicial, tasa de interés y plazos (12, 24, 36, 48 meses).
+- Cálculo de Ganancia Neta Real: (Para usados) Precio de venta - (Precio de compra + Gastos de reacondicionamiento), para saber la ganancia neta exacta.
+- Actualización Masiva de Precios: Subir/bajar precios de todo el stock o de una marca por un porcentaje (ideal para ajustes por inflación o dólar).
+- Generador de Presupuestos/Cotizaciones: Exportar en PDF el detalle del auto con foto y plan de pagos con una validez temporal.
 
+## 2. 👥 Gestión de Clientes (CRM) y Fidelización
+- Perfil del Cliente: Historial de compras, "scoring" (qué tan buen cliente es), y monto total gastado en la empresa.
+- Embudo de Ventas (Pipeline): Estados como: Contacto inicial > Prueba de manejo > Negociación > Crédito Aprobado > Vendido.
+- Recordatorios Automáticos: Avisos como "Se cumple un año de la compra de [Cliente], ofrécele un descuento o cambio".
 
-rol vendedor u otro, el sistema se fija en la base de datos la gente que trabaja en la empresa, se fija si hay una nueva citas
-le manda el mensaje a los trabajadores como recordatorio. 
+## 3. 📊 Dashboard y Estadísticas (Business Intelligence)
+- Rendimiento de Vendedores: Quién concreta más ventas, quién vende más rápido, etc.
+- Métricas de Inventario: 
+  * Autos estancados (llevan más de X días sin venderse).
+  * Marcas o modelos más rentables (se venden rápido y dejan margen).
+- Previsión de Ingresos: Proyección de ingresos a futuro basada en cuotas a cobrar.
 
-confirmar turno
+## 4. 🔧 Post-Venta y Mantenimiento (Si aplica taller)
+- Historial Clínico del Vehículo (por Patente/Dominio): Registro de todas las reparaciones y services que se le hizo a un auto.
+- Alertas de Service Automáticas: Recordatorio al cliente (y vendedor) cuando un auto 0KM se acerca a los 10.000km o cumple un año.
 
-crear promociones manualmente. La ia las envia solas.
+## 5. 🤖 Ideas con IA / Automatización (n8n + WhatsApp)
+- Calificación de Leads (Lead Scoring): El bot hace 3 preguntas (Presupuesto, auto en permuta, fecha de compra) y prioriza los contactos en la DB para que el vendedor atienda a los más calientes.
+- Tasación Automática Estimada: Un mini-flujo de WA donde el cliente da año/modelo/km de su auto y el sistema le da un valor de toma aproximado.
 
-¿Conectar catalogo wsp con la db o la ia de n8n?. 
-
-pagina para cargar vehiculos, con imagenes. modelo, precio, kilometros, informacion  extra. 
-pagina tiene citas y cargado de vehiculos y ventas
-
+==================================================
 
 Informacion de implementacion ordenada
 

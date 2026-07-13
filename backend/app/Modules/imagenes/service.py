@@ -73,3 +73,11 @@ class ImagenesService:
                 filepath = os.path.join(UPLOAD_DIR, img.ruta.replace("/fotos/", ""))
                 if os.path.exists(filepath):
                     os.remove(filepath)
+
+    def limpiar_archivos_por_ruta(self, rutas: List[str]):
+        """Utilidad para limpiar archivos a partir de rutas planas (strings)"""
+        for ruta in rutas:
+            if ruta.startswith("/fotos/"):
+                filepath = os.path.join(UPLOAD_DIR, ruta.replace("/fotos/", ""))
+                if os.path.exists(filepath):
+                    os.remove(filepath)
