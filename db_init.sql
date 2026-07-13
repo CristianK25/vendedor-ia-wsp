@@ -38,8 +38,9 @@ CREATE TABLE IF NOT EXISTS vehiculos (
     detalle_interior TEXT,
     detalle_exterior TEXT,
     informacion_extra TEXT,
-    anio INTEGER,
-    transmision TEXT,
+    anio INTEGER NOT NULL,
+    transmision TEXT NOT NULL,
+    patente TEXT UNIQUE NOT NULL,
     estado TEXT DEFAULT 'disponible' CHECK (
         estado IN ('disponible', 'vendido', 'reservado')
     )

@@ -47,8 +47,16 @@ class VehiculoService:
 
     async def create_vehiculo_con_imagenes(self, vehiculo_data: VehiculoCreate, imagenes: List[UploadFile]):
         # 1. Crear el vehículo en BD
+        from sqlalchemy.exc import IntegrityError
+        
         vehiculo = Vehiculo(**vehiculo_data.model_dump())
-        vehiculo_creado = self.repository.create(vehiculo)
+        try:
+            vehiculo_creado = self.repository.create(vehiculo)
+        except IntegrityError as e:
+            self.session.rollback()
+            if "patente" in str(e).lower():
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ya existe un vehículo registrado con esta patente.")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Error de integridad de datos al guardar el vehículo.")
         
         # 2. Guardar las imágenes usando el servicio de Imágenes
         if imagenes:

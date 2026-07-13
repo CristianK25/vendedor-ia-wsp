@@ -16,8 +16,9 @@ class Vehiculo(SQLModel, table=True):
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
     informacion_extra: Optional[str] = None
-    anio: Optional[int] = None
-    transmision: Optional[str] = None
+    anio: int
+    transmision: str
+    patente: str = Field(unique=True)
     estado: EstadoVehiculo = Field(default=EstadoVehiculo.disponible)
     
     imagenes: List["Imagen"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})

@@ -71,6 +71,9 @@ export default function VehiculoForm() {
           modelo: data.modelo,
           precio: data.precio,
           kilometraje: data.kilometraje,
+          anio: data.anio,
+          transmision: data.transmision,
+          patente: data.patente,
           detalle_interior: data.detalle_interior,
           detalle_exterior: data.detalle_exterior,
           informacion_extra: data.informacion_extra
@@ -111,8 +114,11 @@ export default function VehiculoForm() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-error-container text-on-error-container rounded-xl text-sm font-medium border border-error/20">
-          {error}
+        <div className="fixed bottom-6 right-6 z-50 p-4 bg-error-container text-on-error-container rounded-xl text-sm font-medium border border-error/20 shadow-lg animate-fade-in flex items-center justify-between gap-4 w-[calc(100%-3rem)] md:w-[400px]">
+          <span className="flex-1">{error}</span>
+          <button type="button" onClick={() => setError(null)} className="text-on-error-container/70 hover:text-on-error-container transition-colors shrink-0 p-1">
+            <X size={18} />
+          </button>
         </div>
       )}
 
@@ -122,17 +128,64 @@ export default function VehiculoForm() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Modelo */}
-            <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-medium text-on-surface-variant mb-2">Modelo y Año *</label>
+            <div className="col-span-1 md:col-span-1">
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Modelo *</label>
               <div className="relative">
                 <Car className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
                 <input 
                   {...register('modelo', { required: 'El modelo es requerido' })}
                   className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                  placeholder="Ej: Toyota Corolla 2022"
+                  placeholder="Ej: Toyota Corolla"
                 />
               </div>
               {errors.modelo && <p className="text-error text-xs mt-1 font-medium">{errors.modelo.message}</p>}
+            </div>
+
+            {/* Año */}
+            <div className="col-span-1 md:col-span-1">
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Año *</label>
+              <div className="relative">
+                <input 
+                  type="number"
+                  {...register('anio', { 
+                    required: 'El año es requerido',
+                    valueAsNumber: true,
+                    min: { value: 1900, message: 'Año inválido' }
+                  })}
+                  className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  placeholder="Ej: 2022"
+                />
+              </div>
+              {errors.anio && <p className="text-error text-xs mt-1 font-medium">{errors.anio.message}</p>}
+            </div>
+
+            {/* Patente */}
+            <div className="col-span-1 md:col-span-1">
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Patente *</label>
+              <div className="relative">
+                <input 
+                  {...register('patente', { required: 'La patente es requerida' })}
+                  className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all uppercase"
+                  placeholder="Ej: AD123EF"
+                />
+              </div>
+              {errors.patente && <p className="text-error text-xs mt-1 font-medium">{errors.patente.message}</p>}
+            </div>
+
+            {/* Transmisión */}
+            <div className="col-span-1 md:col-span-1">
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Transmisión *</label>
+              <div className="relative">
+                <select
+                  {...register('transmision', { required: 'La transmisión es requerida' })}
+                  className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="Manual">Manual</option>
+                  <option value="Automática">Automática</option>
+                </select>
+              </div>
+              {errors.transmision && <p className="text-error text-xs mt-1 font-medium">{errors.transmision.message}</p>}
             </div>
 
             {/* Precio */}

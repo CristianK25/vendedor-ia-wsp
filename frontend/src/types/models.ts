@@ -13,6 +13,9 @@ export interface Vehiculo {
   detalle_interior?: string
   detalle_exterior?: string
   informacion_extra?: string
+  anio: number
+  transmision: string
+  patente: string
   estado: string
   imagenes: Imagen[]
 }
@@ -24,6 +27,9 @@ export interface VehiculoCreate {
   detalle_interior?: string
   detalle_exterior?: string
   informacion_extra?: string
+  anio: number
+  transmision: string
+  patente: string
 }
 
 export interface Venta {

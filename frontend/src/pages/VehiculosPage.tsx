@@ -28,6 +28,18 @@ export default function VehiculosView() {
   const [kmRango, setKmRango] = useState<[number, number]>([0, 200000]);
   const [anioRango, setAnioRango] = useState<[number, number]>([2000, new Date().getFullYear()]);
   const [filterTransmision, setFilterTransmision] = useState<string>('');
+  const [appliedFilters, setAppliedFilters] = useState<{
+    precioRango: [number, number];
+    kmRango: [number, number];
+    anioRango: [number, number];
+    filterTransmision: string;
+  }>({
+    precioRango: [0, 100000],
+    kmRango: [0, 200000],
+    anioRango: [2000, new Date().getFullYear()],
+    filterTransmision: ''
+  });
+  const [fetchTrigger, setFetchTrigger] = useState(0);
   
   const size = 50;
 
@@ -66,9 +78,18 @@ export default function VehiculosView() {
   useEffect(() => {
     vehiculosApi.getStats().then((data: any) => {
       setStats(data);
-      setPrecioRango([data.precio_min || 0, data.precio_max || 100000]);
-      setKmRango([data.km_min || 0, data.km_max || 200000]);
-      setAnioRango([data.anio_min || 2000, data.anio_max || new Date().getFullYear()]);
+      const initialPrecio: [number, number] = [data.precio_min || 0, data.precio_max || 100000];
+      const initialKm: [number, number] = [data.km_min || 0, data.km_max || 200000];
+      const initialAnio: [number, number] = [data.anio_min || 2000, data.anio_max || new Date().getFullYear()];
+      setPrecioRango(initialPrecio);
+      setKmRango(initialKm);
+      setAnioRango(initialAnio);
+      setAppliedFilters({
+        precioRango: initialPrecio,
+        kmRango: initialKm,
+        anioRango: initialAnio,
+        filterTransmision: ''
+      });
     }).catch(console.error);
   }, []);
 
@@ -81,13 +102,13 @@ export default function VehiculosView() {
       size,
       search: debouncedSearch,
       estado: estadoQuery,
-      precio_min: precioRango[0],
-      precio_max: precioRango[1],
-      km_min: kmRango[0],
-      km_max: kmRango[1],
-      anio_min: anioRango[0],
-      anio_max: anioRango[1],
-      transmision: filterTransmision === 'Todas' ? '' : filterTransmision,
+      precio_min: appliedFilters.precioRango[0],
+      precio_max: appliedFilters.precioRango[1],
+      km_min: appliedFilters.kmRango[0],
+      km_max: appliedFilters.kmRango[1],
+      anio_min: appliedFilters.anioRango[0],
+      anio_max: appliedFilters.anioRango[1],
+      transmision: appliedFilters.filterTransmision === 'Todas' ? '' : appliedFilters.filterTransmision,
       sortBy: sortConfig.key || '',
       sortDir: sortConfig.direction
     };
@@ -101,7 +122,7 @@ export default function VehiculosView() {
         console.error(err);
         setLoading(false);
       });
-  }, [currentPage, debouncedSearch, sortConfig, filterEstado])
+  }, [currentPage, debouncedSearch, sortConfig, filterEstado, appliedFilters, fetchTrigger])
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -355,11 +376,31 @@ export default function VehiculosView() {
             <button 
               onClick={() => {
                 if (stats) {
-                  setPrecioRango([stats.precio_min || 0, stats.precio_max || 100000]);
-                  setKmRango([stats.km_min || 0, stats.km_max || 200000]);
-                  setAnioRango([stats.anio_min || 2000, stats.anio_max || new Date().getFullYear()]);
+                  const defaultPrecio: [number, number] = [stats.precio_min || 0, stats.precio_max || 100000];
+                  const defaultKm: [number, number] = [stats.km_min || 0, stats.km_max || 200000];
+                  const defaultAnio: [number, number] = [stats.anio_min || 2000, stats.anio_max || new Date().getFullYear()];
+                  setPrecioRango(defaultPrecio);
+                  setKmRango(defaultKm);
+                  setAnioRango(defaultAnio);
+                  setFilterTransmision('Todas');
+                  setAppliedFilters({
+                    precioRango: defaultPrecio,
+                    kmRango: defaultKm,
+                    anioRango: defaultAnio,
+                    filterTransmision: 'Todas'
+                  });
+                } else {
+                  setPrecioRango([0, 100000]);
+                  setKmRango([0, 200000]);
+                  setAnioRango([2000, new Date().getFullYear()]);
+                  setFilterTransmision('Todas');
+                  setAppliedFilters({
+                    precioRango: [0, 100000],
+                    kmRango: [0, 200000],
+                    anioRango: [2000, new Date().getFullYear()],
+                    filterTransmision: 'Todas'
+                  });
                 }
-                setFilterTransmision('Todas');
                 setFilterEstado('todos');
                 setSearchTerm('');
                 setCurrentPage(1);
@@ -369,7 +410,15 @@ export default function VehiculosView() {
               Limpiar Filtros
             </button>
             <button 
-              onClick={() => setCurrentPage(1)}
+              onClick={() => {
+                setCurrentPage(1);
+                setAppliedFilters({
+                  precioRango,
+                  kmRango,
+                  anioRango,
+                  filterTransmision
+                });
+              }}
               className="px-5 py-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container rounded-lg text-sm font-bold transition-colors shadow-sm"
             >
               Aplicar
@@ -541,33 +590,7 @@ export default function VehiculosView() {
           onClose={() => setVehiculoParaVender(null)}
           onSuccess={() => {
             setVehiculoParaVender(null);
-            setLoading(true);
-            const estadoQuery = filterEstado === 'todos' ? '' : filterEstado;
-            const filters = {
-              page: currentPage,
-              size,
-              search: debouncedSearch,
-              estado: estadoQuery,
-              precio_min: precioRango[0],
-              precio_max: precioRango[1],
-              km_min: kmRango[0],
-              km_max: kmRango[1],
-              anio_min: anioRango[0],
-              anio_max: anioRango[1],
-              transmision: filterTransmision === 'Todas' ? '' : filterTransmision,
-              sortBy: sortConfig.key || '',
-              sortDir: sortConfig.direction
-            };
-            vehiculosApi.getAll(filters)
-              .then((data: any) => {
-                setVehiculos(data.items);
-                setTotalPages(data.total_pages);
-                setLoading(false);
-              })
-              .catch(err => {
-                console.error(err);
-                setLoading(false);
-              });
+            setFetchTrigger(prev => prev + 1);
           }}
         />
       )}
