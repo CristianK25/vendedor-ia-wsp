@@ -10,3 +10,8 @@ class N8NCitaCreate(BaseModel):
 
 class N8NCitaCancel(BaseModel):
     cita_id: int
+
+class N8NClienteCheck(BaseModel):
+    telefono: str
+    nombre: Optional[str] = None
+    ultima_interaccion_cliente: Optional[datetime] = None
