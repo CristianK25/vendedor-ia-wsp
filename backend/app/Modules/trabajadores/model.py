@@ -7,3 +7,4 @@ class Trabajador(SQLModel, table=True):
     nombre: str
     telefono: str = Field(unique=True)
     rol: str = Field(default="vendedor")
+    recibe_notificaciones: bool = Field(default=True)

@@ -1,3 +1,6 @@
+import os
+import secrets
+import ipaddress
 from typing import Annotated
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -82,3 +85,27 @@ require_admin = require_role([UserRole.ADMIN])
 
 # Dependencia para requerir rol de bot o admin (n8n)
 require_bot_or_admin = require_role([UserRole.ADMIN, UserRole.BOT])
+
+def verify_n8n_internal_request(request: Request):
+    client_ip = request.client.host
+    if not client_ip:
+        raise HTTPException(status_code=403, detail="Origen desconocido")
+        
+    try:
+        ip = ipaddress.ip_address(client_ip)
+        # Permitimos ips privadas (Docker red interna) o loopback
+        if not ip.is_private and not ip.is_loopback:
+            raise HTTPException(status_code=403, detail="Acceso denegado: Solo red interna autorizada")
+    except ValueError:
+        raise HTTPException(status_code=403, detail="IP inválida")
+        
+    api_key = request.headers.get("X-N8N-API-KEY")
+    expected_key = os.getenv("N8N_API_KEY")
+    
+    if not api_key or not expected_key:
+        raise HTTPException(status_code=401, detail="API Key M2M faltante")
+        
+    if not secrets.compare_digest(api_key, expected_key):
+        raise HTTPException(status_code=401, detail="API Key M2M inválida")
+    
+    return True

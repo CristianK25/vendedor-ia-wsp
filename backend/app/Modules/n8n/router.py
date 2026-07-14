@@ -3,7 +3,7 @@ from sqlmodel import Session
 from datetime import datetime
 
 from app.Core.database import get_session
-from app.Core.Security.deps import require_bot_or_admin
+from app.Core.Security.deps import verify_n8n_internal_request
 from app.Modules.n8n.schema import N8NCitaCreate, N8NCitaCancel, N8NClienteCheck
 from app.Modules.vehiculos.service import VehiculoService
 from app.Modules.citas.service import CitaService
@@ -11,7 +11,7 @@ from app.Modules.citas.schema import CitaCreate, CitaUpdate
 from app.Modules.clientes.service import ClienteService
 from app.Modules.clientes.schema import ClienteCreate, ClienteUpdate
 
-router = APIRouter(prefix="/n8n", tags=["N8N"], dependencies=[Depends(require_bot_or_admin)])
+router = APIRouter(prefix="/n8n", tags=["N8N"], dependencies=[Depends(verify_n8n_internal_request)])
 
 @router.get("/vehiculos/buscar")
 def buscar_vehiculos(
