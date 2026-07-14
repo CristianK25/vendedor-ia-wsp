@@ -4,7 +4,7 @@ from datetime import datetime
 
 from app.Core.database import get_session
 from app.Core.Security.deps import verify_n8n_internal_request
-from app.Modules.n8n.schema import N8NCitaCreate, N8NCitaCancel, N8NClienteCheck
+from app.Modules.n8n.schema import N8NCitaCreate, N8NCitaCancel, N8NClienteCheck, N8NResenaCreate
 from app.Modules.vehiculos.service import VehiculoService
 from app.Modules.citas.service import CitaService
 from app.Modules.citas.schema import CitaCreate, CitaUpdate
@@ -75,3 +75,17 @@ def verificar_o_crear_cliente(cliente_data: N8NClienteCheck, session: Session = 
                 
             return {"status": "success", "message": "Cliente creado exitosamente", "cliente": creado}
         raise e
+
+@router.post("/resenas/guardar")
+def guardar_resena(resena_data: N8NResenaCreate, session: Session = Depends(get_session)):
+    from app.Modules.resenas.model import Resena
+    
+    nueva_resena = Resena(
+        cliente_telefono=resena_data.cliente_telefono,
+        comentario=resena_data.comentario
+    )
+    session.add(nueva_resena)
+    session.commit()
+    session.refresh(nueva_resena)
+    
+    return {"status": "success", "message": "Reseña guardada exitosamente", "resena": nueva_resena}

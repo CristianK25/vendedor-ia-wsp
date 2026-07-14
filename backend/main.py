@@ -9,6 +9,7 @@ from app.Modules.usuarios.model import Usuario, RefreshToken, UserRole
 from app.Core.Security.jwt import get_password_hash
 from app.Modules.usuarios.router import router as auth_router
 from app.Core.Security.deps import require_admin
+from app.Modules.resenas.model import Resena
 
 app = FastAPI(title="Vendedor IA API", description="API para el sistema de Vendedor IA y CRM de vehículos")
 
