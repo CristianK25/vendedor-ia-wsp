@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
-from typing import List
+from typing import List, Optional
 import math
 from app.Core.database import get_session
 from app.Modules.clientes.service import ClienteService
@@ -15,11 +15,12 @@ def get_clientes(
     search: str = "",
     sort_by: str = "",
     sort_dir: str = "asc",
+    etiqueta_id: Optional[int] = None,
     session: Session = Depends(get_session)
 ):
     service = ClienteService(session)
     skip = (page - 1) * size
-    items, total = service.get_all_clientes(skip=skip, limit=size, search=search, sort_by=sort_by, sort_dir=sort_dir)
+    items, total = service.get_all_clientes(skip=skip, limit=size, search=search, sort_by=sort_by, sort_dir=sort_dir, etiqueta_id=etiqueta_id)
     
     total_pages = math.ceil(total / size) if total > 0 else 1
     

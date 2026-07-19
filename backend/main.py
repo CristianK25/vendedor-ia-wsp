@@ -87,6 +87,7 @@ from app.Modules.trabajadores.router import router as trabajadores_router
 from app.Modules.ventas.router import router as ventas_router
 from app.Modules.citas.router import router as citas_router
 from app.Modules.promociones.router import router as promociones_router
+from app.Modules.etiquetas.router import router as etiquetas_router
 from app.Modules.n8n.router import router as n8n_router
 
 app.include_router(auth_router, prefix="/api")
@@ -96,4 +97,5 @@ app.include_router(trabajadores_router, prefix="/api", dependencies=[Depends(req
 app.include_router(ventas_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(citas_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(promociones_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(etiquetas_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(n8n_router, prefix="/api")

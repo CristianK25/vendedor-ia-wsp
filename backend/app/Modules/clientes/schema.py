@@ -6,6 +6,7 @@ from app.Modules.clientes.model import EstadoConversacion
 class ClienteCreate(BaseModel):
     telefono: str
     nombre: Optional[str] = None
+    etiqueta_id: Optional[int] = None
 
 class ClienteUpdate(BaseModel):
     nombre: Optional[str] = None
@@ -14,6 +15,9 @@ class ClienteUpdate(BaseModel):
     cantidad_compras: Optional[int] = None
     estado_conversacion: Optional[EstadoConversacion] = None
     id_mensaje_esperado: Optional[int] = None
+    etiqueta_id: Optional[int] = None
+
+from app.Modules.etiquetas.schema import EtiquetaResponse
 
 class ClienteResponse(BaseModel):
     telefono: str
@@ -24,6 +28,7 @@ class ClienteResponse(BaseModel):
     estado_conversacion: EstadoConversacion
     id_mensaje_esperado: Optional[int] = None
     tiene_cita_pendiente: bool = False
+    etiqueta: Optional[EtiquetaResponse] = None
 
 from typing import List
 class PaginatedClientesResponse(BaseModel):

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { clientesApi } from '../api/clientes'
+import { clientesApi, etiquetasApi } from '../api/clientes'
 import { Plus, Search, ListFilter, Download, ChevronDown, ChevronUp, Tag } from 'lucide-react'
+import EtiquetasModal, { PALETA_COLORES } from '../components/EtiquetasModal'
 
 const WhatsAppIcon = ({ size = 24, className = "" }) => (
   <svg 
@@ -25,6 +26,13 @@ export default function ClientesView() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filterEtiqueta, setFilterEtiqueta] = useState<number | null>(null);
+  
+  const [etiquetas, setEtiquetas] = useState<any[]>([]);
+  const [showEtiquetasModal, setShowEtiquetasModal] = useState(false);
+  const [openTagDropdownFor, setOpenTagDropdownFor] = useState<string | null>(null);
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+
   const size = 50;
 
   type SortConfig = {
@@ -61,7 +69,7 @@ export default function ClientesView() {
     const fetchClientes = (isSilent = false) => {
       if (!isSilent) setLoading(true);
       
-      clientesApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction)
+      clientesApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction, filterEtiqueta)
         .then((data: any) => {
           setClientes(data.items)
           setTotalPages(data.total_pages)
@@ -82,7 +90,25 @@ export default function ClientesView() {
     }, 10000);
 
     return () => clearInterval(intervalId);
-  }, [currentPage, debouncedSearch, sortConfig])
+  }, [currentPage, debouncedSearch, sortConfig, filterEtiqueta])
+
+  const fetchEtiquetas = () => {
+    etiquetasApi.getAll().then((data: any) => setEtiquetas(data)).catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchEtiquetas();
+  }, []);
+
+  const handleAssignEtiqueta = async (telefono: string, etiquetaId: number | null) => {
+    try {
+      await clientesApi.update(telefono, { etiqueta_id: etiquetaId });
+      setClientes(prev => prev.map(c => c.telefono === telefono ? { ...c, etiqueta: etiquetaId ? etiquetas.find(e => e.id === etiquetaId) : null } : c));
+    } catch (e) {
+      console.error(e);
+    }
+    setOpenTagDropdownFor(null);
+  };
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -170,20 +196,87 @@ export default function ClientesView() {
 
 
       {/* Main Data View */}
-      <div className="bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-outline-variant rounded-2xl overflow-visible shadow-sm">
         {/* Table Header / Search */}
         <div className="p-4 border-b border-outline-variant flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={20} />
-            <input 
-              className="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all text-sm" 
-              placeholder="Buscar cliente por nombre o teléfono..." 
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="relative w-full md:w-auto flex-1 max-w-2xl flex flex-col md:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={20} />
+              <input 
+                className="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all text-sm" 
+                placeholder="Buscar cliente por nombre o teléfono..." 
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                className="flex items-center justify-between min-w-[180px] h-full px-4 py-2 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all text-sm outline-none cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  {filterEtiqueta === null ? (
+                    <span className="text-on-surface-variant font-medium">Todas las etiquetas</span>
+                  ) : filterEtiqueta === 0 ? (
+                    <>
+                      <span className="w-3 h-3 rounded-full bg-slate-300" />
+                      <span className="text-on-surface font-medium">Sin etiqueta</span>
+                    </>
+                  ) : (
+                    <>
+                      <span 
+                        className={`w-3 h-3 rounded-full ${PALETA_COLORES[etiquetas.find(e => e.id === filterEtiqueta)?.color || '']?.bg || 'bg-slate-100'}`}
+                        style={{ backgroundColor: PALETA_COLORES[etiquetas.find(e => e.id === filterEtiqueta)?.color || '']?.preview }}
+                      />
+                      <span className="text-on-surface font-medium">{etiquetas.find(e => e.id === filterEtiqueta)?.nombre || 'Desconocida'}</span>
+                    </>
+                  )}
+                </div>
+                <ChevronDown size={16} className="text-on-surface-variant opacity-70 ml-2" />
+              </button>
+              
+              {isFilterDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsFilterDropdownOpen(false)} 
+                  />
+                  <div className="absolute top-full left-0 mt-2 z-50 w-full min-w-[200px] bg-surface rounded-xl shadow-lg border border-outline-variant overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-2">
+                    <button
+                      onClick={() => { setFilterEtiqueta(null); setIsFilterDropdownOpen(false); }}
+                      className="px-4 py-2 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors font-medium"
+                    >
+                      Todas las etiquetas
+                    </button>
+                    <button
+                      onClick={() => { setFilterEtiqueta(0); setIsFilterDropdownOpen(false); }}
+                      className="px-4 py-2 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-2 font-medium"
+                    >
+                      <span className="w-3 h-3 rounded-full bg-slate-300" />
+                      Sin etiqueta
+                    </button>
+                    <div className="h-[1px] w-full bg-outline-variant/50 my-1"></div>
+                    {etiquetas.map(etq => (
+                      <button
+                        key={etq.id}
+                        onClick={() => { setFilterEtiqueta(etq.id); setIsFilterDropdownOpen(false); }}
+                        className="px-4 py-2 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-2 font-medium"
+                      >
+                        <span className={`w-3 h-3 rounded-full ${PALETA_COLORES[etq.color]?.bg || 'bg-slate-100'}`} style={{ backgroundColor: PALETA_COLORES[etq.color]?.preview }} />
+                        {etq.nombre}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+            <button onClick={() => setShowEtiquetasModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors text-on-surface">
+              <Tag size={18} />
+              Etiquetas
+            </button>
             <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors text-on-surface">
               <ListFilter size={18} />
               Filtros
@@ -202,10 +295,11 @@ export default function ClientesView() {
           <div className="divide-y divide-outline-variant">
             {/* Subtle List Headers (Desktop Only) */}
             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-surface-container-low text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
-              <div className="col-span-4 flex items-center gap-1 cursor-pointer hover:text-on-surface w-max select-none" onClick={() => handleSort('nombre')}>
+              <div className="col-span-3 flex items-center gap-1 cursor-pointer hover:text-on-surface w-max select-none" onClick={() => handleSort('nombre')}>
                 Cliente {renderSortIcon('nombre')}
               </div>
-              <div className="col-span-3">Estado del Lead</div>
+              <div className="col-span-2">Etiqueta</div>
+              <div className="col-span-2">Estado</div>
               <div className="col-span-2 flex items-center gap-1 cursor-pointer hover:text-on-surface w-max select-none" onClick={() => handleSort('ultima_interaccion_cliente')}>
                 Última Interacción {renderSortIcon('ultima_interaccion_cliente')}
               </div>
@@ -222,16 +316,53 @@ export default function ClientesView() {
                 const initials = c.nombre ? c.nombre.substring(0, 2).toUpperCase() : 'NN';
                 return (
                   <div key={c.telefono} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 hover:bg-surface-container-low transition-colors group">
-                    <div className="col-span-1 md:col-span-4 flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/clientes/${c.telefono}`)}>
-                      <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+                    <div className="col-span-1 md:col-span-3 flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/clientes/${c.telefono}`)}>
+                      <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg shrink-0">
                         {initials}
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-base font-semibold text-on-surface">{c.nombre || 'Sin Nombre'}</span>
-                        <span className="text-sm text-on-surface-variant">Tel: {c.telefono}</span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-base font-semibold text-on-surface truncate">{c.nombre || 'Sin Nombre'}</span>
+                        <span className="text-sm text-on-surface-variant truncate">Tel: {c.telefono}</span>
                       </div>
                     </div>
-                    <div className="col-span-1 md:col-span-3 flex items-center">
+                    <div className="col-span-1 md:col-span-2 flex items-center">
+                      <div className="relative">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setOpenTagDropdownFor(openTagDropdownFor === c.telefono ? null : c.telefono); }}
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border transition-colors ${
+                            c.etiqueta 
+                              ? `${PALETA_COLORES[c.etiqueta.color]?.bg || 'bg-slate-100'} ${PALETA_COLORES[c.etiqueta.color]?.text || 'text-slate-700'} ${PALETA_COLORES[c.etiqueta.color]?.border || 'border-slate-200'} hover:brightness-95`
+                              : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-container'
+                          }`}
+                        >
+                          <Tag size={12} />
+                          {c.etiqueta ? c.etiqueta.nombre : 'Sin etiqueta'}
+                        </button>
+                        
+                        {openTagDropdownFor === c.telefono && (
+                          <div className="absolute top-full left-0 mt-1 z-50 w-48 bg-surface rounded-xl shadow-lg border border-outline-variant overflow-hidden flex flex-col py-1 animate-in fade-in slide-in-from-top-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleAssignEtiqueta(c.telefono, null); }}
+                              className="px-4 py-2 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors"
+                            >
+                              Sin etiqueta
+                            </button>
+                            {etiquetas.map(etq => (
+                              <button
+                                key={etq.id}
+                                onClick={(e) => { e.stopPropagation(); handleAssignEtiqueta(c.telefono, etq.id); }}
+                                className="px-4 py-2 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-2"
+                              >
+                                <span className={`w-3 h-3 rounded-full ${PALETA_COLORES[etq.color]?.bg || 'bg-slate-100'}`} style={{ backgroundColor: PALETA_COLORES[etq.color]?.preview }} />
+                                {etq.nombre}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="col-span-1 md:col-span-2 flex items-center">
                       {c.tiene_cita_pendiente ? (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200 shadow-sm">
                           CON CITA PENDIENTE
@@ -288,6 +419,13 @@ export default function ClientesView() {
         )}
         {renderPagination()}
       </div>
+
+      <EtiquetasModal 
+        isOpen={showEtiquetasModal}
+        onClose={() => setShowEtiquetasModal(false)}
+        etiquetas={etiquetas}
+        refreshEtiquetas={fetchEtiquetas}
+      />
     </section>
   )
 }

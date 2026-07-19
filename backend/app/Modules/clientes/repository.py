@@ -1,6 +1,7 @@
 from sqlmodel import Session, select, func
 from app.Modules.clientes.model import Cliente
 from app.Modules.citas.model import Cita
+from app.Modules.etiquetas.model import Etiqueta
 from typing import List, Optional, Tuple
 from datetime import datetime
 
@@ -8,20 +9,27 @@ class ClienteRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_all(self, skip: int = 0, limit: int = 50, search: str = "", sort_by: str = "", sort_dir: str = "asc") -> Tuple[List[dict], int]:
+    def get_all(self, skip: int = 0, limit: int = 50, search: str = "", sort_by: str = "", sort_dir: str = "asc", etiqueta_id: Optional[int] = None) -> Tuple[List[dict], int]:
         has_pending_cita = select(Cita.id).where(
             Cita.cliente_telefono == Cliente.telefono,
             Cita.estado == "pendiente",
             Cita.fecha >= datetime.utcnow()
         ).correlate(Cliente).exists()
         
-        query = select(Cliente, has_pending_cita)
+        query = select(Cliente, has_pending_cita, Etiqueta).join(
+            Etiqueta, Cliente.etiqueta_id == Etiqueta.id, isouter=True
+        )
         
         if search:
             query = query.where(
                 (Cliente.nombre.ilike(f"%{search}%")) |
                 (Cliente.telefono.ilike(f"%{search}%"))
             )
+            
+        if etiqueta_id == 0:
+            query = query.where(Cliente.etiqueta_id == None)
+        elif etiqueta_id is not None:
+            query = query.where(Cliente.etiqueta_id == etiqueta_id)
             
         if sort_by:
             column = getattr(Cliente, sort_by, None)
@@ -39,9 +47,11 @@ class ClienteRepository:
         results = self.session.exec(query).all()
         
         items = []
-        for cliente, pending_cita in results:
+        for cliente, pending_cita, etiqueta in results:
             c_dict = cliente.model_dump()
             c_dict["tiene_cita_pendiente"] = pending_cita
+            if etiqueta:
+                c_dict["etiqueta"] = etiqueta.model_dump()
             items.append(c_dict)
             
         return items, total
