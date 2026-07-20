@@ -47,6 +47,7 @@ class VentaRepository:
         for venta, vehiculo_modelo, cliente_nombre in results:
             venta_dict = venta.model_dump()
             venta_dict["vehiculo_modelo"] = vehiculo_modelo
+            venta_dict["tipo_venta"] = venta.tipo_venta
             venta_dict["cliente_nombre"] = cliente_nombre
             items.append(venta_dict)
             

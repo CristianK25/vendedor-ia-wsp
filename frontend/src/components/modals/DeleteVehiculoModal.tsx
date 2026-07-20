@@ -16,7 +16,7 @@ export default function DeleteVehiculoModal({ isOpen, onClose, vehiculo, onConfi
   const [loadingVenta, setLoadingVenta] = useState(false)
 
   useEffect(() => {
-    if (isOpen && vehiculo && vehiculo.estado === 'vendido') {
+    if (isOpen && vehiculo && (vehiculo.estado === 'vendido' || vehiculo.estado === 'reventa')) {
       setLoadingVenta(true)
       ventasApi.getByVehiculoId(vehiculo.id)
         .then(data => setVentaData(data))
@@ -29,7 +29,7 @@ export default function DeleteVehiculoModal({ isOpen, onClose, vehiculo, onConfi
 
   if (!isOpen || !vehiculo) return null
 
-  const isVendido = vehiculo.estado === 'vendido'
+  const isVendido = vehiculo.estado === 'vendido' || vehiculo.estado === 'reventa'
 
   const modalContent = (
     <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">

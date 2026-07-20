@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ventasApi } from '../api/ventas'
-import { Plus, Search, ListFilter, Download, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Search, ListFilter, Download, ChevronDown, ChevronUp, FileText } from 'lucide-react'
+import VentaNotasModal from '../components/modals/VentaNotasModal'
 export default function VentasView() {
   const navigate = useNavigate()
   const [ventas, setVentas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedVentaForNotas, setSelectedVentaForNotas] = useState<any>(null)
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -170,9 +172,17 @@ export default function VentasView() {
                     </div>
                   </th>
                   <th className="py-4 px-6">
+                    <div className="flex items-center gap-1 text-on-surface-variant select-none w-max">
+                      Tipo Venta
+                    </div>
+                  </th>
+                  <th className="py-4 px-6">
                     <div onClick={() => handleSort('precio_final')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
                       Precio Final {renderSortIcon('precio_final')}
                     </div>
+                  </th>
+                  <th className="py-4 px-6 w-16 text-center">
+                    <span className="sr-only">Notas</span>
                   </th>
                 </tr>
               </thead>
@@ -193,7 +203,28 @@ export default function VentasView() {
                         <div className="text-xs">{v.cliente_telefono}</div>
                       </td>
                       <td className="py-4 px-6 text-on-surface-variant">{new Date(v.fecha).toLocaleDateString()}</td>
+                      <td className="py-4 px-6 text-center">
+                        {v.tipo_venta === 'reventa' ? (
+                          <span className="px-2.5 py-1 text-xs font-semibold rounded-full border bg-orange-50 text-orange-700 border-orange-100">
+                            Reventa
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 text-xs font-semibold rounded-full border bg-surface-container-high text-on-surface-variant border-outline-variant">
+                            Convencional
+                          </span>
+                        )}
+                      </td>
                       <td className="py-4 px-6 font-bold text-primary">${v.precio_final.toLocaleString()}</td>
+                      <td className="py-4 px-6 text-center">
+                        <button 
+                          className={`p-1.5 rounded-lg transition-colors ${v.notas ? 'text-primary hover:bg-primary-container/50' : 'text-on-surface-variant/30 hover:bg-surface-container cursor-not-allowed'}`}
+                          title={v.notas ? 'Ver notas' : 'Sin notas'}
+                          disabled={!v.notas}
+                          onClick={() => setSelectedVentaForNotas(v)}
+                        >
+                          <FileText size={22} />
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -203,6 +234,11 @@ export default function VentasView() {
         )}
         {renderPagination()}
       </div>
+      <VentaNotasModal 
+        isOpen={!!selectedVentaForNotas} 
+        onClose={() => setSelectedVentaForNotas(null)} 
+        venta={selectedVentaForNotas} 
+      />
     </section>
   )
 }

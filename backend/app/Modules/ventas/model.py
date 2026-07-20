@@ -10,5 +10,6 @@ class Venta(SQLModel, table=True):
     fecha: Optional[datetime] = Field(default_factory=datetime.utcnow)
     precio_final: float
     metodo_pago: str = Field(default="Efectivo")
+    tipo_venta: str = Field(default="vendido")
     notas: Optional[str] = None
     activo: bool = Field(default=True)

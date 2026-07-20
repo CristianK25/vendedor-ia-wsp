@@ -31,7 +31,7 @@ export default function VehiculosView() {
     if (!vehiculoParaEliminar) return;
     setIsDeleting(true);
     try {
-      if (vehiculoParaEliminar.estado === 'vendido') {
+      if (vehiculoParaEliminar.estado === 'vendido' || vehiculoParaEliminar.estado === 'reventa') {
         await vehiculosApi.deleteUnified(vehiculoParaEliminar.id);
       } else {
         await vehiculosApi.delete(vehiculoParaEliminar.id);
@@ -51,7 +51,7 @@ export default function VehiculosView() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [filterEstado, setFilterEstado] = useState<'todos' | 'disponible' | 'vendido'>('todos');
+  const [filterEstado, setFilterEstado] = useState<'todos' | 'disponible' | 'vendido' | 'reventa'>('todos');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
   // Advanced Filters State
@@ -275,6 +275,13 @@ export default function VehiculosView() {
             <span className={`w-2 h-2 rounded-full ${filterEstado === 'vendido' ? 'bg-red-500' : 'bg-red-500/50'}`}></span>
             Vendidos
           </button>
+          <button 
+            onClick={() => setFilterEstado('reventa')}
+            className={`px-4 rounded-md transition-colors text-sm font-semibold flex items-center gap-1.5 ${filterEstado === 'reventa' ? 'bg-white shadow-sm text-orange-600' : 'text-on-surface-variant hover:text-on-surface'}`}
+          >
+            <span className={`w-2 h-2 rounded-full ${filterEstado === 'reventa' ? 'bg-orange-500' : 'bg-orange-500/50'}`}></span>
+            Reventa
+          </button>
         </div>
 
         <div className="ml-auto flex items-center bg-surface-container-low border border-outline-variant rounded-lg p-1 h-11">
@@ -485,8 +492,8 @@ export default function VehiculosView() {
                         <ImageOff size={48} className="opacity-20" />
                       )}
                       <div className="absolute top-3 right-3">
-                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
-                          {v.estado === 'disponible' ? 'Disponible' : 'Vendido'}
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : v.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                          {v.estado === 'disponible' ? 'Disponible' : v.estado === 'reventa' ? 'Reventa' : 'Vendido'}
                         </span>
                       </div>
                     </div>
@@ -529,7 +536,7 @@ export default function VehiculosView() {
                             Marcar Vendido
                           </button>
                         ) : (
-                          <span className="text-xs text-on-surface-variant uppercase font-semibold">Vendido</span>
+                          <span className="text-xs text-on-surface-variant uppercase font-semibold">{v.estado === 'reventa' ? 'Reventa' : 'Vendido'}</span>
                         )}
                       </div>
                     </div>
@@ -594,8 +601,8 @@ export default function VehiculosView() {
                           </div>
                         </td>
                         <td className="py-4 px-6 text-center">
-                          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
-                            {v.estado === 'disponible' ? 'Disponible' : 'Vendido'}
+                          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : v.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                            {v.estado === 'disponible' ? 'Disponible' : v.estado === 'reventa' ? 'Reventa' : 'Vendido'}
                           </span>
                         </td>
                         <td className="py-4 px-6 font-bold text-primary text-right">${v.precio.toLocaleString()}</td>
@@ -609,7 +616,7 @@ export default function VehiculosView() {
                                 Marcar Vendido
                               </button>
                             ) : (
-                              <span className="text-xs text-on-surface-variant uppercase font-semibold w-32 whitespace-nowrap text-center px-3 py-1.5">Vendido</span>
+                              <span className="text-xs text-on-surface-variant uppercase font-semibold w-32 whitespace-nowrap text-center px-3 py-1.5">{v.estado === 'reventa' ? 'Reventa' : 'Vendido'}</span>
                             )}
                             <div className="relative">
                               <button 

@@ -7,12 +7,14 @@ class VentaCreate(BaseModel):
     cliente_telefono: str
     precio_final: float
     metodo_pago: Optional[str] = "Efectivo"
+    estado_vehiculo: Optional[str] = "vendido"
     notas: Optional[str] = None
 
 class VentaResponse(BaseModel):
     id: int
     vehiculo_id: int
     vehiculo_modelo: Optional[str] = None
+    tipo_venta: Optional[str] = None
     cliente_telefono: str
     cliente_nombre: Optional[str] = None
     fecha: datetime

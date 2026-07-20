@@ -89,9 +89,9 @@ export default function VehiculoDetailPage() {
         </div>
         <div className="text-right">
           <div className="text-primary font-bold text-4xl mb-1">${vehiculo.precio.toLocaleString()}</div>
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${vehiculo.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${vehiculo.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : vehiculo.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
             <CheckCircle2 size={14} />
-            {vehiculo.estado === 'disponible' ? 'Disponible para la Venta' : 'Vendido'}
+            {vehiculo.estado === 'disponible' ? 'Disponible para la Venta' : vehiculo.estado === 'reventa' ? 'Vendido (Reventa)' : 'Vendido'}
           </div>
         </div>
       </div>

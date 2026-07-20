@@ -12,6 +12,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
   const [precioFinal, setPrecioFinal] = useState(vehiculo.precio.toString());
   const [metodoPago, setMetodoPago] = useState('Efectivo');
   const [notas, setNotas] = useState('');
+  const [esReventa, setEsReventa] = useState(false);
   
   // Client selection
   const [clienteTelefono, setClienteTelefono] = useState('');
@@ -74,7 +75,8 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
         cliente_telefono: finalTelefono,
         precio_final: parseFloat(precioFinal),
         metodo_pago: metodoPago,
-        notas: notas
+        notas: notas,
+        estado_vehiculo: esReventa ? 'reventa' : 'vendido'
       };
 
       await ventasApi.create(ventaData);
@@ -232,6 +234,28 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
               placeholder="Ej: Se entregó con medio tanque, falta firmar formulario X..."
               className="w-full p-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" 
             />
+          </div>
+
+          <div 
+            className={`p-4 rounded-xl border-2 transition-colors cursor-pointer flex items-start gap-4 select-none ${esReventa ? 'bg-orange-50 border-orange-500' : 'bg-surface-container-low border-outline-variant hover:border-orange-300'}`} 
+            onClick={() => setEsReventa(!esReventa)}
+          >
+            <div className="pt-0.5">
+              <input 
+                type="checkbox" 
+                checked={esReventa}
+                onChange={() => {}} 
+                className="w-5 h-5 accent-orange-600 cursor-pointer rounded border-outline-variant"
+              />
+            </div>
+            <div>
+              <h4 className={`font-bold ${esReventa ? 'text-orange-900' : 'text-on-surface'}`}>
+                Marcar como Venta de Reventa
+              </h4>
+              <p className={`text-sm mt-1 leading-relaxed ${esReventa ? 'text-orange-800' : 'text-on-surface-variant'}`}>
+                Al activar esta opción, el vehículo pasará al estado "Reventa" en lugar del tradicional "Vendido".
+              </p>
+            </div>
           </div>
 
         </form>

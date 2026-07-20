@@ -5,6 +5,7 @@ from sqlmodel import Field, SQLModel, Relationship
 class EstadoVehiculo(str, enum.Enum):
     disponible = "disponible"
     vendido = "vendido"
+    reventa = "reventa"
     reservado = "reservado"
 
 class Vehiculo(SQLModel, table=True):

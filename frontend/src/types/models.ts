@@ -35,7 +35,10 @@ export interface VehiculoCreate {
 export interface Venta {
   id: number
   vehiculo_id: number
+  vehiculo_modelo?: string
+  tipo_venta?: string
   cliente_telefono: string
+  cliente_nombre?: string
   fecha: string
   precio_final: number
 }
@@ -44,6 +47,7 @@ export interface VentaCreate {
   vehiculo_id: number
   cliente_telefono: string
   precio_final: number
+  estado_vehiculo?: string
 }
 
 export interface Cliente {

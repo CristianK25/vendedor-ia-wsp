@@ -25,6 +25,7 @@ export default function VentaForm() {
   // Sale Details
   const [precioFinal, setPrecioFinal] = useState('');
   const [metodoPago, setMetodoPago] = useState('Efectivo');
+  const [estadoVehiculo, setEstadoVehiculo] = useState('vendido');
   const [notas, setNotas] = useState('');
 
   // Buscador Vehículos
@@ -84,6 +85,7 @@ export default function VentaForm() {
         cliente_telefono: finalTelefono,
         precio_final: parseFloat(precioFinal),
         metodo_pago: metodoPago,
+        estado_vehiculo: estadoVehiculo,
         notas: notas
       };
 
@@ -297,6 +299,17 @@ export default function VentaForm() {
                 <option value="Transferencia">Transferencia</option>
                 <option value="Cheque">Cheque</option>
                 <option value="Financiado">Financiado</option>
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-on-surface-variant mb-1">Tipo de Venta *</label>
+              <select 
+                value={estadoVehiculo}
+                onChange={e => setEstadoVehiculo(e.target.value)}
+                className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+              >
+                <option value="vendido">Venta Convencional</option>
+                <option value="reventa">Venta de Reventa</option>
               </select>
             </div>
             <div className="md:col-span-2">

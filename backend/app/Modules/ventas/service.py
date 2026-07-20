@@ -49,8 +49,10 @@ class VentaService:
         if not cliente:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente no encontrado")
 
-        vehiculo.estado = EstadoVehiculo.vendido
+        vehiculo.estado = EstadoVehiculo(venta_data.estado_vehiculo)
         vehiculo_repo.update(vehiculo)
 
-        venta = Venta(**venta_data.model_dump())
+        venta_dict = venta_data.model_dump(exclude={"estado_vehiculo"})
+        venta_dict["tipo_venta"] = venta_data.estado_vehiculo
+        venta = Venta(**venta_dict)
         return self.repository.create(venta)
