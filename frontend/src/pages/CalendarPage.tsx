@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Bell, X, Clock, Check } from 'lucide-react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -45,6 +45,15 @@ export default function CalendarView() {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
+  
+  // Estado para el panel de peticiones
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  // Datos mockeados visuales para el diseño
+  const [peticiones] = useState([
+    { id: 101, cliente_nombre: 'Juan Pérez', cliente_telefono: '+54911223344', vehiculo_modelo: 'Toyota Corolla', fecha_propuesta: '2026-07-22T10:00:00', estado: 'peticion_admin' },
+    { id: 103, cliente_nombre: 'Sofía Álvarez', cliente_telefono: '+54911556677', vehiculo_modelo: 'Ford Fiesta', fecha_propuesta: '2026-07-23T11:30:00', estado: 'peticion_admin' },
+    { id: 102, cliente_nombre: 'María López', cliente_telefono: '+54911334455', vehiculo_modelo: 'Honda Civic', fecha_propuesta: '2026-07-25T15:30:00', estado: 'peticion_cliente' }
+  ]);
   
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [cooldown, setCooldown] = useState(() => {
@@ -148,7 +157,22 @@ export default function CalendarView() {
 
   return (
     <section className="px-4 md:px-10 pt-4 pb-4 flex-1 flex flex-col h-full min-h-0">
-      <div className="flex justify-end mb-3">
+      <div className="flex justify-end items-center gap-3 mb-3">
+        {/* Botón de Peticiones */}
+        <button 
+          onClick={() => setIsDrawerOpen(true)}
+          className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow"
+        >
+          <Bell size={16} className={peticiones.filter(p => p.estado === 'peticion_admin').length > 0 ? "text-blue-600" : ""} />
+          <span>Peticiones</span>
+          {peticiones.filter(p => p.estado === 'peticion_admin').length > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-[10px] w-5 h-5 flex items-center justify-center font-bold border-2 border-white shadow-sm">
+              {peticiones.filter(p => p.estado === 'peticion_admin').length}
+            </span>
+          )}
+        </button>
+        
+        {/* Botón Actualizar */}
         <button 
           onClick={handleManualRefresh}
           disabled={cooldown > 0 || isRefreshing}
@@ -201,6 +225,138 @@ export default function CalendarView() {
         cita={selectedCita} 
         onUpdate={handleCitaUpdate}
       />
+
+      {/* Drawer de Peticiones */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-[9999] overflow-hidden flex justify-end">
+          {/* Capa invisible para cerrar al hacer clic fuera */}
+          <div 
+            className="absolute inset-0 bg-transparent" 
+            onClick={() => setIsDrawerOpen(false)} 
+          />
+          
+          {/* Contenedor del Drawer */}
+          <div className="relative w-[400px] max-w-[90vw] shrink-0 bg-white h-full shadow-2xl flex flex-col z-10 border-l border-gray-200">
+            {/* Header del Drawer */}
+            <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                  <Bell size={20} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-800 leading-tight">Peticiones de Citas</h2>
+                  <p className="text-xs text-gray-500 font-medium">Gestiona solicitudes de IA</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsDrawerOpen(false)} 
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            {/* Cuerpo del Drawer (Listas) */}
+            <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-8 bg-gray-50/30">
+              
+              {/* Sección: Pendientes por Admin */}
+              <div>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                   <Clock size={14} className="text-blue-500" /> Peticiones Recibidas (IA)
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {peticiones.filter(p => p.estado === 'peticion_admin').length === 0 ? (
+                    <div className="text-center py-6 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+                      No hay peticiones nuevas
+                    </div>
+                  ) : (
+                    peticiones.filter(p => p.estado === 'peticion_admin').map(p => (
+                      <div key={p.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-gray-800 text-sm">{p.cliente_nombre}</span>
+                            <span className="text-xs text-gray-500">{p.cliente_telefono}</span>
+                          </div>
+                          <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-wide">
+                            Nueva
+                          </span>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3 text-[13px] text-gray-700 flex flex-col gap-1.5 mb-4 border border-gray-100">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Vehículo:</span>
+                            <span className="font-semibold">{p.vehiculo_modelo}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Horario:</span>
+                            <span className="font-semibold text-blue-700">
+                              {new Date(p.fecha_propuesta).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}hs
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors shadow-sm">
+                            Aceptar
+                          </button>
+                          <button className="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors">
+                            Posponer
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Sección: Pendientes por Cliente */}
+              <div>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                   <Check size={14} className="text-orange-500" /> Esperando Confirmación
+                </h3>
+                <div className="flex flex-col gap-3">
+                  {peticiones.filter(p => p.estado === 'peticion_cliente').length === 0 ? (
+                    <div className="text-center py-6 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+                      No hay peticiones esperando al cliente
+                    </div>
+                  ) : (
+                    peticiones.filter(p => p.estado === 'peticion_cliente').map(p => (
+                      <div key={p.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm relative overflow-hidden opacity-90">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-orange-400" />
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-gray-800 text-sm">{p.cliente_nombre}</span>
+                            <span className="text-xs text-gray-500">{p.cliente_telefono}</span>
+                          </div>
+                          <span className="text-[9px] font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full border border-orange-100 uppercase tracking-wide flex items-center gap-1">
+                            WhatsApp <Check size={10} />
+                          </span>
+                        </div>
+                        <div className="bg-orange-50/50 rounded-lg p-3 text-[13px] text-gray-700 flex flex-col gap-1.5 mb-4 border border-orange-100/50">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Vehículo:</span>
+                            <span className="font-semibold">{p.vehiculo_modelo}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Propuesta:</span>
+                            <span className="font-semibold text-orange-700">
+                              {new Date(p.fecha_propuesta).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}hs
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button className="flex-1 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 text-xs font-semibold py-2 rounded-lg transition-colors">
+                            Forzar Confirmación
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

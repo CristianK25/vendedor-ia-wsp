@@ -4,12 +4,13 @@ from datetime import datetime
 
 from app.Core.database import get_session
 from app.Core.Security.deps import verify_n8n_internal_request
-from app.Modules.n8n.schema import N8NCitaCreate, N8NCitaCancel, N8NClienteCheck, N8NResenaCreate
+from app.Modules.n8n.schema import N8NCitaCreate, N8NCitaCancel, N8NClienteCheck, N8NResenaCreate, PeticionCreateN8N
 from app.Modules.vehiculos.service import VehiculoService
 from app.Modules.citas.service import CitaService
 from app.Modules.citas.schema import CitaCreate, CitaUpdate
 from app.Modules.clientes.service import ClienteService
 from app.Modules.clientes.schema import ClienteCreate, ClienteUpdate
+from app.Modules.peticiones.model import Peticion
 
 router = APIRouter(prefix="/n8n", tags=["N8N"], dependencies=[Depends(verify_n8n_internal_request)])
 
@@ -32,17 +33,46 @@ def buscar_citas(cliente_telefono: str = None, session: Session = Depends(get_se
         
     return citas
 
-@router.post("/citas/agendar")
-def agendar_cita(cita_data: N8NCitaCreate, session: Session = Depends(get_session)):
+@router.post("/peticiones")
+def crear_peticion(peticion_data: PeticionCreateN8N, session: Session = Depends(get_session)):
+    nueva_peticion = Peticion(
+        cliente_nombre=peticion_data.cliente_nombre,
+        cliente_telefono=peticion_data.cliente_telefono,
+        vehiculo_modelo=peticion_data.vehiculo_modelo,
+        fecha_propuesta=peticion_data.fecha_propuesta,
+        origen="cliente",
+        estado="pendiente_admin"
+    )
+    session.add(nueva_peticion)
+    session.commit()
+    session.refresh(nueva_peticion)
+    return {"status": "success", "message": "Petición creada exitosamente", "peticion": nueva_peticion}
+
+@router.post("/peticiones/{peticion_id}/confirmar")
+def confirmar_peticion(peticion_id: int, session: Session = Depends(get_session)):
+    peticion = session.get(Peticion, peticion_id)
+    if not peticion:
+        raise HTTPException(status_code=404, detail="Petición no encontrada")
+    
+    if peticion.estado == "completada" or peticion.estado == "cancelada":
+        raise HTTPException(status_code=400, detail=f"La petición ya está {peticion.estado}")
+
+    # Transformar a cita
     service = CitaService(session)
     cita_create = CitaCreate(
-        vehiculo_id=cita_data.vehiculo_id,
-        cliente_telefono=cita_data.cliente_telefono,
-        fecha=cita_data.fecha,
-        estado="pendiente",
-        notas=cita_data.notas or "Agendado por Vendedor IA"
+        cliente_telefono=peticion.cliente_telefono,
+        fecha=peticion.fecha_propuesta,
+        estado="confirmada",
+        notas=f"Auto: {peticion.vehiculo_modelo or 'N/A'}"
     )
-    return service.create_cita(cita_create)
+    nueva_cita = service.create_cita(cita_create)
+    
+    # Marcar petición como completada
+    peticion.estado = "completada"
+    session.add(peticion)
+    session.commit()
+    
+    return {"status": "success", "message": "Cita confirmada", "cita": nueva_cita}
 
 @router.put("/citas/cancelar")
 def cancelar_cita(cita_data: N8NCitaCancel, session: Session = Depends(get_session)):

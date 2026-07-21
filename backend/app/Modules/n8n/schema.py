@@ -8,6 +8,12 @@ class N8NCitaCreate(BaseModel):
     fecha: datetime
     notas: Optional[str] = None
 
+class PeticionCreateN8N(BaseModel):
+    cliente_nombre: str
+    cliente_telefono: str
+    vehiculo_modelo: Optional[str] = None
+    fecha_propuesta: datetime
+
 class N8NCitaCancel(BaseModel):
     cita_id: int
 

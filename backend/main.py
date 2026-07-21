@@ -10,6 +10,7 @@ from app.Core.Security.jwt import get_password_hash
 from app.Modules.usuarios.router import router as auth_router
 from app.Core.Security.deps import require_admin
 from app.Modules.resenas.model import Resena
+from app.Modules.peticiones.model import Peticion
 
 app = FastAPI(title="Vendedor IA API", description="API para el sistema de Vendedor IA y CRM de vehículos")
 
@@ -89,6 +90,7 @@ from app.Modules.citas.router import router as citas_router
 from app.Modules.promociones.router import router as promociones_router
 from app.Modules.etiquetas.router import router as etiquetas_router
 from app.Modules.n8n.router import router as n8n_router
+from app.Modules.peticiones.router import router as peticiones_router
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(vehiculos_router, prefix="/api", dependencies=[Depends(require_admin)])
@@ -98,4 +100,5 @@ app.include_router(ventas_router, prefix="/api", dependencies=[Depends(require_a
 app.include_router(citas_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(promociones_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(etiquetas_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(peticiones_router, prefix="/api")
 app.include_router(n8n_router, prefix="/api")
