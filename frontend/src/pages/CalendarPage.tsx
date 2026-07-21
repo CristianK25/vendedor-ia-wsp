@@ -5,7 +5,8 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { citasApi } from '../api/citas'
-import type { Cita } from '../types/models'
+import { peticionesApi } from '../api/peticiones'
+import type { Cita, Peticion } from '../types/models'
 import CitaModal from '../components/CitaModal'
 
 function renderEventContent(eventInfo: any) {
@@ -43,17 +44,15 @@ function renderEventContent(eventInfo: any) {
 
 export default function CalendarView() {
   const [citas, setCitas] = useState<Cita[]>([]);
+  const [peticiones, setPeticiones] = useState<Peticion[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCita, setSelectedCita] = useState<Cita | null>(null);
   
   // Estado para el panel de peticiones
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  // Datos mockeados visuales para el diseño
-  const [peticiones] = useState([
-    { id: 101, cliente_nombre: 'Juan Pérez', cliente_telefono: '+54911223344', vehiculo_modelo: 'Toyota Corolla', fecha_propuesta: '2026-07-22T10:00:00', estado: 'peticion_admin' },
-    { id: 103, cliente_nombre: 'Sofía Álvarez', cliente_telefono: '+54911556677', vehiculo_modelo: 'Ford Fiesta', fecha_propuesta: '2026-07-23T11:30:00', estado: 'peticion_admin' },
-    { id: 102, cliente_nombre: 'María López', cliente_telefono: '+54911334455', vehiculo_modelo: 'Honda Civic', fecha_propuesta: '2026-07-25T15:30:00', estado: 'peticion_cliente' }
-  ]);
+  const [posponerId, setPosponerId] = useState<number | null>(null);
+  const [nuevaFecha, setNuevaFecha] = useState<string>('');
+  const [isActionLoading, setIsActionLoading] = useState(false);
   
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [cooldown, setCooldown] = useState(() => {
@@ -63,27 +62,29 @@ export default function CalendarView() {
     return passedSeconds < 20 ? 20 - passedSeconds : 0;
   });
 
-  const fetchCitas = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsRefreshing(true);
-      const data = await citasApi.getAll();
-      setCitas(data);
+      const [citasData, peticionesData] = await Promise.all([
+        citasApi.getAll(),
+        peticionesApi.getAll()
+      ]);
+      setCitas(citasData);
+      setPeticiones(peticionesData);
     } catch (error) {
-      console.error("Error fetching citas:", error);
+      console.error("Error fetching data:", error);
     } finally {
       setIsRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
-    // Carga inicial (solo si no estamos en cooldown)
-    if (cooldown === 0 && citas.length === 0) {
-        fetchCitas();
-    } else if (citas.length === 0) {
-        // Si hay cooldown pero no hay citas (re-entrada rápida), hacer fetch silencioso sin afectar cooldown
-        fetchCitas();
+    if (cooldown === 0 && (citas.length === 0 || peticiones.length === 0)) {
+        fetchData();
+    } else if (citas.length === 0 || peticiones.length === 0) {
+        fetchData();
     }
-  }, [fetchCitas]); // Se removió cooldown como dependencia para no re-fetchear
+  }, [fetchData]);
 
   // Manejo del temporizador de 20 segundos
   useEffect(() => {
@@ -95,9 +96,48 @@ export default function CalendarView() {
 
   const handleManualRefresh = () => {
     if (cooldown === 0 && !isRefreshing) {
-      fetchCitas();
+      fetchData();
       setCooldown(20);
       sessionStorage.setItem('calendar_last_refresh', Date.now().toString());
+    }
+  };
+
+  const handleAceptar = async (id: number) => {
+    try {
+      setIsActionLoading(true);
+      await peticionesApi.aceptar(id);
+      await fetchData();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handlePosponer = async (id: number) => {
+    if (!nuevaFecha) return;
+    try {
+      setIsActionLoading(true);
+      await peticionesApi.posponer(id, nuevaFecha);
+      setPosponerId(null);
+      setNuevaFecha('');
+      await fetchData();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleForzarConfirmacion = async (id: number) => {
+    try {
+      setIsActionLoading(true);
+      await peticionesApi.forzarConfirmacion(id);
+      await fetchData();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -163,11 +203,11 @@ export default function CalendarView() {
           onClick={() => setIsDrawerOpen(true)}
           className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow"
         >
-          <Bell size={16} className={peticiones.filter(p => p.estado === 'peticion_admin').length > 0 ? "text-blue-600" : ""} />
+          <Bell size={16} className={peticiones.filter(p => p.estado === 'pendiente_admin').length > 0 ? "text-blue-600" : ""} />
           <span>Peticiones</span>
-          {peticiones.filter(p => p.estado === 'peticion_admin').length > 0 && (
+          {peticiones.filter(p => p.estado === 'pendiente_admin').length > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-[10px] w-5 h-5 flex items-center justify-center font-bold border-2 border-white shadow-sm">
-              {peticiones.filter(p => p.estado === 'peticion_admin').length}
+              {peticiones.filter(p => p.estado === 'pendiente_admin').length}
             </span>
           )}
         </button>
@@ -265,12 +305,12 @@ export default function CalendarView() {
                    <Clock size={14} className="text-blue-500" /> Peticiones Recibidas (IA)
                 </h3>
                 <div className="flex flex-col gap-3">
-                  {peticiones.filter(p => p.estado === 'peticion_admin').length === 0 ? (
+                  {peticiones.filter(p => p.estado === 'pendiente_admin').length === 0 ? (
                     <div className="text-center py-6 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
                       No hay peticiones nuevas
                     </div>
                   ) : (
-                    peticiones.filter(p => p.estado === 'peticion_admin').map(p => (
+                    peticiones.filter(p => p.estado === 'pendiente_admin').map(p => (
                       <div key={p.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
                         <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
                         <div className="flex justify-between items-start mb-3">
@@ -285,7 +325,7 @@ export default function CalendarView() {
                         <div className="bg-gray-50 rounded-lg p-3 text-[13px] text-gray-700 flex flex-col gap-1.5 mb-4 border border-gray-100">
                           <div className="flex justify-between">
                             <span className="text-gray-500">Vehículo:</span>
-                            <span className="font-semibold">{p.vehiculo_modelo}</span>
+                            <span className="font-semibold">{p.vehiculo_modelo || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Horario:</span>
@@ -294,14 +334,51 @@ export default function CalendarView() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors shadow-sm">
-                            Aceptar
-                          </button>
-                          <button className="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors">
-                            Posponer
-                          </button>
-                        </div>
+                        
+                        {posponerId === p.id ? (
+                          <div className="flex flex-col gap-2 bg-gray-100 p-2.5 rounded-lg border border-gray-200">
+                            <label className="text-xs font-semibold text-gray-700">Nueva Fecha Propuesta:</label>
+                            <input 
+                              type="datetime-local" 
+                              value={nuevaFecha}
+                              onChange={(e) => setNuevaFecha(e.target.value)}
+                              className="text-xs p-1.5 border border-gray-300 rounded bg-white shadow-sm outline-none focus:border-blue-500"
+                            />
+                            <div className="flex gap-2 mt-1">
+                              <button 
+                                onClick={() => handlePosponer(p.id)}
+                                disabled={isActionLoading || !nuevaFecha}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold py-1.5 rounded disabled:opacity-50 transition-colors shadow-sm"
+                              >
+                                Confirmar
+                              </button>
+                              <button 
+                                onClick={() => { setPosponerId(null); setNuevaFecha(''); }}
+                                disabled={isActionLoading}
+                                className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-[11px] font-semibold py-1.5 rounded disabled:opacity-50 transition-colors"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={() => handleAceptar(p.id)}
+                              disabled={isActionLoading}
+                              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                            >
+                              Aceptar
+                            </button>
+                            <button 
+                              onClick={() => { setPosponerId(p.id); setNuevaFecha(''); }}
+                              disabled={isActionLoading}
+                              className="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              Posponer
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
@@ -314,12 +391,12 @@ export default function CalendarView() {
                    <Check size={14} className="text-orange-500" /> Esperando Confirmación
                 </h3>
                 <div className="flex flex-col gap-3">
-                  {peticiones.filter(p => p.estado === 'peticion_cliente').length === 0 ? (
+                  {peticiones.filter(p => p.estado === 'pendiente_cliente').length === 0 ? (
                     <div className="text-center py-6 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
                       No hay peticiones esperando al cliente
                     </div>
                   ) : (
-                    peticiones.filter(p => p.estado === 'peticion_cliente').map(p => (
+                    peticiones.filter(p => p.estado === 'pendiente_cliente').map(p => (
                       <div key={p.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm relative overflow-hidden opacity-90">
                         <div className="absolute top-0 left-0 w-1 h-full bg-orange-400" />
                         <div className="flex justify-between items-start mb-3">
@@ -334,7 +411,7 @@ export default function CalendarView() {
                         <div className="bg-orange-50/50 rounded-lg p-3 text-[13px] text-gray-700 flex flex-col gap-1.5 mb-4 border border-orange-100/50">
                           <div className="flex justify-between">
                             <span className="text-gray-500">Vehículo:</span>
-                            <span className="font-semibold">{p.vehiculo_modelo}</span>
+                            <span className="font-semibold">{p.vehiculo_modelo || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Propuesta:</span>
@@ -344,7 +421,11 @@ export default function CalendarView() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button className="flex-1 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 text-xs font-semibold py-2 rounded-lg transition-colors">
+                          <button 
+                            onClick={() => handleForzarConfirmacion(p.id)}
+                            disabled={isActionLoading}
+                            className="flex-1 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
+                          >
                             Forzar Confirmación
                           </button>
                         </div>

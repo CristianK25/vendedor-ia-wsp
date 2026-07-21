@@ -110,3 +110,14 @@ export interface CitaCreate {
   fecha: string
   estado?: string
 }
+
+export interface Peticion {
+  id: number
+  cliente_nombre: string
+  cliente_telefono: string
+  vehiculo_modelo?: string
+  fecha_propuesta: string
+  origen: string
+  estado: string
+  peticion_padre_id?: number
+}

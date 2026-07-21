@@ -93,3 +93,33 @@ def cancelar_peticion(peticion_id: int, session: Session = Depends(get_session))
     session.commit()
     
     return {"status": "success", "message": "Petición cancelada internamente (sin notificar al cliente)"}
+
+@router.post("/{peticion_id}/forzar_confirmacion")
+def forzar_confirmacion(peticion_id: int, session: Session = Depends(get_session)):
+    peticion = session.get(Peticion, peticion_id)
+    if not peticion:
+        raise HTTPException(status_code=404, detail="Petición no encontrada")
+    
+    if peticion.estado == "completada" or peticion.estado == "cancelada":
+        raise HTTPException(status_code=400, detail=f"La petición ya está {peticion.estado}")
+
+    # Importación local para evitar ciclos
+    from app.Modules.citas.service import CitaService
+    from app.Modules.citas.schema import CitaCreate
+    
+    # Transformar a cita
+    service = CitaService(session)
+    cita_create = CitaCreate(
+        cliente_telefono=peticion.cliente_telefono,
+        fecha=peticion.fecha_propuesta,
+        estado="confirmada",
+        notas=f"Auto: {peticion.vehiculo_modelo or 'N/A'}"
+    )
+    nueva_cita = service.create_cita(cita_create)
+    
+    # Marcar petición como completada
+    peticion.estado = "completada"
+    session.add(peticion)
+    session.commit()
+    
+    return {"status": "success", "message": "Cita confirmada manualmente por el administrador", "cita": nueva_cita}
