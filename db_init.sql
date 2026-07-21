@@ -72,9 +72,8 @@ CREATE TABLE IF NOT EXISTS citas (
     vehiculo_id INTEGER,
     fecha TIMESTAMP NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado TEXT DEFAULT 'pendiente' CHECK (
+    estado TEXT DEFAULT 'confirmada' CHECK (
         estado IN (
-            'pendiente',
             'confirmada',
             'cancelada'
         )

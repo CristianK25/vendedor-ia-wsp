@@ -53,6 +53,7 @@ export default function CalendarView() {
   const [posponerId, setPosponerId] = useState<number | null>(null);
   const [nuevaFecha, setNuevaFecha] = useState<string>('');
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'recibidas' | 'esperando'>('recibidas');
   
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [cooldown, setCooldown] = useState(() => {
@@ -276,7 +277,7 @@ export default function CalendarView() {
           />
           
           {/* Contenedor del Drawer */}
-          <div className="relative w-[400px] max-w-[90vw] shrink-0 bg-white h-full shadow-2xl flex flex-col z-10 border-l border-gray-200">
+          <div className="relative w-[800px] max-w-[90vw] shrink-0 bg-white h-full shadow-2xl flex flex-col z-10 border-l border-gray-200">
             {/* Header del Drawer */}
             <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-md">
               <div className="flex items-center gap-3">
@@ -296,11 +297,46 @@ export default function CalendarView() {
               </button>
             </div>
             
+            {/* Pestañas de Navegación */}
+            <div className="flex border-b border-gray-200 bg-white shadow-sm shrink-0">
+              <button 
+                onClick={() => setActiveTab('recibidas')}
+                className={`flex-1 py-3 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 outline-none
+                  ${activeTab === 'recibidas' 
+                    ? 'border-blue-600 text-blue-700 bg-blue-50/50' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+              >
+                <Clock size={16} className={activeTab === 'recibidas' ? 'text-blue-600' : 'text-gray-400'} /> 
+                Recibidas (IA)
+                {peticiones.filter(p => p.estado === 'pendiente_admin').length > 0 && (
+                  <span className={`ml-1 text-[10px] px-2 py-0.5 rounded-full ${activeTab === 'recibidas' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                    {peticiones.filter(p => p.estado === 'pendiente_admin').length}
+                  </span>
+                )}
+              </button>
+              <button 
+                onClick={() => setActiveTab('esperando')}
+                className={`flex-1 py-3 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 outline-none
+                  ${activeTab === 'esperando' 
+                    ? 'border-orange-500 text-orange-700 bg-orange-50/50' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+              >
+                <Check size={16} className={activeTab === 'esperando' ? 'text-orange-500' : 'text-gray-400'} /> 
+                Esperando Confirmación
+                {peticiones.filter(p => p.estado === 'pendiente_cliente').length > 0 && (
+                  <span className={`ml-1 text-[10px] px-2 py-0.5 rounded-full ${activeTab === 'esperando' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                    {peticiones.filter(p => p.estado === 'pendiente_cliente').length}
+                  </span>
+                )}
+              </button>
+            </div>
+
             {/* Cuerpo del Drawer (Listas) */}
             <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-8 bg-gray-50/30">
               
               {/* Sección: Pendientes por Admin */}
-              <div>
+              {activeTab === 'recibidas' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                    <Clock size={14} className="text-blue-500" /> Peticiones Recibidas (IA)
                 </h3>
@@ -384,9 +420,11 @@ export default function CalendarView() {
                   )}
                 </div>
               </div>
+              )}
 
               {/* Sección: Pendientes por Cliente */}
-              <div>
+              {activeTab === 'esperando' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                    <Check size={14} className="text-orange-500" /> Esperando Confirmación
                 </h3>
@@ -434,6 +472,7 @@ export default function CalendarView() {
                   )}
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>
