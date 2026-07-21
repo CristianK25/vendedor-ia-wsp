@@ -77,7 +77,8 @@ def posponer_peticion(peticion_id: int, datos: PeticionPosponer, background_task
         cliente_nombre=nueva_peticion.cliente_nombre,
         vehiculo_modelo=nueva_peticion.vehiculo_modelo or "N/A",
         fecha_propuesta=nueva_peticion.fecha_propuesta.isoformat(),
-        accion="pospuesta"
+        accion="pospuesta",
+        token_confirmacion=nueva_peticion.token_confirmacion
     )
     
     return {"status": "success", "message": "Petición pospuesta y cliente notificado", "nueva_peticion_id": nueva_peticion.id}

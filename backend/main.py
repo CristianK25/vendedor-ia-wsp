@@ -91,6 +91,7 @@ from app.Modules.promociones.router import router as promociones_router
 from app.Modules.etiquetas.router import router as etiquetas_router
 from app.Modules.n8n.router import router as n8n_router
 from app.Modules.peticiones.router import router as peticiones_router
+from app.Modules.peticiones.public_router import router as peticiones_public_router
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(vehiculos_router, prefix="/api", dependencies=[Depends(require_admin)])
@@ -101,4 +102,5 @@ app.include_router(citas_router, prefix="/api", dependencies=[Depends(require_ad
 app.include_router(promociones_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(etiquetas_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(peticiones_router, prefix="/api")
+app.include_router(peticiones_public_router, prefix="/api")
 app.include_router(n8n_router, prefix="/api")

@@ -1,5 +1,6 @@
 from typing import Optional
 from datetime import datetime
+import uuid
 from sqlmodel import Field, SQLModel
 
 class Peticion(SQLModel, table=True):
@@ -18,3 +19,4 @@ class Peticion(SQLModel, table=True):
     estado: str = Field(default="pendiente_admin")
     
     peticion_padre_id: Optional[int] = Field(default=None)
+    token_confirmacion: Optional[str] = Field(default_factory=lambda: uuid.uuid4().hex)

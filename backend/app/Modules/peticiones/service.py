@@ -3,7 +3,7 @@ from app.Core.config import settings
 
 class PeticionService:
     @staticmethod
-    def notificar_n8n(peticion_id: int, cliente_telefono: str, cliente_nombre: str, vehiculo_modelo: str, fecha_propuesta: str, accion: str):
+    def notificar_n8n(peticion_id: int, cliente_telefono: str, cliente_nombre: str, vehiculo_modelo: str, fecha_propuesta: str, accion: str, token_confirmacion: str = None):
         """
         Notifica a N8N que el administrador tomó una acción (aceptar o posponer).
         accion puede ser: 'aceptada' o 'pospuesta'
@@ -15,6 +15,7 @@ class PeticionService:
             "cliente_nombre": cliente_nombre,
             "vehiculo_modelo": vehiculo_modelo,
             "fecha_propuesta": fecha_propuesta,
+            "token_confirmacion": token_confirmacion,
         }
         
         try:
