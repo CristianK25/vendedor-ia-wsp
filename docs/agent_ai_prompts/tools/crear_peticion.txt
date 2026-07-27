@@ -1,4 +1,9 @@
-Description:"Usa esta herramienta cuando el cliente te pida agendar una cita, agendar un turno o ir a ver un vehículo al concesionario. Esto enviará una solicitud al administrador para que confirme el turno."
+Description:
+Usa esta herramienta cuando el cliente te pida agendar una cita, agendar un turno o ir a ver un vehículo al concesionario. Esto enviará una solicitud al administrador para que confirme el turno.
+REGLAS ESTRICTAS DE RESPUESTA:
+- ESTÁ ESTRICTAMENTE PROHIBIDO confirmar la cita al cliente antes de ejecutar esta herramienta y leer su respuesta.
+- Si la herramienta devuelve un texto que dice "Not Found", "Error", o cualquier mensaje que no sea un JSON con `status: success`, SIGNIFICA QUE LA CITA NO SE GUARDÓ. En ese caso, dile al cliente amablemente que hubo un problema técnico y que intente más tarde o proporcione más datos.
+- SÓLO si la herramienta te devuelve explícitamente "status: success" puedes decirle al cliente: "He registrado tu solicitud, serás notificado cuando el administrador la confirme."
 
 Query Parameters:
 
@@ -10,4 +15,4 @@ Body:
 
 
 Method: POST
-URL: http://backend:8000/api/n8n/citas/agendar
+URL: http://backend:8000/api/n8n/peticiones
