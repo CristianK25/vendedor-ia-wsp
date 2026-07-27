@@ -147,7 +147,7 @@ class UsuarioService:
         self.repository.create_password_reset_token(token_model)
 
         # Enviar a n8n
-        webhook_url = settings.N8N_WEBHOOK_URL
+        webhook_url = f"{settings.N8N_WEBHOOK_BASE_URL}/enviar-mail"
         frontend_url = "http://localhost:5173/reset-password"
         reset_link = f"{frontend_url}?token={reset_token}"
         

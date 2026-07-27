@@ -13,14 +13,15 @@ class PeticionService:
             "accion": accion,
             "cliente_telefono": cliente_telefono,
             "cliente_nombre": cliente_nombre,
-            "vehiculo_modelo": vehiculo_modelo,
+            "vehiculo_modelo": vehiculo_modelo or "Consulta general",
             "fecha_propuesta": fecha_propuesta,
             "token_confirmacion": token_confirmacion,
         }
         
         try:
+            url = f"{settings.N8N_WEBHOOK_BASE_URL}/notificar-peticion"
             # Usamos timeout de 10 seg por seguridad en caso de que n8n esté lento
-            response = requests.post(settings.N8N_WEBHOOK_URL, json=payload, timeout=10.0)
+            response = requests.post(url, json=payload, timeout=10.0)
             response.raise_for_status()
             print(f"Notificado a n8n: {accion} para petición {peticion_id}")
         except Exception as e:

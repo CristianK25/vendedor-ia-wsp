@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "supersecretkey_change_me_in_production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
-    N8N_WEBHOOK_URL: str = "https://seminocturnal-willena-unbeseeching.ngrok-free.dev/webhook-test/94fef72b-163c-42cf-972e-5538f5b482ed"
+    N8N_WEBHOOK_BASE_URL: str = "http://n8n:5678/webhook"
+    N8N_API_KEY: str = ""
     model_config = {
         "env_file": "../.env",
         "extra": "ignore"
