@@ -1,0 +1,62 @@
+Perfecto, ajustemos los números y las condiciones exactamente a tu modelo de negocio. 
+
+Al cambiar el enfoque a una mejora continua (trabajar mes a mes puliendo el sistema), la redacción queda mucho mejor porque el cliente siente que lo vas a acompañar y no que le tirás el software por la cabeza y te vas.
+
+Copiá y pegá esta versión actualizada en tu plantilla:
+
+---
+
+**[TU LOGO / NOMBRE DE TU EMPRESA]**
+**Presupuesto N°:** 001
+**Fecha:** [Fecha actual]
+**Cliente:** [Nombre de la Concesionaria]
+
+**PROYECTO:** Desarrollo e Implementación de CRM y Asistente IA Autogestor.
+
+---
+
+### 1. ALCANCE DEL SISTEMA
+Implementación de un ecosistema integral para automatizar la atención y gestión de clientes:
+- **Asistente Virtual con IA (WhatsApp):** Bot entrenado para responder consultas, perfilar clientes y entender lenguaje natural 24/7.
+- **Orquestación (n8n):** Motor de reglas para envíos automáticos de confirmaciones de citas y reprogramaciones.
+- **Panel Administrativo (CRM):** Dashboard privado para que los vendedores visualicen clientes y gestionen las citas.
+
+---
+
+### 2. INVERSIÓN INICIAL (Setup y Desarrollo)
+
+| Descripción | Total |
+| :--- | :--- |
+| **Instalación y Puesta en Marcha del Sistema** | **$800 USD** |
+*(Pago único por armado de la arquitectura, configuración inicial del bot de IA e integración con WhatsApp).*
+
+**Opciones de pago para la Inversión Inicial:**
+- Opción A: Un solo pago de **$800 USD**.
+- Opción B: Financiado en 3 cuotas mensuales de **$300 USD** (Total: $900 USD).
+
+---
+
+### 3. MANTENIMIENTO, SOPORTE Y MEJORA CONTINUA
+
+| Descripción | Total Mensual |
+| :--- | :--- |
+| **Abono Mensual de Soporte e Infraestructura** | **$200 USD / mes** |
+
+**¿Qué incluye este abono mensual?**
+- Alojamiento del sistema en servidor en la nube (VPS).
+- Monitoreo del servidor y resolución de fallos técnicos.
+- **Mejora continua:** Ajustes regulares en el comportamiento del bot e iteración del sistema trabajando en conjunto según las necesidades de la concesionaria.
+
+**Costos Variables a cargo del cliente (Abonados a los proveedores):**
+- **Consumo IA (OpenAI):** Estimado ~$5.00 USD / mes según volumen.
+- **Mensajería (Meta API):** Confirmaciones dentro de 24hs GRATIS. Reprogramaciones (Plantillas) a ~$0.035 USD por cliente según tarifa oficial de Meta.
+
+---
+
+### 4. CONDICIONES COMERCIALES
+- **Tiempo de entrega:** El cronograma de implementación y salida a producción será acordado en conjunto con la concesionaria.
+- **Método de trabajo:** Desarrollo iterativo. Se trabajará codo a codo para ir mejorando y adaptando el bot a los flujos reales de venta.
+
+--- 
+
+Con esta versión, los números quedan súper claros y el mensaje de "vamos a ir mejorándolo juntos" queda plasmado en las condiciones comerciales y en la descripción del abono mensual. ¡Éxitos con esa presentación! ¿Te sirvió cómo quedó armado?

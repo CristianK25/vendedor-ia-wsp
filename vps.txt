@@ -1,0 +1,1 @@
+-Uso de pm2 para gestionar el funcionamiento. para levantar una vez se caiga.
