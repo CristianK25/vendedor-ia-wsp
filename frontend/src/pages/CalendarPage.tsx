@@ -42,6 +42,13 @@ function renderEventContent(eventInfo: any) {
   );
 }
 
+const getVehiculoLabel = (modelo?: string | null) => {
+  if (!modelo || ['null', 'n/a', 'none', ''].includes(modelo.trim().toLowerCase())) {
+    return 'Consulta general';
+  }
+  return modelo;
+};
+
 export default function CalendarView() {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [peticiones, setPeticiones] = useState<Peticion[]>([]);
@@ -361,7 +368,7 @@ export default function CalendarView() {
                         <div className="bg-gray-50 rounded-lg p-3 text-[13px] text-gray-700 flex flex-col gap-1.5 mb-4 border border-gray-100">
                           <div className="flex justify-between">
                             <span className="text-gray-500">Vehículo:</span>
-                            <span className="font-semibold">{p.vehiculo_modelo || 'N/A'}</span>
+                            <span className="font-semibold">{getVehiculoLabel(p.vehiculo_modelo)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Horario:</span>
@@ -449,7 +456,7 @@ export default function CalendarView() {
                         <div className="bg-orange-50/50 rounded-lg p-3 text-[13px] text-gray-700 flex flex-col gap-1.5 mb-4 border border-orange-100/50">
                           <div className="flex justify-between">
                             <span className="text-gray-500">Vehículo:</span>
-                            <span className="font-semibold">{p.vehiculo_modelo || 'N/A'}</span>
+                            <span className="font-semibold">{getVehiculoLabel(p.vehiculo_modelo)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Propuesta:</span>

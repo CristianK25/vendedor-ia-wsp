@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+from sqlmodel import Session, select
 from datetime import datetime
 
 from app.Core.database import get_session
@@ -35,10 +35,34 @@ def buscar_citas(cliente_telefono: str = None, session: Session = Depends(get_se
 
 @router.post("/peticiones")
 def crear_peticion(peticion_data: PeticionCreateN8N, session: Session = Depends(get_session)):
+    # Sanear vehiculo_modelo si viene como texto literal "null", "none", "N/A"
+    vehiculo_limpio = peticion_data.vehiculo_modelo
+    if vehiculo_limpio and vehiculo_limpio.strip().lower() in ["null", "none", "n/a", ""]:
+        vehiculo_limpio = None
+
+    # Buscar si ya existe una petición pendiente para este cliente
+    statement = select(Peticion).where(
+        Peticion.cliente_telefono == peticion_data.cliente_telefono,
+        Peticion.estado == "pendiente_admin"
+    )
+    peticion_existente = session.exec(statement).first()
+
+    if peticion_existente:
+        # Actualizar la petición existente
+        peticion_existente.cliente_nombre = peticion_data.cliente_nombre
+        peticion_existente.vehiculo_modelo = vehiculo_limpio
+        peticion_existente.fecha_propuesta = peticion_data.fecha_propuesta
+        
+        session.add(peticion_existente)
+        session.commit()
+        session.refresh(peticion_existente)
+        return {"status": "success", "message": "Petición actualizada exitosamente", "peticion": peticion_existente}
+
+    # Si no existe, crear una nueva
     nueva_peticion = Peticion(
         cliente_nombre=peticion_data.cliente_nombre,
         cliente_telefono=peticion_data.cliente_telefono,
-        vehiculo_modelo=peticion_data.vehiculo_modelo,
+        vehiculo_modelo=vehiculo_limpio,
         fecha_propuesta=peticion_data.fecha_propuesta,
         origen="cliente",
         estado="pendiente_admin"
