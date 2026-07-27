@@ -9,4 +9,4 @@ class Cita(SQLModel, table=True):
     vehiculo_id: Optional[int] = Field(default=None, foreign_key="vehiculos.id")
     fecha: datetime
     fecha_creacion: Optional[datetime] = Field(default=None)
-    estado: str = Field(default="pendiente")
+    estado: str = Field(default="confirmada")

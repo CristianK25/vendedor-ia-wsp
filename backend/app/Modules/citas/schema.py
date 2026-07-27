@@ -6,6 +6,7 @@ class CitaCreate(BaseModel):
     cliente_telefono: str
     vehiculo_id: Optional[int] = None
     fecha: datetime
+    estado: Optional[str] = "confirmada"
 
 class CitaUpdate(BaseModel):
     cliente_telefono: Optional[str] = None

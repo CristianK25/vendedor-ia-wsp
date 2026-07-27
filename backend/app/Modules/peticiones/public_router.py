@@ -94,7 +94,7 @@ def confirmar_peticion_publica(peticion_id: int, token: str, session: Session = 
         cliente_telefono=peticion.cliente_telefono,
         fecha=peticion.fecha_propuesta,
         estado="confirmada",
-        notas=f"Auto: {peticion.vehiculo_modelo or 'N/A'} (Confirmada vía web)"
+        notas=f"Auto: {peticion.vehiculo_modelo or 'Consulta general'} (Confirmada vía web)"
     )
     service.create_cita(cita_create)
     

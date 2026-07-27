@@ -28,7 +28,19 @@ def aceptar_peticion(peticion_id: int, background_tasks: BackgroundTasks, sessio
     if peticion.estado != "pendiente_admin":
         raise HTTPException(status_code=400, detail="Solo se pueden aceptar peticiones nuevas creadas por el cliente (pendiente_admin)")
         
-    peticion.estado = "pendiente_cliente"
+    # Al aceptar la propuesta del cliente, confirmamos y creamos la Cita de inmediato
+    from app.Modules.citas.service import CitaService
+    from app.Modules.citas.schema import CitaCreate
+    
+    service = CitaService(session)
+    cita_create = CitaCreate(
+        cliente_telefono=peticion.cliente_telefono,
+        fecha=peticion.fecha_propuesta,
+        estado="confirmada"
+    )
+    nueva_cita = service.create_cita(cita_create)
+
+    peticion.estado = "completada"
     session.add(peticion)
     session.commit()
     
@@ -38,12 +50,12 @@ def aceptar_peticion(peticion_id: int, background_tasks: BackgroundTasks, sessio
         peticion_id=peticion.id,
         cliente_telefono=peticion.cliente_telefono,
         cliente_nombre=peticion.cliente_nombre,
-        vehiculo_modelo=peticion.vehiculo_modelo or "N/A",
+        vehiculo_modelo=peticion.vehiculo_modelo or "Consulta general",
         fecha_propuesta=peticion.fecha_propuesta.isoformat(),
         accion="aceptada"
     )
     
-    return {"status": "success", "message": "Petición aceptada y cliente notificado vía n8n"}
+    return {"status": "success", "message": "Petición aceptada, cita creada y cliente notificado vía n8n", "cita": nueva_cita}
 
 @router.post("/{peticion_id}/posponer")
 def posponer_peticion(peticion_id: int, datos: PeticionPosponer, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
@@ -75,7 +87,7 @@ def posponer_peticion(peticion_id: int, datos: PeticionPosponer, background_task
         peticion_id=nueva_peticion.id,
         cliente_telefono=nueva_peticion.cliente_telefono,
         cliente_nombre=nueva_peticion.cliente_nombre,
-        vehiculo_modelo=nueva_peticion.vehiculo_modelo or "N/A",
+        vehiculo_modelo=nueva_peticion.vehiculo_modelo or "Consulta general",
         fecha_propuesta=nueva_peticion.fecha_propuesta.isoformat(),
         accion="pospuesta",
         token_confirmacion=nueva_peticion.token_confirmacion
@@ -114,7 +126,7 @@ def forzar_confirmacion(peticion_id: int, session: Session = Depends(get_session
         cliente_telefono=peticion.cliente_telefono,
         fecha=peticion.fecha_propuesta,
         estado="confirmada",
-        notas=f"Auto: {peticion.vehiculo_modelo or 'N/A'}"
+        notas=f"Auto: {peticion.vehiculo_modelo or 'Consulta general'}"
     )
     nueva_cita = service.create_cita(cita_create)
     
