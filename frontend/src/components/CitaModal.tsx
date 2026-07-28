@@ -45,7 +45,7 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
   };
 
   const fechaCita = new Date(cita.fecha);
-  const fechaCreacion = new Date(cita.fecha_creacion);
+  const fechaCreacion = cita.fecha_creacion ? new Date(cita.fecha_creacion) : null;
 
   const modalContent = (
     <div 
@@ -104,10 +104,12 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
                   {cita.estado}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-[11px] text-gray-400 mt-1 pt-2 border-t border-gray-200">
-                <span>Creado:</span>
-                <span>{fechaCreacion.toLocaleDateString('es-ES')} {fechaCreacion.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})}hs</span>
-              </div>
+              {fechaCreacion && (
+                <div className="flex justify-between items-center text-[11px] text-gray-400 mt-1 pt-2 border-t border-gray-200">
+                  <span>Creado:</span>
+                  <span>{fechaCreacion.toLocaleDateString('es-ES')} {fechaCreacion.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})}hs</span>
+                </div>
+              )}
             </div>
           </div>
 
