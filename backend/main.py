@@ -64,8 +64,8 @@ async def csrf_middleware(request: Request, call_next):
     if request.method in ["POST", "PUT", "DELETE", "PATCH"]:
         # Solo bajo el prefijo /api
         if request.url.path.startswith("/api"):
-            # Excluimos login público y endpoints de n8n (tienen seguridad interna)
-            if not request.url.path.endswith("/auth/login") and not request.url.path.startswith("/api/n8n"):
+            # Excluimos login público, endpoints de n8n y rutas públicas (tienen seguridad interna por token)
+            if not request.url.path.endswith("/auth/login") and not request.url.path.startswith("/api/n8n") and not request.url.path.startswith("/api/public"):
                 csrf_header = request.headers.get("x-vendedoria-crm-vehiculos")
                 if csrf_header != "true":
                     return JSONResponse(
