@@ -86,3 +86,9 @@ typings/
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Documentación y notas locales no versionadas
+docs/*
+docs/definicion/
+docs/funcionalidades/
+docs/ideas/
