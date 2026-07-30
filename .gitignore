@@ -88,7 +88,7 @@ typings/
 .pnp.*
 
 # Documentación y notas locales no versionadas
-docs/*
+docs/
 docs/definicion/
 docs/funcionalidades/
 docs/ideas/

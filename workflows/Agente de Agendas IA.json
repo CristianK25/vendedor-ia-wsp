@@ -1,0 +1,743 @@
+{
+  "name": "Agente de Agendas IA",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "telegram-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        0
+      ],
+      "webhookId": "df90c7db-b64e-4ee4-82f4-711ae6db46e7",
+      "alwaysOutputData": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "sNEgRxsnCouQBM1B",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Armar Mensaje').item.json.mensaje_completo }}",
+        "options": {
+          "systemMessage": "=Eres un Asistente de Ventas IA experto, profesional y muy amable, trabajando para una prestigiosa empresa de venta de vehículos.\n\nTu ÚNICO propósito es brindar una excelente atención a nuestros clientes a través de mensajería, dándoles una cálida bienvenida y ayudándolos EXCLUSIVAMENTE con estas dos únicas tareas:\n\n1. CATÁLOGO DE VEHÍCULOS Y STOCK:\nSi el cliente pregunta por vehículos, autos, camionetas, precios, modelos o disponibilidad de stock:\n- PRIMERO: UTILIZA TU HERRAMIENTA `buscar_vehiculos` para revisar la disponibilidad real en la base de datos antes de responderle. NUNCA inventes vehículos que no existen en el catálogo.\n- SEGUNDO: Responde amablemente con los resultados de la búsqueda y envíale nuestro catálogo oficial de WhatsApp usando exactamente este enlace: https://wa.me/c/00000000000 para que vea más detalles.\n- TERCERO: Inmediatamente después de facilitarle la información, ofrécele agendar una cita para que venga a ver los vehículos en persona.\n\n2. AGENDAR, REPROGRAMAR O CANCELAR UNA CITA:\nSi el cliente quiere agendar una cita, reprogramar una existente o cancelarla:\n- Pregúntale su nombre (si no lo sabes) y qué fecha y hora le queda mejor. (No te disculpes ni menciones reglas, hazlo natural).\n- Una vez tengas esa información, UTILIZA TU HERRAMIENTA `crear_peticion`. \n- IMPORTANTE: Si el cliente indicó que desea CANCELAR o REPROGRAMAR, simplemente añade la nota explícita \"(El cliente desea cancelar/reprogramar su cita)\" al final del campo `vehiculo_modelo` de la herramienta. El administrador se encargará del resto.\n- Tras crear la petición exitosamente, confírmale al cliente que su solicitud fue enviada a la administración y que será notificado de la confirmación.\n\nLÍMITES ESTRICTOS (LO QUE NO PUEDES HACER):\n- Tienes PROHIBIDO hablar o dar detalles sobre: Financiación, cuotas, créditos, toma de vehículos usados (permutas), tasas de interés, descuentos, o papeleo.\n- Si el cliente pregunta por CUALQUIERA de esos temas, tu ÚNICA directiva es responderle amablemente que esos detalles los maneja personalmente el asesor comercial o dueño de la concesionaria, y acto seguido ofrécele agendar una cita usando `crear_peticion` para que lo charlen en persona.\n- NO tienes capacidad para buscar, ver o cancelar citas activas por tu cuenta. Toda interacción de agenda se envía como solicitud nueva a través de `crear_peticion`.\n\nREGLAS ESTRICTAS DE COMPORTAMIENTO:\n- En la primera interacción, da siempre la bienvenida a la concesionaria de manera cordial.\n- NO debes responder a preguntas sobre política, programación, conocimientos generales u otros temas fuera de tu rol. Si pasa, responde amablemente que tu función es exclusivamente el catálogo y agendar visitas.\n- Sé siempre claro, conciso y orienta la conversación hacia la visita presencial. No envíes mensajes excesivamente largos.\n- CONTEXTO DE SEGUIMIENTO: Si el usuario solo dice \"Gracias\", \"Ok\" o saluda sin intención clara, responde de manera cortés sin forzar el uso de herramientas.\n- REGLA DE SEGURIDAD CRÍTICA: Cuando uses una herramienta, TIENES PROHIBIDO ejecutarla más de una vez en el mismo turno. Ejecútala exactamente UNA SOLA VEZ y luego responde inmediatamente al usuario con el resultado.\n- MANEJO DE ERRORES CRÍTICO: Después de usar una herramienta, VERIFICA OBLIGATORIAMENTE el resultado que te devuelve el sistema. Si hay un error, discúlpate amablemente indicando que hubo un problema técnico.\n\nINFORMACIÓN DEL SISTEMA (No la menciones en la conversación): \nLa fecha y hora actual del sistema es: {{ $now }}\nUsa esta fecha como referencia absoluta para calcular \"hoy\", \"mañana\", \"el próximo viernes\", etc.\n"
+        }
+      },
+      "id": "ai-agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        1824,
+        0
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "model": "=llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "groq-model",
+      "name": "Groq Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        384
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "YwdS011dGQKiOODW",
+          "name": "Groq account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "telegram-output",
+      "name": "Telegram (Send)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        2240,
+        0
+      ],
+      "webhookId": "ea1aae36-5a3e-4586-a99a-d527e34bda16",
+      "credentials": {
+        "telegramApi": {
+          "id": "sNEgRxsnCouQBM1B",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "clientes",
+          "mode": "list",
+          "cachedResultName": "clientes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "telefono": "={{ $json.message.chat.id }}",
+            "nombre": "={{ $json.message.chat.first_name }}",
+            "ultima_interaccion_cliente": "={{ DateTime.fromSeconds($json.message.date).toISO() }}"
+          },
+          "matchingColumns": [
+            "telefono"
+          ],
+          "schema": [
+            {
+              "id": "telefono",
+              "displayName": "telefono",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "ultimo_mensaje_bot",
+              "displayName": "ultimo_mensaje_bot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "ultima_interaccion_cliente",
+              "displayName": "ultima_interaccion_cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        848,
+        368
+      ],
+      "id": "3126d9a1-8893-4903-8385-0acabdaf0efd",
+      "name": "Guardar telefono",
+      "credentials": {
+        "postgres": {
+          "id": "XAlxZzVnXRA3vMZo",
+          "name": "Postgres Docker"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        1808,
+        240
+      ],
+      "id": "2d044238-46b9-4197-b1b7-e2934260a2e9",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "XAlxZzVnXRA3vMZo",
+          "name": "Postgres Docker"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        560,
+        368
+      ],
+      "id": "d06215e7-0d45-4744-b7e2-d1f842e9eabf",
+      "name": "WhatsApp Trigger",
+      "webhookId": "bc7fb585-9971-4260-8731-d60762c5e163",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        384
+      ],
+      "id": "f06db8db-c206-426a-8ba9-51a8effeab9f",
+      "name": "OpenAI Chat Model",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=mensaje:{{ $json.message.chat.id }}:{{ $json.message.message_id }}",
+        "value": "={{ $json.message.text }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "51f04900-dc96-4c79-8fde-d90541abb61f",
+      "name": "Iniciar o Meter Valor",
+      "credentials": {
+        "redis": {
+          "id": "i7jKC5WfqDQAUsiV",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "incr",
+        "key": "=esperando:{{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        112,
+        0
+      ],
+      "id": "cb7a723c-c872-4142-94f0-95a3d8f50f0b",
+      "name": "Incrementar a 1",
+      "credentials": {
+        "redis": {
+          "id": "i7jKC5WfqDQAUsiV",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "147012ae-c437-4a39-b627-e1661683899c",
+              "leftValue": "={{ Object.values($json)[0] }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        0
+      ],
+      "id": "52338f09-c253-4d35-9561-a1184b7863e2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "amount": 6
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        0
+      ],
+      "id": "54a052ed-2f17-43a6-a55e-a839e28bf8e5",
+      "name": "Wait",
+      "webhookId": "1a1a69f0-0943-4949-a42e-440d342e56dc"
+    },
+    {
+      "parameters": {
+        "operation": "keys",
+        "keyPattern": "=mensaje:{{ $('Telegram Trigger').item.json.message.chat.id }}:*"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        736,
+        0
+      ],
+      "id": "c9b31b35-999d-4bb6-be6b-b1247f3a00bd",
+      "name": "Extraer todos los mensajes",
+      "credentials": {
+        "redis": {
+          "id": "i7jKC5WfqDQAUsiV",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Usa esta herramienta cuando el cliente pregunte qué autos, vehículos o camionetas hay disponibles en venta, o si está buscando algo en específico.",
+        "url": "http://backend:8000/api/n8n/vehiculos/buscar",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "search",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `Término de búsqueda opcional. Puede ser la marca, modelo o palabra clave del vehículo que el cliente está buscando (ejemplo: 'Toyota', 'Gol', 'Rojo').`, 'string') }}"
+            },
+            {
+              "name": "precio_max",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Precio máximo opcional. Si el cliente dice 'tengo hasta 20000 dólares' o 'algo barato', envía el monto máximo aquí en formato numérico (ej: 20000).`, 'string') }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "5bcdfebf6c2a1008d987c7b48e84f7246aa6c2dabdffcd03a424f039cb0df9cc"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2064,
+        320
+      ],
+      "id": "b6f4bfbc-9ca3-4c17-b45b-f4c27a4d3c9b",
+      "name": "buscar_vehiculos"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "889d5062-7171-4834-8ca6-9efe2d35470f",
+              "name": "mensaje_completo",
+              "value": "={{ Object.keys($json).sort((a, b) => parseInt(a.split(':').pop()) - parseInt(b.split(':').pop())).map(k => $json[k]).join('\\n') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        0
+      ],
+      "id": "e2d0b176-2698-4203-a464-eb3c53bb48f2",
+      "name": "Armar Mensaje"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/n8n/clientes/verificar_o_crear",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "5bcdfebf6c2a1008d987c7b48e84f7246aa6c2dabdffcd03a424f039cb0df9cc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "telefono",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id.toString() }}"
+            },
+            {
+              "name": "nombre",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.first_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "ab4f928a-c165-417d-9f39-ac054f9e04ff",
+      "name": "Guardar Cliente",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $json.clave_a_borrar }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        0
+      ],
+      "id": "d0b14249-d4ee-4dac-948b-7f1730e3ffc7",
+      "name": "Redis",
+      "credentials": {
+        "redis": {
+          "id": "i7jKC5WfqDQAUsiV",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenemos el chat_id del nodo Trigger usando .first()\nconst chat_id = $('Telegram Trigger').first().json.message.chat.id;\n\n// Obtenemos el JSON del nodo \"Extraer todos los mensajes\"\nconst mensajesJson = $('Extraer todos los mensajes').first().json;\n\n// Extraemos solo los nombres de las propiedades (las claves de Redis de los mensajes)\nlet claves_a_borrar = Object.keys(mensajesJson);\n\n// Sumamos también la clave del contador \"esperando\" para reiniciar la ráfaga\nclaves_a_borrar.push(`esperando:${chat_id}`);\n\n// Convertimos esa lista en \"Items\" de n8n para pasárselos al nodo siguiente\nreturn claves_a_borrar.map(clave => ({ json: { clave_a_borrar: clave } }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "491b3ed7-420c-4120-a34c-b5833dfd17ae",
+      "name": "Extraer Mensajes Redis"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Usa esta herramienta cuando el cliente te pida agendar una cita, agendar un turno o ir a ver un vehículo al concesionario. Esto enviará una solicitud al administrador para que confirme el turno.\nREGLAS ESTRICTAS DE RESPUESTA:\n- ESTÁ ESTRICTAMENTE PROHIBIDO confirmar la cita al cliente antes de ejecutar esta herramienta y leer su respuesta.\n- Si la herramienta devuelve un texto que dice \"Not Found\", \"Error\", o cualquier mensaje que no sea un JSON con `status: success`, SIGNIFICA QUE LA CITA NO SE GUARDÓ. En ese caso, dile al cliente amablemente que hubo un problema técnico y que intente más tarde o proporcione más datos.\n- SÓLO si la herramienta te devuelve explícitamente \"status: success\" puedes decirle al cliente: \"He registrado tu solicitud, serás notificado cuando el administrador la confirme.\"",
+        "method": "POST",
+        "url": "http://backend:8000/api/n8n/peticiones",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "5bcdfebf6c2a1008d987c7b48e84f7246aa6c2dabdffcd03a424f039cb0df9cc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cliente_telefono",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id.toString() }}"
+            },
+            {
+              "name": "cliente_nombre",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `El nombre del cliente con el que estás hablando. Fundamental para saber de quién es la petición`, 'string') }}"
+            },
+            {
+              "name": "vehiculo_modelo",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', `El modelo o marca del vehículo que el cliente quiere ir a ver. Si el cliente no especificó ningún vehículo o quiere una cita de tipo general (por ejemplo, para tasar su usado o consultar opciones de financiación), envía este campo vacío o como null`, 'string') }}"
+            },
+            {
+              "name": "fecha_propuesta",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters3_Value', `La fecha y hora en formato ISO 8601 (ejemplo: 2026-07-15T15:30:00) para la cual el cliente solicita o propone agendar la cita`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        2240,
+        256
+      ],
+      "id": "a8423fb1-b211-458b-8d44-3b49fe971217",
+      "name": "crear_peticion"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1664,
+        208
+      ],
+      "id": "1a48ebd2-1f76-41d1-a7c1-30a1e58da366",
+      "name": "Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "H7zkY7QNMG7g6lCA",
+          "name": "Google-Gemini-Api"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Iniciar o Meter Valor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram (Send)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Guardar telefono": {
+      "main": [
+        []
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Iniciar o Meter Valor": {
+      "main": [
+        [
+          {
+            "node": "Incrementar a 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Incrementar a 1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Extraer todos los mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer todos los mensajes": {
+      "main": [
+        [
+          {
+            "node": "Armar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_vehiculos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Extraer Mensajes Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Cliente": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis": {
+      "main": [
+        [
+          {
+            "node": "Guardar Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Mensajes Redis": {
+      "main": [
+        [
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crear_peticion": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram (Send)": {
+      "main": [
+        []
+      ]
+    },
+    "Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7b30ad03-4fb5-4678-8ca6-71d8ba8f31b7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d90d229e6f91a1588de750a2f504c3d09357d21735e68d2b6f71c25c84d69d34"
+  },
+  "nodeGroups": [],
+  "id": "mi-flujo-ventas-id",
+  "tags": []
+}
