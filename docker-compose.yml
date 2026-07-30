@@ -45,6 +45,10 @@ services:
       - N8N_API_KEY=${N8N_API_KEY}
       - N8N_WEBHOOK_BASE_URL=${N8N_WEBHOOK_BASE_URL}
       - SECRET_KEY=${SECRET_KEY}
+      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL:-admin@vendedor.com}
+      - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD:-admin123}
+      - INITIAL_BOT_EMAIL=${INITIAL_BOT_EMAIL:-bot@vendedor.com}
+      - INITIAL_BOT_PASSWORD=${INITIAL_BOT_PASSWORD:-bot1234}
     volumes:
       - ./backend/fotos:/app/fotos
     command: sh -c "python init_db.py && uvicorn main:app --host 0.0.0.0 --port 8000"

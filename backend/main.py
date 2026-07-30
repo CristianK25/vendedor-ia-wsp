@@ -25,8 +25,8 @@ def on_startup():
             admin_user = Usuario(
                 nombre="Admin",
                 apellido="Sistema",
-                email="admin@vendedor.com",
-                password_hash=get_password_hash("admin123"),
+                email=settings.INITIAL_ADMIN_EMAIL,
+                password_hash=get_password_hash(settings.INITIAL_ADMIN_PASSWORD),
                 rol=UserRole.ADMIN,
                 is_active=True
             )
@@ -34,14 +34,14 @@ def on_startup():
             session.commit()
             print("Default admin user seeded successfully!")
             
-        bot_user = session.exec(select(Usuario).where(Usuario.email == "bot@vendedor.com")).first()
+        bot_user = session.exec(select(Usuario).where(Usuario.email == settings.INITIAL_BOT_EMAIL)).first()
         if not bot_user:
             print("Seeding default bot user...")
             bot_user = Usuario(
                 nombre="Bot",
                 apellido="n8n",
-                email="bot@vendedor.com",
-                password_hash=get_password_hash("bot1234"),
+                email=settings.INITIAL_BOT_EMAIL,
+                password_hash=get_password_hash(settings.INITIAL_BOT_PASSWORD),
                 rol=UserRole.BOT,
                 is_active=True
             )

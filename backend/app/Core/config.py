@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     N8N_WEBHOOK_BASE_URL: str = "http://n8n:5678/webhook"
     N8N_API_KEY: str = ""
     BACKEND_CORS_ORIGINS: str = "*"
+    INITIAL_ADMIN_EMAIL: str = "admin@vendedor.com"
+    INITIAL_ADMIN_PASSWORD: str = "admin123"
+    INITIAL_BOT_EMAIL: str = "bot@vendedor.com"
+    INITIAL_BOT_PASSWORD: str = "bot1234"
     model_config = {
         "env_file": "../.env",
         "extra": "ignore"
