@@ -60,7 +60,21 @@ services:
     depends_on:
       - backend
     ports:
-      - "80:80"
+      - "8080:80"
+
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: npm-vendedor-ia
+    restart: unless-stopped
+    ports:
+      - '80:80'     # Tráfico HTTP público
+      - '443:443'   # Tráfico HTTPS público
+      - '81:81'     # Panel de administración de NPM
+    volumes:
+      - ./npm_data:/data
+      - ./npm_letsencrypt:/etc/letsencrypt
+    depends_on:
+      - frontend
 
   redis:
     image: redis:7-alpine
