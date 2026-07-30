@@ -8,6 +8,7 @@ from app.Core.database import engine
 from app.Modules.usuarios.model import Usuario, RefreshToken, UserRole
 from app.Core.Security.jwt import get_password_hash
 from app.Modules.usuarios.router import router as auth_router
+from app.Core.config import settings
 from app.Core.Security.deps import require_admin
 from app.Modules.resenas.model import Resena
 from app.Modules.peticiones.model import Peticion
@@ -49,9 +50,11 @@ def on_startup():
             print("Default bot user seeded successfully!")
 
 # Configure CORS for frontend access
+cors_origins = [origin.strip() for origin in settings.BACKEND_CORS_ORIGINS.split(",")] if settings.BACKEND_CORS_ORIGINS else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

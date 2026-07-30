@@ -484,7 +484,7 @@ export default function VehiculosView() {
                     <div className="relative h-48 w-full overflow-hidden bg-surface-container flex items-center justify-center text-outline">
                       {v.imagenes && v.imagenes.length > 0 ? (
                         <img 
-                          src={v.imagenes[0].ruta.trim().startsWith('http') ? v.imagenes[0].ruta.trim() : `http://localhost:8000${v.imagenes[0].ruta.trim()}`}
+                          src={v.imagenes[0].ruta.trim()}
                           alt={v.modelo}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

@@ -108,7 +108,7 @@ export default function VehiculoDetailPage() {
               {hasImages ? (
                 <>
                   <img 
-                    src={vehiculo.imagenes[activeImageIndex].ruta.startsWith('http') ? vehiculo.imagenes[activeImageIndex].ruta : `http://localhost:8000${vehiculo.imagenes[activeImageIndex].ruta}`} 
+                    src={vehiculo.imagenes[activeImageIndex].ruta} 
                     alt={vehiculo.modelo} 
                     className="w-full h-full object-cover transition-opacity duration-300"
                   />
@@ -144,7 +144,7 @@ export default function VehiculoDetailPage() {
                     className={`flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 snap-start transition-all ${activeImageIndex === idx ? 'border-primary shadow-sm' : 'border-transparent opacity-60 hover:opacity-100'}`}
                   >
                     <img 
-                      src={img.ruta.startsWith('http') ? img.ruta : `http://localhost:8000${img.ruta}`} 
+                      src={img.ruta} 
                       alt="thumbnail" 
                       className="w-full h-full object-cover" 
                     />

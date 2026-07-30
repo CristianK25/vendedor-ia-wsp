@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     N8N_WEBHOOK_BASE_URL: str = "http://n8n:5678/webhook"
     N8N_API_KEY: str = ""
+    BACKEND_CORS_ORIGINS: str = "*"
     model_config = {
         "env_file": "../.env",
         "extra": "ignore"

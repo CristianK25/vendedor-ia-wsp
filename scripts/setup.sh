@@ -37,6 +37,19 @@ if [ -f "$ENV_FILE" ]; then
         echo "N8N_API_KEY=$API_KEY" >> "$ENV_FILE"
         echo "✅ N8N_API_KEY añadida exitosamente."
     fi
+    # Inyectar SECRET_KEY si no existe
+    if ! grep -q "^SECRET_KEY=" "$ENV_FILE"; then
+        echo "🔑 Generando nueva SECRET_KEY para JWT en el archivo .env existente..."
+        if command -v openssl >/dev/null 2>&1; then
+            JWT_SECRET=$(openssl rand -hex 32)
+        else
+            JWT_SECRET=$(head -c 32 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 40)
+        fi
+        echo "" >> "$ENV_FILE"
+        echo "# Clave secreta para firmar tokens JWT en el Backend" >> "$ENV_FILE"
+        echo "SECRET_KEY=$JWT_SECRET" >> "$ENV_FILE"
+        echo "✅ SECRET_KEY añadida exitosamente."
+    fi
 else
     # 2. Copiar .env.example a .env
     if [ -f "$ENV_EXAMPLE" ]; then
@@ -44,15 +57,17 @@ else
         cp "$ENV_EXAMPLE" "$ENV_FILE"
         
         # 3. Generar claves aleatorias seguras usando openssl (o dev/urandom como fallback)
-        echo "🔑 Generando claves de seguridad (n8n, API y Postgres)..."
+        echo "🔑 Generando claves de seguridad (n8n, API, JWT y Postgres)..."
         if command -v openssl >/dev/null 2>&1; then
             SECURE_KEY=$(openssl rand -hex 24)
             DB_PASS=$(openssl rand -hex 16)
             API_KEY=$(openssl rand -hex 32)
+            JWT_SECRET=$(openssl rand -hex 32)
         else
             SECURE_KEY=$(head -c 24 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 32)
             DB_PASS=$(head -c 16 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 24)
             API_KEY=$(head -c 32 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 40)
+            JWT_SECRET=$(head -c 32 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 40)
         fi
 
         # 4. Reemplazar las claves temporales en el archivo .env
@@ -61,11 +76,13 @@ else
             sed -i '' "s/N8N_ENCRYPTION_KEY=.*/N8N_ENCRYPTION_KEY=$SECURE_KEY/g" "$ENV_FILE"
             sed -i '' "s/POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$DB_PASS/g" "$ENV_FILE"
             sed -i '' "s/N8N_API_KEY=.*/N8N_API_KEY=$API_KEY/g" "$ENV_FILE"
+            sed -i '' "s/SECRET_KEY=.*/SECRET_KEY=$JWT_SECRET/g" "$ENV_FILE"
         else
             # Linux estándar
             sed -i "s/N8N_ENCRYPTION_KEY=.*/N8N_ENCRYPTION_KEY=$SECURE_KEY/g" "$ENV_FILE"
             sed -i "s/POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$DB_PASS/g" "$ENV_FILE"
             sed -i "s/N8N_API_KEY=.*/N8N_API_KEY=$API_KEY/g" "$ENV_FILE"
+            sed -i "s/SECRET_KEY=.*/SECRET_KEY=$JWT_SECRET/g" "$ENV_FILE"
         fi
 
         echo "✅ Archivo .env generado exitosamente con claves seguras únicas."
@@ -75,15 +92,20 @@ else
     fi
 fi
 
-# 5. Preparar directorio para PostgreSQL
-echo "📦 Preparando directorio de PostgreSQL..."
+# 5. Preparar directorios de persistencia
+echo "📦 Preparando directorios de persistencia..."
 mkdir -p "$PROJECT_ROOT/postgres_data"
-# Postgres usa internamente el usuario postgres.
-# Dejaremos que Docker asigne los permisos correctos al iniciar, 
-# pero nos aseguramos de que la carpeta exista para evitar conflictos de montaje.
+mkdir -p "$PROJECT_ROOT/backend/fotos"
 
 echo "============================================="
+echo "🚨 IMPORTANTE (Si vas a copiar 'n8n_data' de tu local a la VPS):"
+echo "   Debes copiar manualmente los valores exactos de:"
+echo "   - N8N_ENCRYPTION_KEY"
+echo "   - N8N_API_KEY"
+echo "   desde tu .env local hacia el .env de la VPS."
+echo "   Si no lo haces, n8n no podrá desencriptar las credenciales copiadas."
+echo "============================================="
 echo "Próximos pasos:"
-echo "1. Ejecuta 'nano .env' para configurar tu GROQ_API_KEY y TELEGRAM_BOT_TOKEN."
-echo "2. Levanta los contenedores con 'docker compose up -d'."
+echo "1. Ejecuta 'nano .env' en la VPS para configurar tu GROQ_API_KEY, TELEGRAM_BOT_TOKEN y N8N_WEBHOOK_URL."
+echo "2. Levanta los contenedores con 'docker compose up -d --build'."
 echo "============================================="

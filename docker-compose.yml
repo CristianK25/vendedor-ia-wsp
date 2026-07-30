@@ -11,8 +11,6 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-vendedor_ia}
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
 
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
@@ -26,7 +24,7 @@ services:
     environment:
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-America/Argentina/Mendoza}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
-      - WEBHOOK_URL=https://seminocturnal-willena-unbeseeching.ngrok-free.dev
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL:-https://seminocturnal-willena-unbeseeching.ngrok-free.dev}
     volumes:
       - ./n8n_data:/home/node/.n8n
       - ./workflows:/data:ro
@@ -46,7 +44,10 @@ services:
       - POSTGRES_PORT=5432
       - N8N_API_KEY=${N8N_API_KEY}
       - N8N_WEBHOOK_BASE_URL=${N8N_WEBHOOK_BASE_URL}
-    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - ./backend/fotos:/app/fotos
+    command: sh -c "python init_db.py && uvicorn main:app --host 0.0.0.0 --port 8000"
 
   frontend:
     build: ./frontend
