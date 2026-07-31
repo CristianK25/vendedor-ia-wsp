@@ -1,9 +1,0 @@
-n8n:
-    credentials:
-        - Header X-API-KEY
-        - Google-Gemini-API
-        - Postgres Docker
-        - Bearer Auth Account
-        - Redis Account
-        - Cuenta Correos
-        - Google Service Account Account

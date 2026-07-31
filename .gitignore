@@ -1,8 +1,12 @@
 .env
 n8n_data/
 postgres_data/
+npm_data/
+npm_letsencrypt/
 backend/fotos/*
 !backend/fotos/.gitkeep
+dominios.txt
+info.txt
 
 # Python / FastAPI
 __pycache__/

@@ -15,6 +15,8 @@ from app.Modules.citas.model import Cita
 from app.Modules.ventas.model import Venta
 from app.Modules.promociones.model import Promocion
 from app.Modules.resenas.model import Resena
+from app.Modules.etiquetas.model import Etiqueta
+from app.Modules.peticiones.model import Peticion
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("init_db")
@@ -24,8 +26,10 @@ def init_database():
         inspector = inspect(engine)
         tables = inspector.get_table_names()
         
-        if not tables:
-            logger.info("La base de datos está vacía. Creando todas las tablas usando SQLModel...")
+        # Consideramos vacía si no existe la tabla principal del CRM 'usuario'
+        # (Esto evita problemas si n8n arranca primero y crea sus tablas)
+        if "usuario" not in tables:
+            logger.info("La base de datos de negocio está vacía. Creando todas las tablas usando SQLModel...")
             SQLModel.metadata.create_all(engine)
             logger.info("Tablas creadas. Estampando alembic en 'head'...")
             subprocess.run(["alembic", "stamp", "head"], check=True)
