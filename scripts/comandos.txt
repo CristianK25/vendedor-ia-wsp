@@ -65,3 +65,26 @@ uvicorn main:app --reload
 # Iniciar el frontend (Vite + React)
 cd frontend
 npm run dev
+
+
+# Agregar otro usuario
+
+docker compose exec backend python -c "
+from app.Core.database import engine
+from sqlmodel import Session
+from app.Modules.usuarios.model import Usuario, UserRole
+from app.Core.Security.jwt import get_password_hash
+
+with Session(engine) as session:
+    nuevo_usuario = Usuario(
+        nombre='Nombre',
+        apellido='Apellido',
+        email='correo@dominio.com',
+        password_hash=get_password_hash('TuContraseñaSegura123'),
+        rol=UserRole.ADMIN,
+        is_active=True
+    )
+    session.add(nuevo_usuario)
+    session.commit()
+    print('✅ ¡Usuario creado con éxito!')
+"
