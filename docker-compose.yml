@@ -9,6 +9,11 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-vendedor_ia}
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
@@ -26,6 +31,11 @@ services:
     volumes:
       - ./n8n_data:/home/node/.n8n
       - ./workflows:/data:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   backend:
     build: ./backend
     container_name: backend-vendedor-ia
@@ -49,6 +59,11 @@ services:
     volumes:
       - ./backend/fotos:/app/fotos
     command: sh -c "python init_db.py && uvicorn main:app --host 0.0.0.0 --port 8000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build: ./frontend
@@ -56,6 +71,11 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
@@ -70,6 +90,11 @@ services:
       - ./npm_letsencrypt:/etc/letsencrypt
     depends_on:
       - frontend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
     image: redis:7-alpine
@@ -77,3 +102,8 @@ services:
     restart: unless-stopped
     # No exponemos puertos hacia afuera. Solo los contenedores internos (n8n, backend) podrán ver a Redis.
     # command: redis-server --save 60 1 --loglevel warning
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
