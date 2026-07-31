@@ -57,7 +57,7 @@ function App() {
           {/* Logo & Brand */}
           <div className="flex items-center gap-2 shrink-0">
             <Car className="text-primary" size={24} />
-            <span className="text-xl font-bold text-primary">AutoGestor</span>
+            <span className="text-xl font-bold text-primary">AutoLead AI</span>
           </div>
 
           {/* Desktop Tabs */}

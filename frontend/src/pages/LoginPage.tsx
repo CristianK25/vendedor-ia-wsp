@@ -48,7 +48,7 @@ export default function LoginPage() {
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
             <Car size={28} />
           </div>
-          <h1 className="text-2xl font-bold text-on-surface">AutoGestor</h1>
+          <h1 className="text-2xl font-bold text-on-surface">AutoLead AI</h1>
           <p className="text-sm text-on-surface-variant">Inicia sesión para gestionar el CRM de vehículos</p>
         </div>
 
