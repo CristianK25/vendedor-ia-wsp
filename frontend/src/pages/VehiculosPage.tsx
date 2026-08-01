@@ -523,7 +523,7 @@ export default function VehiculosView() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Settings2 size={16} />
-                          Automático {/* Mocked */}
+                          {v.transmision}
                         </div>
                       </div>
                       <div className="mt-auto flex items-center justify-between">
@@ -597,7 +597,7 @@ export default function VehiculosView() {
                         </td>
                         <td className="py-4 px-6 text-on-surface-variant">
                           <div className="flex items-center gap-1.5">
-                            <Settings2 size={14} />Automático
+                            <Settings2 size={14} />{v.transmision}
                           </div>
                         </td>
                         <td className="py-4 px-6 text-center">

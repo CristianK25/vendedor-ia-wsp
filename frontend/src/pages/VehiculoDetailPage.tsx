@@ -175,6 +175,10 @@ export default function VehiculoDetailPage() {
                 <span className="text-on-surface-variant">ID Referencia</span>
                 <span className="font-semibold text-on-surface">#{vehiculo.id.toString().padStart(4, '0')}</span>
               </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Transmisión</span>
+                <span className="font-semibold text-on-surface">{vehiculo.transmision}</span>
+              </div>
             </div>
           </div>
           
