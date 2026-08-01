@@ -16,6 +16,9 @@ export const vehiculosApi = {
     if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
     if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
     if (filters.transmision) params.append('transmision', filters.transmision);
+    if (filters.traccion) params.append('traccion', filters.traccion);
+    if (filters.tipo) params.append('tipo', filters.tipo);
+    if (filters.condicion) params.append('condicion', filters.condicion);
     if (filters.sortBy) params.append('sort_by', filters.sortBy);
     if (filters.sortDir) params.append('sort_dir', filters.sortDir);
     

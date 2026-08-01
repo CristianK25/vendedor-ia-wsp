@@ -18,6 +18,9 @@ export interface Vehiculo {
   patente: string
   estado: string
   imagenes: Imagen[]
+  traccion?: string
+  tipo?: string
+  condicion?: string
 }
 
 export interface VehiculoCreate {
@@ -30,6 +33,9 @@ export interface VehiculoCreate {
   anio: number
   transmision: string
   patente: string
+  traccion: string
+  tipo: string
+  condicion: string
 }
 
 export interface Venta {

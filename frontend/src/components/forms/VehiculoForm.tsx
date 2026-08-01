@@ -74,6 +74,9 @@ export default function VehiculoForm() {
           anio: data.anio,
           transmision: data.transmision,
           patente: data.patente,
+          traccion: data.traccion,
+          tipo: data.tipo,
+          condicion: data.condicion,
           detalle_interior: data.detalle_interior,
           detalle_exterior: data.detalle_exterior,
           informacion_extra: data.informacion_extra
@@ -186,6 +189,54 @@ export default function VehiculoForm() {
                 </select>
               </div>
               {errors.transmision && <p className="text-error text-xs mt-1 font-medium">{errors.transmision.message}</p>}
+            </div>
+
+            {/* Tracción */}
+            <div className="col-span-1 md:col-span-1">
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Tracción *</label>
+              <div className="relative">
+                <select
+                  {...register('traccion', { required: 'La tracción es requerida' })}
+                  className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="4x2">4x2</option>
+                  <option value="4x4">4x4</option>
+                </select>
+              </div>
+              {errors.traccion && <p className="text-error text-xs mt-1 font-medium">{errors.traccion.message}</p>}
+            </div>
+
+            {/* Tipo */}
+            <div className="col-span-1 md:col-span-1">
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Tipo *</label>
+              <div className="relative">
+                <select
+                  {...register('tipo', { required: 'El tipo es requerido' })}
+                  className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="Auto">Auto</option>
+                  <option value="Camioneta">Camioneta</option>
+                </select>
+              </div>
+              {errors.tipo && <p className="text-error text-xs mt-1 font-medium">{errors.tipo.message}</p>}
+            </div>
+
+            {/* Condición */}
+            <div className="col-span-1 md:col-span-1">
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Condición *</label>
+              <div className="relative">
+                <select
+                  {...register('condicion', { required: 'La condición es requerida' })}
+                  className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="Usado">Usado</option>
+                  <option value="Nuevo">Nuevo</option>
+                </select>
+              </div>
+              {errors.condicion && <p className="text-error text-xs mt-1 font-medium">{errors.condicion.message}</p>}
             </div>
 
             {/* Precio */}
