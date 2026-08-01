@@ -22,5 +22,8 @@ class Vehiculo(SQLModel, table=True):
     patente: str = Field(unique=True)
     estado: EstadoVehiculo = Field(default=EstadoVehiculo.disponible)
     activo: bool = Field(default=True)
+    traccion: Optional[str] = Field(default=None)
+    tipo: Optional[str] = Field(default=None)
+    condicion: Optional[str] = Field(default=None)
     
     imagenes: List["Imagen"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})

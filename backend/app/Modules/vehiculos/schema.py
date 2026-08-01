@@ -18,6 +18,9 @@ class VehiculoCreate(BaseModel):
     anio: int
     transmision: str
     patente: str
+    traccion: str
+    tipo: str
+    condicion: str
 
 class VehiculoUpdate(BaseModel):
     modelo: Optional[str] = None
@@ -30,6 +33,9 @@ class VehiculoUpdate(BaseModel):
     transmision: Optional[str] = None
     patente: Optional[str] = None
     estado: Optional[EstadoVehiculo] = None
+    traccion: Optional[str] = None
+    tipo: Optional[str] = None
+    condicion: Optional[str] = None
 
 class VehiculoResponse(BaseModel):
     id: int
@@ -44,6 +50,9 @@ class VehiculoResponse(BaseModel):
     patente: str
     estado: EstadoVehiculo
     imagenes: List[ImagenResponse] = []
+    traccion: Optional[str] = None
+    tipo: Optional[str] = None
+    condicion: Optional[str] = None
 
 class PaginatedVehiculosResponse(BaseModel):
     items: List[VehiculoResponse]

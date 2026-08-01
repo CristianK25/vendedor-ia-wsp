@@ -21,6 +21,9 @@ def get_vehiculos(
     anio_min: Optional[int] = None,
     anio_max: Optional[int] = None,
     transmision: str = "",
+    traccion: str = "",
+    tipo: str = "",
+    condicion: str = "",
     sort_by: str = "",
     sort_dir: str = "asc",
     session: Session = Depends(get_session)
@@ -31,6 +34,7 @@ def get_vehiculos(
         skip=skip, limit=size, search=search, estado=estado, 
         precio_min=precio_min, precio_max=precio_max, km_min=km_min, km_max=km_max,
         anio_min=anio_min, anio_max=anio_max, transmision=transmision,
+        traccion=traccion, tipo=tipo, condicion=condicion,
         sort_by=sort_by, sort_dir=sort_dir
     )
     

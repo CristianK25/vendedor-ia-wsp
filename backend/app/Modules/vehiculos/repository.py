@@ -19,6 +19,9 @@ class VehiculoRepository:
         anio_min: Optional[int] = None,
         anio_max: Optional[int] = None,
         transmision: str = "",
+        traccion: str = "",
+        tipo: str = "",
+        condicion: str = "",
         sort_by: str = "", 
         sort_dir: str = "asc"
     ) -> Tuple[List[Vehiculo], int]:
@@ -47,6 +50,15 @@ class VehiculoRepository:
             
         if transmision:
             query = query.where(Vehiculo.transmision == transmision)
+            
+        if traccion:
+            query = query.where(Vehiculo.traccion == traccion)
+            
+        if tipo:
+            query = query.where(Vehiculo.tipo == tipo)
+            
+        if condicion:
+            query = query.where(Vehiculo.condicion == condicion)
             
         if sort_by:
             column = getattr(Vehiculo, sort_by, None)

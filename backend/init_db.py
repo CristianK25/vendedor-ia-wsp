@@ -26,10 +26,9 @@ def init_database():
         inspector = inspect(engine)
         tables = inspector.get_table_names()
         
-        # Consideramos vacía si no existe la tabla principal del CRM 'usuario'
-        # (Esto evita problemas si n8n arranca primero y crea sus tablas)
-        if "usuario" not in tables:
-            logger.info("La base de datos de negocio está vacía. Creando todas las tablas usando SQLModel...")
+        # Consideramos vacía si no hay ninguna tabla
+        if len(tables) == 0:
+            logger.info("La base de datos está completamente vacía. Creando todas las tablas usando SQLModel...")
             SQLModel.metadata.create_all(engine)
             logger.info("Tablas creadas. Estampando alembic en 'head'...")
             subprocess.run(["alembic", "stamp", "head"], check=True)

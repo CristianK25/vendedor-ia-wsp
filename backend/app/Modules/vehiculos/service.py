@@ -24,12 +24,16 @@ class VehiculoService:
         anio_min: Optional[int] = None,
         anio_max: Optional[int] = None,
         transmision: str = "",
+        traccion: str = "",
+        tipo: str = "",
+        condicion: str = "",
         sort_by: str = "", 
         sort_dir: str = "asc"
     ):
         return self.repository.get_all(
             skip, limit, search, estado, 
             precio_min, precio_max, km_min, km_max, anio_min, anio_max, transmision,
+            traccion, tipo, condicion,
             sort_by, sort_dir
         )
     
