@@ -162,10 +162,34 @@ export default function VehiculoDetailPage() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
               <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Año</span>
+                <span className="font-semibold text-on-surface">{vehiculo.anio}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Patente</span>
+                <span className="font-semibold text-on-surface uppercase">{vehiculo.patente}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
                 <span className="text-on-surface-variant">Kilometraje</span>
-                <span className="font-semibold text-on-surface flex items-center gap-1">
+                <span className="font-semibold text-on-surface">
                   {vehiculo.kilometraje.toLocaleString()} km
                 </span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Transmisión</span>
+                <span className="font-semibold text-on-surface">{vehiculo.transmision}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Tracción</span>
+                <span className="font-semibold text-on-surface">{vehiculo.traccion || '-'}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Tipo</span>
+                <span className="font-semibold text-on-surface">{vehiculo.tipo || '-'}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Condición</span>
+                <span className="font-semibold text-on-surface">{vehiculo.condicion || '-'}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-outline-variant/30">
                 <span className="text-on-surface-variant">Estado</span>
@@ -174,10 +198,6 @@ export default function VehiculoDetailPage() {
               <div className="flex justify-between py-2 border-b border-outline-variant/30">
                 <span className="text-on-surface-variant">ID Referencia</span>
                 <span className="font-semibold text-on-surface">#{vehiculo.id.toString().padStart(4, '0')}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Transmisión</span>
-                <span className="font-semibold text-on-surface">{vehiculo.transmision}</span>
               </div>
             </div>
           </div>

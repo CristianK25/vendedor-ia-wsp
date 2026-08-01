@@ -60,23 +60,32 @@ export default function VehiculosView() {
   const [kmRango, setKmRango] = useState<[number, number]>([0, 200000]);
   const [anioRango, setAnioRango] = useState<[number, number]>([2000, new Date().getFullYear()]);
   const [filterTransmision, setFilterTransmision] = useState<string>('');
+  const [filterTraccion, setFilterTraccion] = useState<string>('Todas');
+  const [filterTipo, setFilterTipo] = useState<string>('Todos');
+  const [filterCondicion, setFilterCondicion] = useState<string>('Todas');
   const [appliedFilters, setAppliedFilters] = useState<{
     precioRango: [number, number];
     kmRango: [number, number];
     anioRango: [number, number];
     filterTransmision: string;
+    filterTraccion: string;
+    filterTipo: string;
+    filterCondicion: string;
   }>({
     precioRango: [0, 100000],
     kmRango: [0, 200000],
     anioRango: [2000, new Date().getFullYear()],
-    filterTransmision: ''
+    filterTransmision: '',
+    filterTraccion: 'Todas',
+    filterTipo: 'Todos',
+    filterCondicion: 'Todas'
   });
   const [fetchTrigger, setFetchTrigger] = useState(0);
   
   const size = 50;
 
   type SortConfig = {
-    key: 'modelo' | 'kilometraje' | 'transmision' | 'estado' | 'precio' | null;
+    key: 'modelo' | 'kilometraje' | 'transmision' | 'traccion' | 'tipo' | 'condicion' | 'estado' | 'precio' | null;
     direction: 'asc' | 'desc';
   }
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
@@ -120,7 +129,10 @@ export default function VehiculosView() {
         precioRango: initialPrecio,
         kmRango: initialKm,
         anioRango: initialAnio,
-        filterTransmision: ''
+        filterTransmision: '',
+        filterTraccion: 'Todas',
+        filterTipo: 'Todos',
+        filterCondicion: 'Todas'
       });
     }).catch(console.error);
   }, []);
@@ -141,6 +153,9 @@ export default function VehiculosView() {
       anio_min: appliedFilters.anioRango[0],
       anio_max: appliedFilters.anioRango[1],
       transmision: appliedFilters.filterTransmision === 'Todas' ? '' : appliedFilters.filterTransmision,
+      traccion: appliedFilters.filterTraccion === 'Todas' ? '' : appliedFilters.filterTraccion,
+      tipo: appliedFilters.filterTipo === 'Todos' ? '' : appliedFilters.filterTipo,
+      condicion: appliedFilters.filterCondicion === 'Todas' ? '' : appliedFilters.filterCondicion,
       sortBy: sortConfig.key || '',
       sortDir: sortConfig.direction
     };
@@ -409,6 +424,48 @@ export default function VehiculosView() {
               </select>
             </div>
 
+            {/* Filtro: Tracción */}
+            <div className="flex flex-col gap-1.5 justify-end">
+              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Tracción</label>
+              <select 
+                value={filterTraccion}
+                onChange={(e) => setFilterTraccion(e.target.value)}
+                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              >
+                <option value="Todas">Todas</option>
+                <option value="4x2">4x2</option>
+                <option value="4x4">4x4</option>
+              </select>
+            </div>
+
+            {/* Filtro: Tipo */}
+            <div className="flex flex-col gap-1.5 justify-end">
+              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Tipo</label>
+              <select 
+                value={filterTipo}
+                onChange={(e) => setFilterTipo(e.target.value)}
+                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              >
+                <option value="Todos">Todos</option>
+                <option value="Auto">Auto</option>
+                <option value="Camioneta">Camioneta</option>
+              </select>
+            </div>
+
+            {/* Filtro: Condición */}
+            <div className="flex flex-col gap-1.5 justify-end">
+              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Condición</label>
+              <select 
+                value={filterCondicion}
+                onChange={(e) => setFilterCondicion(e.target.value)}
+                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              >
+                <option value="Todas">Todas</option>
+                <option value="Usado">Usado</option>
+                <option value="Nuevo">Nuevo</option>
+              </select>
+            </div>
+
           </div>
           
           <div className="flex justify-end items-center gap-3 mt-5 pt-4 border-t border-outline-variant/50">
@@ -422,22 +479,34 @@ export default function VehiculosView() {
                   setKmRango(defaultKm);
                   setAnioRango(defaultAnio);
                   setFilterTransmision('Todas');
+                  setFilterTraccion('Todas');
+                  setFilterTipo('Todos');
+                  setFilterCondicion('Todas');
                   setAppliedFilters({
                     precioRango: defaultPrecio,
                     kmRango: defaultKm,
                     anioRango: defaultAnio,
-                    filterTransmision: 'Todas'
+                    filterTransmision: 'Todas',
+                    filterTraccion: 'Todas',
+                    filterTipo: 'Todos',
+                    filterCondicion: 'Todas'
                   });
                 } else {
                   setPrecioRango([0, 100000]);
                   setKmRango([0, 200000]);
                   setAnioRango([2000, new Date().getFullYear()]);
                   setFilterTransmision('Todas');
+                  setFilterTraccion('Todas');
+                  setFilterTipo('Todos');
+                  setFilterCondicion('Todas');
                   setAppliedFilters({
                     precioRango: [0, 100000],
                     kmRango: [0, 200000],
                     anioRango: [2000, new Date().getFullYear()],
-                    filterTransmision: 'Todas'
+                    filterTransmision: 'Todas',
+                    filterTraccion: 'Todas',
+                    filterTipo: 'Todos',
+                    filterCondicion: 'Todas'
                   });
                 }
                 setFilterEstado('todos');
@@ -455,7 +524,10 @@ export default function VehiculosView() {
                   precioRango,
                   kmRango,
                   anioRango,
-                  filterTransmision
+                  filterTransmision,
+                  filterTraccion,
+                  filterTipo,
+                  filterCondicion
                 });
               }}
               className="px-5 py-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container rounded-lg text-sm font-bold transition-colors shadow-sm"
@@ -516,15 +588,29 @@ export default function VehiculosView() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-on-surface-variant text-sm mb-4">
-                        <div className="flex items-center gap-1">
-                          <Gauge size={16} />
+                      <div className="flex flex-wrap gap-2 text-xs text-on-surface-variant mb-4">
+                        <span className="flex items-center gap-1 bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">
+                          <Gauge size={12} />
                           {v.kilometraje.toLocaleString()} km
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Settings2 size={16} />
+                        </span>
+                        <span className="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">
                           {v.transmision}
-                        </div>
+                        </span>
+                        {v.traccion && (
+                          <span className="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30 font-medium">
+                            {v.traccion}
+                          </span>
+                        )}
+                        {v.tipo && (
+                          <span className="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">
+                            {v.tipo}
+                          </span>
+                        )}
+                        {v.condicion && (
+                          <span className={`px-2 py-0.5 rounded border font-semibold ${v.condicion === 'Nuevo' ? 'bg-primary/5 text-primary border-primary/20' : 'bg-surface-container-low text-on-surface-variant border-outline-variant/30'}`}>
+                            {v.condicion}
+                          </span>
+                        )}
                       </div>
                       <div className="mt-auto flex items-center justify-between">
                         <span className="text-primary font-bold text-xl">${v.precio.toLocaleString()}</span>
@@ -564,6 +650,21 @@ export default function VehiculosView() {
                         Transmisión {renderSortIcon('transmision')}
                       </div>
                     </th>
+                    <th className="py-4 px-6">
+                      <div onClick={() => handleSort('traccion')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
+                        Tracción {renderSortIcon('traccion')}
+                      </div>
+                    </th>
+                    <th className="py-4 px-6">
+                      <div onClick={() => handleSort('tipo')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
+                        Tipo {renderSortIcon('tipo')}
+                      </div>
+                    </th>
+                    <th className="py-4 px-6">
+                      <div onClick={() => handleSort('condicion')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
+                        Condición {renderSortIcon('condicion')}
+                      </div>
+                    </th>
                     <th className="py-4 px-6 text-center">
                       <div onClick={() => handleSort('estado')} className="flex items-center justify-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max mx-auto">
                         Estado {renderSortIcon('estado')}
@@ -580,7 +681,7 @@ export default function VehiculosView() {
                 <tbody className="divide-y divide-outline-variant">
                   {vehiculos.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-on-surface-variant">No hay vehículos registrados.</td>
+                      <td colSpan={9} className="py-8 text-center text-on-surface-variant">No hay vehículos registrados.</td>
                     </tr>
                   ) : (
                     vehiculos.map(v => (
@@ -599,6 +700,15 @@ export default function VehiculosView() {
                           <div className="flex items-center gap-1.5">
                             <Settings2 size={14} />{v.transmision}
                           </div>
+                        </td>
+                        <td className="py-4 px-6 text-on-surface-variant font-medium">{v.traccion || '-'}</td>
+                        <td className="py-4 px-6 text-on-surface-variant font-medium">{v.tipo || '-'}</td>
+                        <td className="py-4 px-6 text-on-surface-variant">
+                          {v.condicion ? (
+                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-md border ${v.condicion === 'Nuevo' ? 'bg-primary/5 text-primary border-primary/20' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                              {v.condicion}
+                            </span>
+                          ) : '-'}
                         </td>
                         <td className="py-4 px-6 text-center">
                           <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : v.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
