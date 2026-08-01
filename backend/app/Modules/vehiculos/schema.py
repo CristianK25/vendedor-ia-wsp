@@ -18,9 +18,9 @@ class VehiculoCreate(BaseModel):
     anio: int
     transmision: str
     patente: str
-    traccion: str
-    tipo: str
-    condicion: str
+    traccion: Optional[str] = None
+    tipo: Optional[str] = None
+    condicion: Optional[str] = None
 
 class VehiculoUpdate(BaseModel):
     modelo: Optional[str] = None
