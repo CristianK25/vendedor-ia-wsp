@@ -69,7 +69,9 @@ export default function VehiculoForm() {
         // En modo edicion solo enviamos JSON normal
         const payloadToUpdate = {
           modelo: data.modelo,
-          precio: data.precio,
+          precio_venta: data.precio_venta,
+          precio_compra: data.precio_compra,
+          origen_compra: data.origen_compra,
           kilometraje: data.kilometraje,
           anio: data.anio,
           transmision: data.transmision,
@@ -239,16 +241,32 @@ export default function VehiculoForm() {
               {errors.condicion && <p className="text-error text-xs mt-1 font-medium">{errors.condicion.message}</p>}
             </div>
 
-            {/* Precio */}
+            {/* Origen de Compra */}
+            <div className="col-span-1 md:col-span-1">
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Origen de Compra *</label>
+              <div className="relative">
+                <select
+                  {...register('origen_compra', { required: 'El origen de compra es requerido' })}
+                  className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="particular">Particular</option>
+                  <option value="ri_factura_a">RI con Factura A</option>
+                </select>
+              </div>
+              {errors.origen_compra && <p className="text-error text-xs mt-1 font-medium">{errors.origen_compra.message}</p>}
+            </div>
+
+            {/* Precio de Compra */}
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant mb-2">Precio *</label>
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Precio de Compra *</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
                 <input 
                   type="number"
                   step="0.01"
-                  {...register('precio', { 
-                    required: 'El precio es requerido',
+                  {...register('precio_compra', { 
+                    required: 'El precio de compra es requerido',
                     valueAsNumber: true,
                     min: { value: 0, message: 'No puede ser negativo' }
                   })}
@@ -256,7 +274,27 @@ export default function VehiculoForm() {
                   placeholder="0.00"
                 />
               </div>
-              {errors.precio && <p className="text-error text-xs mt-1 font-medium">{errors.precio.message}</p>}
+              {errors.precio_compra && <p className="text-error text-xs mt-1 font-medium">{errors.precio_compra.message}</p>}
+            </div>
+
+            {/* Precio de Venta */}
+            <div>
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">Precio de Venta *</label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
+                <input 
+                  type="number"
+                  step="0.01"
+                  {...register('precio_venta', { 
+                    required: 'El precio de venta es requerido',
+                    valueAsNumber: true,
+                    min: { value: 0, message: 'No puede ser negativo' }
+                  })}
+                  className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                  placeholder="0.00"
+                />
+              </div>
+              {errors.precio_venta && <p className="text-error text-xs mt-1 font-medium">{errors.precio_venta.message}</p>}
             </div>
 
             {/* Kilometraje */}

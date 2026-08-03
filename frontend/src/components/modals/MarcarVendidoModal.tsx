@@ -9,7 +9,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
   const [loading, setLoading] = useState(false);
   
   // State for creating sale
-  const [precioFinal, setPrecioFinal] = useState(vehiculo.precio.toString());
+  const [precioFinal, setPrecioFinal] = useState(vehiculo.precio_venta.toString());
   const [metodoPago, setMetodoPago] = useState('Efectivo');
   const [notas, setNotas] = useState('');
   const [esReventa, setEsReventa] = useState(false);

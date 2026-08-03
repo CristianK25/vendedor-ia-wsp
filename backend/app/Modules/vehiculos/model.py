@@ -2,6 +2,10 @@ import enum
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship
 
+class OrigenCompra(str, enum.Enum):
+    particular = "particular"
+    ri_factura_a = "ri_factura_a"
+
 class EstadoVehiculo(str, enum.Enum):
     disponible = "disponible"
     vendido = "vendido"
@@ -12,7 +16,9 @@ class Vehiculo(SQLModel, table=True):
     __tablename__ = "vehiculos"
     id: Optional[int] = Field(default=None, primary_key=True)
     modelo: str
-    precio: float
+    precio_venta: float
+    precio_compra: Optional[float] = Field(default=None)
+    origen_compra: Optional[OrigenCompra] = Field(default=None)
     kilometraje: int
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None

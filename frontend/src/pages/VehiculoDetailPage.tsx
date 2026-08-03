@@ -88,7 +88,7 @@ export default function VehiculoDetailPage() {
           </h1>
         </div>
         <div className="text-right">
-          <div className="text-primary font-bold text-4xl mb-1">${vehiculo.precio.toLocaleString()}</div>
+          <div className="text-primary font-bold text-4xl mb-1">${vehiculo.precio_venta.toLocaleString()}</div>
           <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${vehiculo.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : vehiculo.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
             <CheckCircle2 size={14} />
             {vehiculo.estado === 'disponible' ? 'Disponible para la Venta' : vehiculo.estado === 'reventa' ? 'Vendido (Reventa)' : 'Vendido'}
@@ -161,6 +161,18 @@ export default function VehiculoDetailPage() {
               Ficha Técnica
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Origen de compra</span>
+                <span className="font-semibold text-on-surface capitalize">
+                  {vehiculo.origen_compra === 'ri_factura_a' ? 'RI con Factura A' : 'Particular'}
+                </span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Precio de compra</span>
+                <span className="font-semibold text-on-surface">
+                  ${vehiculo.precio_compra?.toLocaleString() || '-'}
+                </span>
+              </div>
               <div className="flex justify-between py-2 border-b border-outline-variant/30">
                 <span className="text-on-surface-variant">Año</span>
                 <span className="font-semibold text-on-surface">{vehiculo.anio}</span>

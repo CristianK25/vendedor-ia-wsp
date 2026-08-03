@@ -34,9 +34,9 @@ class VehiculoRepository:
             query = query.where(Vehiculo.estado == estado)
             
         if precio_min is not None:
-            query = query.where(Vehiculo.precio >= precio_min)
+            query = query.where(Vehiculo.precio_venta >= precio_min)
         if precio_max is not None:
-            query = query.where(Vehiculo.precio <= precio_max)
+            query = query.where(Vehiculo.precio_venta <= precio_max)
             
         if km_min is not None:
             query = query.where(Vehiculo.kilometraje >= km_min)
@@ -77,8 +77,8 @@ class VehiculoRepository:
 
     def get_stats(self) -> dict:
         statement = select(
-            func.min(Vehiculo.precio).label("precio_min"),
-            func.max(Vehiculo.precio).label("precio_max"),
+            func.min(Vehiculo.precio_venta).label("precio_min"),
+            func.max(Vehiculo.precio_venta).label("precio_max"),
             func.min(Vehiculo.kilometraje).label("km_min"),
             func.max(Vehiculo.kilometraje).label("km_max"),
             func.min(Vehiculo.anio).label("anio_min"),

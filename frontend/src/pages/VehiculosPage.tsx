@@ -85,7 +85,7 @@ export default function VehiculosView() {
   const size = 50;
 
   type SortConfig = {
-    key: 'modelo' | 'kilometraje' | 'transmision' | 'traccion' | 'tipo' | 'condicion' | 'estado' | 'precio' | null;
+    key: 'modelo' | 'kilometraje' | 'transmision' | 'traccion' | 'tipo' | 'condicion' | 'estado' | 'precio_venta' | null;
     direction: 'asc' | 'desc';
   }
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
@@ -613,7 +613,7 @@ export default function VehiculosView() {
                         )}
                       </div>
                       <div className="mt-auto flex items-center justify-between">
-                        <span className="text-primary font-bold text-xl">${v.precio.toLocaleString()}</span>
+                        <span className="text-primary font-bold text-xl">${v.precio_venta.toLocaleString()}</span>
                         {v.estado === 'disponible' ? (
                           <button 
                             onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
@@ -671,8 +671,8 @@ export default function VehiculosView() {
                       </div>
                     </th>
                     <th className="py-4 px-6 text-right">
-                      <div onClick={() => handleSort('precio')} className="flex items-center justify-end gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max ml-auto">
-                        Precio {renderSortIcon('precio')}
+                      <div onClick={() => handleSort('precio_venta')} className="flex items-center justify-end gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max ml-auto">
+                        Precio de Venta {renderSortIcon('precio_venta')}
                       </div>
                     </th>
                     <th className="py-4 px-6 text-center">Acciones</th>
@@ -715,7 +715,7 @@ export default function VehiculosView() {
                             {v.estado === 'disponible' ? 'Disponible' : v.estado === 'reventa' ? 'Reventa' : 'Vendido'}
                           </span>
                         </td>
-                        <td className="py-4 px-6 font-bold text-primary text-right">${v.precio.toLocaleString()}</td>
+                        <td className="py-4 px-6 font-bold text-primary text-right">${v.precio_venta.toLocaleString()}</td>
                         <td className="py-4 px-6">
                           <div className="flex items-center justify-center gap-2">
                             {v.estado === 'disponible' ? (

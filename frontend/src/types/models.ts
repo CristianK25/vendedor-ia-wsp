@@ -8,7 +8,9 @@ export interface Imagen {
 export interface Vehiculo {
   id: number
   modelo: string
-  precio: number
+  precio_venta: number
+  precio_compra: number
+  origen_compra: 'particular' | 'ri_factura_a'
   kilometraje: number
   detalle_interior?: string
   detalle_exterior?: string
@@ -25,7 +27,9 @@ export interface Vehiculo {
 
 export interface VehiculoCreate {
   modelo: string
-  precio: number
+  precio_venta: number
+  precio_compra: number
+  origen_compra: 'particular' | 'ri_factura_a'
   kilometraje: number
   detalle_interior?: string
   detalle_exterior?: string

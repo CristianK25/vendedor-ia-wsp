@@ -8,6 +8,7 @@ backend/fotos/*
 dominios.txt
 info.txt
 docker-compose.override.yml
+_tickets/
 
 # Python / FastAPI
 __pycache__/
