@@ -9,6 +9,7 @@ import PromocionesPage from './pages/PromocionesPage'
 
 import VehiculoForm from './components/forms/VehiculoForm'
 import VehiculoDetailPage from './pages/VehiculoDetailPage'
+import VehiculoDocumentacionPage from './pages/VehiculoDocumentacionPage'
 import VentaForm from './components/forms/VentaForm'
 import ClienteForm from './components/forms/ClienteForm'
 import PromocionForm from './components/forms/PromocionForm'
@@ -132,6 +133,7 @@ function App() {
               <Route path="/vehiculos/nuevo" element={<VehiculoForm />} />
               <Route path="/vehiculos/editar/:id" element={<VehiculoForm />} />
               <Route path="/vehiculos/:id" element={<VehiculoDetailPage />} />
+              <Route path="/vehiculos/:id/documentacion" element={<VehiculoDocumentacionPage />} />
 
               <Route path="/ventas" element={<VentasPage />} />
               <Route path="/ventas/nuevo" element={<VentaForm />} />

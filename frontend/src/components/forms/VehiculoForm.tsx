@@ -159,34 +159,36 @@ export default function VehiculoForm() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex items-center gap-4 border-b border-outline-variant mb-8 overflow-x-auto no-scrollbar">
-        <button
-          type="button"
-          onClick={() => setActiveTab('datos')}
-          className={`px-4 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors ${
-            activeTab === 'datos'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline'
-          }`}
-        >
-          Datos Principales
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('documentos')}
-          className={`px-4 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors flex items-center gap-2 ${
-            activeTab === 'documentos'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline'
-          }`}
-        >
-          Documentación
-        </button>
-      </div>
+      {/* Tabs - Solo se muestran en modo creación */}
+      {!isEditMode && (
+        <div className="flex items-center gap-4 border-b border-outline-variant mb-8 overflow-x-auto no-scrollbar">
+          <button
+            type="button"
+            onClick={() => setActiveTab('datos')}
+            className={`px-4 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors ${
+              activeTab === 'datos'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline'
+            }`}
+          >
+            Datos Principales
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('documentos')}
+            className={`px-4 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors flex items-center gap-2 ${
+              activeTab === 'documentos'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline'
+            }`}
+          >
+            Documentación
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="pb-12 animate-fade-in">
-        <div className={activeTab === 'datos' ? 'block space-y-8' : 'hidden'}>
+        <div className={isEditMode || activeTab === 'datos' ? 'block space-y-8' : 'hidden'}>
           <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8 shadow-sm">
             <h2 className="text-lg font-semibold text-on-surface mb-6 border-b border-outline-variant pb-2">Información Vehículo</h2>
           
@@ -457,16 +459,18 @@ export default function VehiculoForm() {
 
         </div>
         
-        <div className={activeTab === 'documentos' ? 'block' : 'hidden'}>
-          <DocumentacionStepForm 
-            vehiculoId={id ? Number(id) : undefined}
-            isNewMode={!isEditMode}
-            archivosPendientes={archivosPendientes}
-            onArchivoPendienteChange={handleArchivoPendienteChange}
-            localEtapaIndex={localEtapaIndex}
-            onAvanzarEtapaLocal={() => setLocalEtapaIndex(prev => prev + 1)}
-          />
-        </div>
+        {!isEditMode && (
+          <div className={activeTab === 'documentos' ? 'block' : 'hidden'}>
+            <DocumentacionStepForm 
+              vehiculoId={id ? Number(id) : undefined}
+              isNewMode={!isEditMode}
+              archivosPendientes={archivosPendientes}
+              onArchivoPendienteChange={handleArchivoPendienteChange}
+              localEtapaIndex={localEtapaIndex}
+              onAvanzarEtapaLocal={() => setLocalEtapaIndex(prev => prev + 1)}
+            />
+          </div>
+        )}
 
         <div className="flex items-center justify-end gap-4 pt-4 border-t border-outline-variant mt-8">
           <button 

@@ -3,15 +3,46 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { vehiculosApi } from '../api/vehiculos'
 import { 
   ArrowLeft, Edit2, CheckCircle2, 
-  Wrench, FileText,
-  ImageOff, ChevronLeft, ChevronRight, UserCircle2, ShieldCheck
+  FileText,
+  ImageOff, ChevronLeft, ChevronRight, UserCircle2, ShieldCheck,
+  Lock, AlertTriangle, ExternalLink, FileCheck2
 } from 'lucide-react'
+
+const ETAPAS = [
+  { id: 'pre_compra', label: 'Pre-compra' },
+  { id: 'comprado', label: 'Comprado' },
+  { id: 'en_stock', label: 'En Stock' },
+  { id: 'vendido', label: 'Vendido' }
+]
+
+const DOCS_POR_ETAPA: Record<string, { id: string, label: string, optional?: boolean }[]> = {
+  pre_compra: [
+    { id: 'informe_dominio', label: 'Informe de Dominio' },
+    { id: 'deuda_patentes', label: 'Deuda de Patentes' }
+  ],
+  comprado: [
+    { id: 'boleto_compra', label: 'Boleto de Compra' },
+    { id: 'dni_vendedor', label: 'DNI Vendedor' },
+    { id: 'cedula_vehiculo', label: 'Cédula Vehículo' },
+    { id: 'formulario_08', label: 'Formulario 08' }
+  ],
+  en_stock: [
+    { id: 'contrato_consignacion', label: 'Contrato Consignación (Opcional)', optional: true }
+  ],
+  vendido: [
+    { id: 'boleto_venta', label: 'Boleto de Venta' },
+    { id: 'verificacion_policial', label: 'Verificación Policial' },
+    { id: 'dni_comprador', label: 'DNI Comprador' },
+    { id: 'formulario_08_12', label: 'Formulario 08/12' }
+  ]
+}
 
 export default function VehiculoDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   
   const [vehiculo, setVehiculo] = useState<any>(null)
+  const [documentos, setDocumentos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
@@ -21,9 +52,14 @@ export default function VehiculoDetailPage() {
   useEffect(() => {
     if (!id) return
     
-    vehiculosApi.getById(Number(id))
-      .then(data => {
-        setVehiculo(data)
+    setLoading(true)
+    Promise.all([
+      vehiculosApi.getById(Number(id)),
+      vehiculosApi.getDocumentos(Number(id))
+    ])
+      .then(([vehiculoData, documentosData]) => {
+        setVehiculo(vehiculoData)
+        setDocumentos(documentosData)
         setLoading(false)
       })
       .catch(err => {
@@ -70,6 +106,13 @@ export default function VehiculoDetailPage() {
           Volver a resultados
         </button>
         <div className="flex items-center gap-3">
+          <button 
+            onClick={() => navigate(`/vehiculos/${vehiculo.id}/documentacion`)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold hover:bg-primary-container transition-colors shadow-sm"
+          >
+            <FileText size={16} />
+            Documentación
+          </button>
           <button 
             onClick={() => navigate(`/vehiculos/editar/${vehiculo.id}`)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant text-sm font-semibold hover:bg-surface-container-low transition-colors text-on-surface"
@@ -214,44 +257,85 @@ export default function VehiculoDetailPage() {
             </div>
           </div>
           
-          {/* Equipamiento y Detalles */}
-          <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8">
+          {/* Documentos del Vehículo */}
+          <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8 shadow-sm">
              <h3 className="text-xl font-semibold text-on-surface mb-6 border-b border-outline-variant pb-3 flex items-center gap-2">
-              <Wrench size={20} className="text-primary"/>
-              Equipamiento y Detalles
+              <FileText size={20} className="text-primary"/>
+              Documentos del Vehículo
             </h3>
             
             <div className="space-y-6">
-              {vehiculo.detalle_interior && (
-                <div>
-                  <h4 className="font-semibold text-on-surface mb-2 text-sm uppercase tracking-wider">Interior</h4>
-                  <p className="text-on-surface-variant text-sm whitespace-pre-wrap leading-relaxed bg-surface-container-low p-4 rounded-xl">
-                    {vehiculo.detalle_interior}
-                  </p>
-                </div>
-              )}
-              
-              {vehiculo.detalle_exterior && (
-                <div>
-                  <h4 className="font-semibold text-on-surface mb-2 text-sm uppercase tracking-wider">Exterior</h4>
-                  <p className="text-on-surface-variant text-sm whitespace-pre-wrap leading-relaxed bg-surface-container-low p-4 rounded-xl">
-                    {vehiculo.detalle_exterior}
-                  </p>
-                </div>
-              )}
-
-              {vehiculo.informacion_extra && (
-                <div>
-                  <h4 className="font-semibold text-on-surface mb-2 text-sm uppercase tracking-wider">Comentarios del Vendedor</h4>
-                  <p className="text-on-surface-variant text-sm whitespace-pre-wrap leading-relaxed bg-surface-container-low p-4 rounded-xl">
-                    {vehiculo.informacion_extra}
-                  </p>
-                </div>
-              )}
-              
-              {(!vehiculo.detalle_interior && !vehiculo.detalle_exterior && !vehiculo.informacion_extra) && (
-                <p className="text-on-surface-variant text-sm italic">No hay detalles adicionales especificados para este vehículo.</p>
-              )}
+              {ETAPAS.map((etapa, idx) => {
+                const currentEtapaIndex = ETAPAS.findIndex(e => e.id === (vehiculo.etapa || 'pre_compra'))
+                const isCurrent = idx === currentEtapaIndex
+                const isCompleted = idx < currentEtapaIndex
+                const isLocked = idx > currentEtapaIndex
+                
+                const docsParaEtapa = DOCS_POR_ETAPA[etapa.id] || []
+                
+                return (
+                  <div key={etapa.id} className={`p-4 rounded-xl border transition-all ${isCurrent ? 'bg-primary-container/10 border-primary/20' : 'bg-background/50 border-outline-variant/60'}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isCompleted ? 'bg-primary text-on-primary' : isCurrent ? 'bg-primary-container text-on-primary-container ring-2 ring-primary/20' : 'bg-outline-variant text-outline'}`}>
+                          {idx + 1}
+                        </span>
+                        <h4 className={`font-semibold ${isLocked ? 'text-outline' : 'text-on-surface'}`}>{etapa.label}</h4>
+                      </div>
+                      
+                      {isCurrent && (
+                        <span className="text-[11px] bg-primary-container text-on-primary-container px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
+                          Etapa Actual
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                      {docsParaEtapa.map(docType => {
+                        const uploadedDoc = documentos.find(d => d.etapa === etapa.id && d.tipo_documento === docType.id)
+                        
+                        return (
+                          <div key={docType.id} className="flex items-center justify-between p-3 rounded-lg bg-surface border border-outline-variant/40">
+                            <div className="flex items-center gap-2">
+                              {uploadedDoc ? (
+                                <FileCheck2 size={16} className="text-primary shrink-0" />
+                              ) : isLocked ? (
+                                <Lock size={16} className="text-outline shrink-0" />
+                              ) : docType.optional ? (
+                                <FileText size={16} className="text-outline shrink-0" />
+                              ) : (
+                                <AlertTriangle size={16} className="text-error shrink-0" />
+                              )}
+                              <span className={`text-xs font-medium ${isLocked ? 'text-outline' : 'text-on-surface'}`}>
+                                {docType.label}
+                              </span>
+                            </div>
+                            
+                            <div>
+                              {uploadedDoc ? (
+                                <a 
+                                  href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${uploadedDoc.ruta_archivo}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-xs text-primary font-semibold hover:underline flex items-center gap-1"
+                                >
+                                  Ver <ExternalLink size={12} className="inline" />
+                                </a>
+                              ) : isLocked ? (
+                                <span className="text-[10px] text-outline">Bloqueado</span>
+                              ) : docType.optional ? (
+                                <span className="text-[10px] text-outline font-medium">Opcional</span>
+                              ) : (
+                                <span className="text-[10px] text-error font-semibold">Falta cargar</span>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
