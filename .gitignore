@@ -9,6 +9,7 @@ dominios.txt
 info.txt
 docker-compose.override.yml
 _tickets/
+archivos_prueba/
 
 # Python / FastAPI
 __pycache__/

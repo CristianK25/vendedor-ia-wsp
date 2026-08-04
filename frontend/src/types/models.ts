@@ -5,6 +5,23 @@ export interface Imagen {
   orden: number
 }
 
+export type EtapaVehiculo = 'pre_compra' | 'comprado' | 'en_stock' | 'vendido';
+export type TipoDocumento = 
+  | 'informe_dominio' | 'deuda_patentes' 
+  | 'boleto_compra' | 'dni_vendedor' | 'cedula_vehiculo' | 'formulario_08' 
+  | 'contrato_consignacion' 
+  | 'boleto_venta' | 'verificacion_policial' | 'dni_comprador' | 'formulario_08_12' | 'factura_venta' | 'circuito_plata';
+
+export interface DocumentoVehiculo {
+  id: number;
+  vehiculo_id: number;
+  etapa: EtapaVehiculo;
+  tipo_documento: TipoDocumento;
+  ruta_archivo: string;
+  nombre_original: string;
+  fecha_subida: string;
+}
+
 export interface Vehiculo {
   id: number
   modelo: string
@@ -23,6 +40,8 @@ export interface Vehiculo {
   traccion?: string
   tipo?: string
   condicion?: string
+  etapa?: EtapaVehiculo
+  documentos?: DocumentoVehiculo[]
 }
 
 export interface VehiculoCreate {

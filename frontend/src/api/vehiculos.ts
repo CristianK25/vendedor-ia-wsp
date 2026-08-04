@@ -53,4 +53,17 @@ export const vehiculosApi = {
   update: (id: number, data: any) => fetchApi(`/vehiculos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (id: number) => fetchApi(`/vehiculos/${id}`, { method: 'DELETE' }),
   deleteUnified: (id: number) => fetchApi(`/vehiculos/${id}/venta_y_vehiculo`, { method: 'DELETE' }),
+  getDocumentos: (id: number) => fetchApi(`/vehiculos/${id}/documentos`),
+  subirDocumento: (id: number, etapa: string, tipoDocumento: string, archivo: File) => {
+    const formData = new FormData()
+    formData.append('etapa', etapa)
+    formData.append('tipo_documento', tipoDocumento)
+    formData.append('archivo', archivo)
+    
+    return fetchApi(`/vehiculos/${id}/documentos`, {
+      method: 'POST',
+      body: formData,
+    })
+  },
+  avanzarEtapa: (id: number) => fetchApi(`/vehiculos/${id}/avanzar-etapa`, { method: 'PUT' }),
 }

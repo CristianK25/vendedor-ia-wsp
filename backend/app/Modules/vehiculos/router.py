@@ -88,3 +88,52 @@ def delete_vehiculo(vehiculo_id: int, session: Session = Depends(get_session)):
 def anular_venta_y_eliminar_vehiculo(vehiculo_id: int, session: Session = Depends(get_session)):
     service = VehiculoService(session)
     return service.anular_venta_y_eliminar_vehiculo(vehiculo_id)
+
+from app.Modules.documentos.service import DocumentosService
+from app.Modules.documentos.schema import DocumentoVehiculoResponse
+from app.Modules.documentos.model import TipoDocumento
+from app.Modules.vehiculos.model import EtapaVehiculo
+
+@router.get("/{vehiculo_id}/documentos", response_model=List[DocumentoVehiculoResponse])
+def get_documentos(vehiculo_id: int, session: Session = Depends(get_session)):
+    service = DocumentosService(session)
+    return service.get_documentos_by_vehiculo(vehiculo_id)
+
+@router.post("/{vehiculo_id}/documentos", response_model=DocumentoVehiculoResponse)
+async def subir_documento(
+    vehiculo_id: int,
+    etapa: EtapaVehiculo = Form(...),
+    tipo_documento: TipoDocumento = Form(...),
+    archivo: UploadFile = File(...),
+    session: Session = Depends(get_session)
+):
+    service = DocumentosService(session)
+    return await service.subir_documento(vehiculo_id, etapa, tipo_documento, archivo)
+
+@router.put("/{vehiculo_id}/avanzar-etapa", response_model=VehiculoResponse)
+def avanzar_etapa(vehiculo_id: int, session: Session = Depends(get_session)):
+    # Avanza el vehículo a la siguiente etapa si cumple requisitos
+    doc_service = DocumentosService(session)
+    vehiculo_service = VehiculoService(session)
+    
+    vehiculo = vehiculo_service.get_vehiculo(vehiculo_id)
+    
+    # Validar etapa actual
+    doc_service.validar_requisitos_etapa(vehiculo_id, vehiculo.etapa)
+    
+    # Transición de etapas
+    siguiente_etapa = None
+    if vehiculo.etapa == EtapaVehiculo.pre_compra:
+        siguiente_etapa = EtapaVehiculo.comprado
+    elif vehiculo.etapa == EtapaVehiculo.comprado:
+        siguiente_etapa = EtapaVehiculo.en_stock
+    elif vehiculo.etapa == EtapaVehiculo.en_stock:
+        siguiente_etapa = EtapaVehiculo.vendido
+    
+    if not siguiente_etapa:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="El vehículo ya se encuentra en la última etapa.")
+        
+    vehiculo.etapa = siguiente_etapa
+    vehiculo_service.repository.update(vehiculo)
+    return vehiculo

@@ -84,6 +84,9 @@ async def csrf_middleware(request: Request, call_next):
 os.makedirs("fotos", exist_ok=True)
 app.mount("/fotos", StaticFiles(directory="fotos"), name="fotos")
 
+os.makedirs("documentos", exist_ok=True)
+app.mount("/documentos", StaticFiles(directory="documentos"), name="documentos")
+
 @app.get("/")
 def read_root():
     return {"message": "API Vendedor IA is running"}

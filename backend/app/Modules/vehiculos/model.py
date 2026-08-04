@@ -12,6 +12,12 @@ class EstadoVehiculo(str, enum.Enum):
     reventa = "reventa"
     reservado = "reservado"
 
+class EtapaVehiculo(str, enum.Enum):
+    pre_compra = "pre_compra"
+    comprado = "comprado"
+    en_stock = "en_stock"
+    vendido = "vendido"
+
 class Vehiculo(SQLModel, table=True):
     __tablename__ = "vehiculos"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -31,5 +37,7 @@ class Vehiculo(SQLModel, table=True):
     traccion: Optional[str] = Field(default=None)
     tipo: Optional[str] = Field(default=None)
     condicion: Optional[str] = Field(default=None)
+    etapa: EtapaVehiculo = Field(default=EtapaVehiculo.pre_compra)
     
     imagenes: List["Imagen"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    documentos: List["DocumentoVehiculo"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
