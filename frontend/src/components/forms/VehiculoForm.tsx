@@ -119,10 +119,7 @@ export default function VehiculoForm() {
           await Promise.all(uploadPromises)
         }
         
-        // Avanzamos etapa las veces necesarias según el progreso local
-        for (let i = 0; i < localEtapaIndex; i++) {
-          await vehiculosApi.avanzarEtapa(nuevoVehiculo.id)
-        }
+        // El backend avanzará automáticamente las etapas al detectar que los requisitos se cumplen
         
         navigate('/vehiculos')
       }

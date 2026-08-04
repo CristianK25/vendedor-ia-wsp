@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { CheckCircle2, UploadCloud, FileText, ChevronRight, Lock, Loader2, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, UploadCloud, FileText, Lock, Loader2, AlertTriangle } from 'lucide-react'
 import { vehiculosApi } from '../../api/vehiculos'
 import type { Vehiculo, DocumentoVehiculo } from '../../types/models'
 
@@ -98,36 +98,21 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
     }
   }
 
-  const handleAvanzarEtapa = async () => {
-    if (isNewMode) {
+  // Auto-avance en modo local (creación)
+  useEffect(() => {
+    if (isNewMode && onAvanzarEtapaLocal) {
       const etapaActual = ETAPAS[localEtapaIndex]
+      if (!etapaActual) return
+
       const docsRequeridos = DOCS_POR_ETAPA[etapaActual.id]?.filter(d => !d.optional) || []
-      
       const faltantes = docsRequeridos.filter(doc => !archivosPendientes[doc.id])
       
-      if (faltantes.length > 0) {
-        setError(`Faltan documentos obligatorios para avanzar: ${faltantes.map(f => f.label).join(', ')}`)
-        return
-      }
-      
-      setError(null)
-      if (onAvanzarEtapaLocal) {
+      // Si ya no hay faltantes, avanzamos automáticamente de etapa local
+      if (faltantes.length === 0 && docsRequeridos.length > 0) {
         onAvanzarEtapaLocal()
       }
-      return
     }
-
-    if (!vehiculo || !vehiculoId) return
-    try {
-      setLoading(true)
-      setError(null)
-      await vehiculosApi.avanzarEtapa(vehiculoId)
-      await fetchData()
-    } catch (err: any) {
-      setError(err.message || 'Error al avanzar de etapa. Verifica que todos los documentos obligatorios estén cargados.')
-      setLoading(false)
-    }
-  }
+  }, [archivosPendientes, isNewMode, localEtapaIndex, onAvanzarEtapaLocal])
 
   if (loading) {
     return <div className="flex justify-center py-12"><Loader2 className="animate-spin text-primary" size={32} /></div>
@@ -195,17 +180,6 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                   {isCompleted ? <CheckCircle2 className="text-primary" size={20} /> : <FileText className="text-primary" size={20} />}
                   Etapa: {etapa.label}
                 </h3>
-                {isCurrent && idx < ETAPAS.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={handleAvanzarEtapa}
-                    disabled={loading}
-                    className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
-                  >
-                    {loading ? <Loader2 className="animate-spin" size={16} /> : 'Avanzar Etapa'}
-                    <ChevronRight size={16} />
-                  </button>
-                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

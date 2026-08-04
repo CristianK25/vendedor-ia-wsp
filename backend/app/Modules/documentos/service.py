@@ -80,7 +80,56 @@ class DocumentosService:
         self.session.commit()
         self.session.refresh(documento_bd)
         
+        # --- Avance de Etapa Automático ---
+        from app.Modules.vehiculos.model import Vehiculo
+        vehiculo = self.session.get(Vehiculo, vehiculo_id)
+        if vehiculo:
+            # Iteramos para avanzar etapa si los requisitos se van cumpliendo
+            while True:
+                if self.tiene_requisitos_completos(vehiculo_id, vehiculo.etapa):
+                    siguiente_etapa = None
+                    if vehiculo.etapa == EtapaVehiculo.pre_compra:
+                        siguiente_etapa = EtapaVehiculo.comprado
+                    elif vehiculo.etapa == EtapaVehiculo.comprado:
+                        siguiente_etapa = EtapaVehiculo.en_stock
+                    elif vehiculo.etapa == EtapaVehiculo.en_stock:
+                        siguiente_etapa = EtapaVehiculo.vendido
+                    
+                    if siguiente_etapa:
+                        vehiculo.etapa = siguiente_etapa
+                        self.session.add(vehiculo)
+                        self.session.commit()
+                        self.session.refresh(vehiculo)
+                    else:
+                        break # Ya está en la última etapa
+                else:
+                    break # No cumple los requisitos para avanzar más
+                    
         return documento_bd
+
+    def tiene_requisitos_completos(self, vehiculo_id: int, etapa: EtapaVehiculo) -> bool:
+        """
+        Devuelve True si todos los documentos obligatorios de la etapa están cargados.
+        No lanza excepciones. Usado para el avance automático silencioso.
+        """
+        requisitos = {
+            EtapaVehiculo.pre_compra: [TipoDocumento.informe_dominio, TipoDocumento.deuda_patentes],
+            EtapaVehiculo.comprado: [TipoDocumento.boleto_compra, TipoDocumento.dni_vendedor, TipoDocumento.formulario_08, TipoDocumento.cedula_vehiculo],
+            EtapaVehiculo.en_stock: [], 
+            EtapaVehiculo.vendido: [TipoDocumento.boleto_venta, TipoDocumento.verificacion_policial, TipoDocumento.dni_comprador, TipoDocumento.formulario_08_12] 
+        }
+        
+        docs_requeridos = requisitos.get(etapa, [])
+        if not docs_requeridos:
+            return True
+            
+        statement = select(DocumentoVehiculo.tipo_documento).where(
+            DocumentoVehiculo.vehiculo_id == vehiculo_id,
+            DocumentoVehiculo.etapa == etapa
+        )
+        docs_subidos = self.session.exec(statement).all()
+        
+        return all(doc in docs_subidos for doc in docs_requeridos)
 
     def validar_requisitos_etapa(self, vehiculo_id: int, etapa: EtapaVehiculo) -> bool:
         """

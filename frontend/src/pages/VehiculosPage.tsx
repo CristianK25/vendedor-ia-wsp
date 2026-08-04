@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { vehiculosApi } from '../api/vehiculos'
-import { Plus, Search, ListFilter, MoreVertical, Gauge, Settings2, ImageOff, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Search, ListFilter, Trash2, Gauge, Settings2, ImageOff, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import MarcarVendidoModal from '../components/modals/MarcarVendidoModal'
@@ -15,17 +15,8 @@ export default function VehiculosView() {
   const [loading, setLoading] = useState(true)
   const [vehiculoParaVender, setVehiculoParaVender] = useState<any>(null)
   
-  // Dropdown y Eliminación
-  const [dropdownOpen, setDropdownOpen] = useState<number | null>(null);
   const [vehiculoParaEliminar, setVehiculoParaEliminar] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Cerrar dropdown al hacer click fuera
-  useEffect(() => {
-    const handleClickOutside = () => setDropdownOpen(null);
-    window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, []);
 
   const handleDeleteConfirm = async () => {
     if (!vehiculoParaEliminar) return;
@@ -572,21 +563,13 @@ export default function VehiculosView() {
                     <div className="p-5 flex flex-col flex-1">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="text-lg font-semibold text-on-surface leading-tight">{v.modelo}</h3>
-                        <div className="relative">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); setDropdownOpen(dropdownOpen === v.id ? null : v.id); }} 
-                            className="text-on-surface-variant hover:text-primary p-1"
-                          >
-                            <MoreVertical size={20} />
-                          </button>
-                          {dropdownOpen === v.id && (
-                            <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-outline-variant py-1 z-10" onClick={e => e.stopPropagation()}>
-                              <button onClick={() => { setDropdownOpen(null); setVehiculoParaEliminar(v); }} className="w-full text-left px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
-                                Eliminar
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setVehiculoParaEliminar(v); }} 
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                          title="Eliminar Vehículo"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs text-on-surface-variant mb-4">
                         <span className="flex items-center gap-1 bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">
@@ -728,21 +711,13 @@ export default function VehiculosView() {
                             ) : (
                               <span className="text-xs text-on-surface-variant uppercase font-semibold w-32 whitespace-nowrap text-center px-3 py-1.5">{v.estado === 'reventa' ? 'Reventa' : 'Vendido'}</span>
                             )}
-                            <div className="relative">
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); setDropdownOpen(dropdownOpen === v.id ? null : v.id); }}
-                                className="text-on-surface-variant hover:text-primary p-1"
-                              >
-                                <MoreVertical size={20} />
-                              </button>
-                              {dropdownOpen === v.id && (
-                                <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-lg shadow-lg border border-outline-variant py-1 z-10" onClick={e => e.stopPropagation()}>
-                                  <button onClick={() => { setDropdownOpen(null); setVehiculoParaEliminar(v); }} className="w-full text-left px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
-                                    Eliminar
-                                  </button>
-                                </div>
-                              )}
-                            </div>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setVehiculoParaEliminar(v); }}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                              title="Eliminar Vehículo"
+                            >
+                              <Trash2 size={18} />
+                            </button>
                           </div>
                         </td>
                       </tr>
