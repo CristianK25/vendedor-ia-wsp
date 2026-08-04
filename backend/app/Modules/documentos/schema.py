@@ -11,6 +11,7 @@ class DocumentoVehiculoResponse(BaseModel):
     tipo_documento: TipoDocumento
     ruta_archivo: str
     nombre_original: str
+    version: int = 1
     fecha_subida: datetime
 
     class Config:

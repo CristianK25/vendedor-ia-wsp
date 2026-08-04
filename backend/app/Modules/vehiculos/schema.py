@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from app.Modules.vehiculos.model import EstadoVehiculo, OrigenCompra
+from app.Modules.vehiculos.model import EstadoVehiculo, OrigenCompra, EtapaVehiculo
 
 class ImagenResponse(BaseModel):
     id: int
@@ -23,6 +23,7 @@ class VehiculoCreate(BaseModel):
     traccion: Optional[str] = None
     tipo: Optional[str] = None
     condicion: Optional[str] = None
+    etapa: Optional[EtapaVehiculo] = EtapaVehiculo.pre_compra
 
 class VehiculoUpdate(BaseModel):
     modelo: Optional[str] = None
@@ -40,6 +41,7 @@ class VehiculoUpdate(BaseModel):
     traccion: Optional[str] = None
     tipo: Optional[str] = None
     condicion: Optional[str] = None
+    etapa: Optional[EtapaVehiculo] = None
 
 class VehiculoResponse(BaseModel):
     id: int
@@ -59,6 +61,7 @@ class VehiculoResponse(BaseModel):
     traccion: Optional[str] = None
     tipo: Optional[str] = None
     condicion: Optional[str] = None
+    etapa: EtapaVehiculo
 
 class PaginatedVehiculosResponse(BaseModel):
     items: List[VehiculoResponse]

@@ -5,7 +5,7 @@ import {
   ArrowLeft, Edit2, CheckCircle2, 
   FileText,
   ImageOff, ChevronLeft, ChevronRight, UserCircle2, ShieldCheck,
-  Lock, AlertTriangle, ExternalLink, FileCheck2
+  Lock, AlertTriangle, ExternalLink, FileCheck2, UploadCloud
 } from 'lucide-react'
 
 const ETAPAS = [
@@ -110,8 +110,8 @@ export default function VehiculoDetailPage() {
             onClick={() => navigate(`/vehiculos/${vehiculo.id}/documentacion`)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-semibold hover:bg-primary-container transition-colors shadow-sm"
           >
-            <FileText size={16} />
-            Documentación
+            <UploadCloud size={16} />
+            Subir Documentos
           </button>
           <button 
             onClick={() => navigate(`/vehiculos/editar/${vehiculo.id}`)}
@@ -197,13 +197,69 @@ export default function VehiculoDetailPage() {
             )}
           </div>
 
-          {/* Datos Generales (Tabla/Grid) */}
-          <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8">
-            <h3 className="text-xl font-semibold text-on-surface mb-6 border-b border-outline-variant pb-3 flex items-center gap-2">
-              <FileText size={20} className="text-primary"/>
-              Ficha Técnica
+          {/* Tarjeta: Identificación y Estado */}
+          <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8 shadow-sm">
+            <h3 className="text-lg font-semibold text-on-surface mb-4 border-b border-outline-variant pb-3 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary/80"></span> 
+              Identificación y Estado
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 text-sm">
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">ID Referencia</span>
+                <span className="font-semibold text-on-surface">#{vehiculo.id.toString().padStart(4, '0')}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Patente</span>
+                <span className="font-semibold text-on-surface uppercase">{vehiculo.patente}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Estado</span>
+                <span className="font-semibold text-on-surface capitalize">{vehiculo.estado}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Condición</span>
+                <span className="font-semibold text-on-surface">{vehiculo.condicion || '-'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tarjeta: Especificaciones Técnicas */}
+          <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8 shadow-sm">
+            <h3 className="text-lg font-semibold text-on-surface mb-4 border-b border-outline-variant pb-3 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary/80"></span> 
+              Especificaciones Técnicas
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 text-sm">
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Tipo</span>
+                <span className="font-semibold text-on-surface">{vehiculo.tipo || '-'}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Año</span>
+                <span className="font-semibold text-on-surface">{vehiculo.anio}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Kilometraje</span>
+                <span className="font-semibold text-on-surface">{vehiculo.kilometraje.toLocaleString()} km</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Transmisión</span>
+                <span className="font-semibold text-on-surface">{vehiculo.transmision}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Tracción</span>
+                <span className="font-semibold text-on-surface">{vehiculo.traccion || '-'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tarjeta: Información Comercial */}
+          <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8 shadow-sm">
+            <h3 className="text-lg font-semibold text-on-surface mb-4 border-b border-outline-variant pb-3 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary/80"></span> 
+              Información Comercial
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 text-sm">
               <div className="flex justify-between py-2 border-b border-outline-variant/30">
                 <span className="text-on-surface-variant">Origen de compra</span>
                 <span className="font-semibold text-on-surface capitalize">
@@ -216,53 +272,24 @@ export default function VehiculoDetailPage() {
                   ${vehiculo.precio_compra?.toLocaleString() || '-'}
                 </span>
               </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Año</span>
-                <span className="font-semibold text-on-surface">{vehiculo.anio}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Patente</span>
-                <span className="font-semibold text-on-surface uppercase">{vehiculo.patente}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Kilometraje</span>
-                <span className="font-semibold text-on-surface">
-                  {vehiculo.kilometraje.toLocaleString()} km
-                </span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Transmisión</span>
-                <span className="font-semibold text-on-surface">{vehiculo.transmision}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Tracción</span>
-                <span className="font-semibold text-on-surface">{vehiculo.traccion || '-'}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Tipo</span>
-                <span className="font-semibold text-on-surface">{vehiculo.tipo || '-'}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Condición</span>
-                <span className="font-semibold text-on-surface">{vehiculo.condicion || '-'}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Estado</span>
-                <span className="font-semibold text-on-surface capitalize">{vehiculo.estado}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">ID Referencia</span>
-                <span className="font-semibold text-on-surface">#{vehiculo.id.toString().padStart(4, '0')}</span>
-              </div>
             </div>
           </div>
           
           {/* Documentos del Vehículo */}
           <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8 shadow-sm">
-             <h3 className="text-xl font-semibold text-on-surface mb-6 border-b border-outline-variant pb-3 flex items-center gap-2">
-              <FileText size={20} className="text-primary"/>
-              Documentos del Vehículo
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-outline-variant pb-3">
+              <h3 className="text-xl font-semibold text-on-surface flex items-center gap-2">
+                <FileText size={20} className="text-primary"/>
+                Documentos del Vehículo
+              </h3>
+              <button 
+                onClick={() => navigate(`/vehiculos/${vehiculo.id}/documentacion`)}
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface text-sm font-semibold hover:bg-surface-container-high transition-colors"
+              >
+                <UploadCloud size={16} />
+                Gestionar
+              </button>
+            </div>
             
             <div className="space-y-6">
               {ETAPAS.map((etapa, idx) => {
@@ -314,7 +341,11 @@ export default function VehiculoDetailPage() {
                             <div>
                               {uploadedDoc ? (
                                 <a 
-                                  href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${uploadedDoc.ruta_archivo}`}
+                                  href={(() => {
+                                    const apiUrl = import.meta.env.VITE_API_URL || '';
+                                    if (!apiUrl || apiUrl.includes('//backend')) return uploadedDoc.ruta_archivo;
+                                    return `${apiUrl}${uploadedDoc.ruta_archivo}`;
+                                  })()}
                                   target="_blank"
                                   rel="noreferrer"
                                   className="text-xs text-primary font-semibold hover:underline flex items-center gap-1"

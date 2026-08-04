@@ -34,6 +34,7 @@ class DocumentoVehiculo(SQLModel, table=True):
     tipo_documento: TipoDocumento
     ruta_archivo: str
     nombre_original: str
+    version: int = Field(default=1)
     fecha_subida: datetime = Field(default_factory=datetime.utcnow)
     
     vehiculo: Optional["Vehiculo"] = Relationship(back_populates="documentos")

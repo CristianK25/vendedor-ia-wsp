@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { CheckCircle2, UploadCloud, FileText, Lock, Loader2, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, UploadCloud, FileText, Loader2, AlertTriangle, Eye, Image } from 'lucide-react'
 import { vehiculosApi } from '../../api/vehiculos'
 import type { Vehiculo, DocumentoVehiculo } from '../../types/models'
 
@@ -186,53 +186,83 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                 {docsParaEtapa.map(docType => {
                   const uploadedDoc = !isNewMode ? documentos.find(d => d.etapa === etapa.id && d.tipo_documento === docType.id) : undefined
                   const pendingFile = isNewMode ? archivosPendientes[docType.id] : undefined
-                  
+                  const canUpload = isCurrent || isCompleted
+                  const isUploadedOrPending = uploadedDoc || pendingFile;
+                  const cardBorder = isUploadedOrPending ? 'border-solid border-outline-variant bg-background' : 'border-dashed border-outline-variant/60 bg-surface/50';
+
                   return (
-                    <div key={docType.id} className="flex items-center justify-between p-4 border border-outline-variant rounded-xl bg-background">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-on-surface text-sm">{docType.label}</span>
+                    <div key={docType.id} className={`flex flex-col p-4 border rounded-xl ${cardBorder} transition-colors`}>
+                      <div className="flex flex-col mb-3">
+                        <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                          {uploadedDoc && <CheckCircle2 size={16} className="text-primary flex-shrink-0" />}
+                          <span className="font-bold text-on-surface text-sm leading-tight">{docType.label.replace(' (Opcional)', '')}</span>
+                          {docType.optional ? (
+                            <span className="bg-surface-variant text-on-surface-variant text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-1">Opcional</span>
+                          ) : (
+                            <span className="bg-error-container text-on-error-container text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-1">Obligatorio</span>
+                          )}
+                        </div>
                         {uploadedDoc ? (
-                          <span className="text-xs text-primary font-medium mt-1">Subido: {new Date(uploadedDoc.fecha_subida).toLocaleDateString()}</span>
+                          <span className="flex items-center gap-1.5 text-xs text-primary font-medium">
+                            {uploadedDoc.ruta_archivo.toLowerCase().endsWith('.pdf') ? <FileText size={14} className="text-error" /> : <Image size={14} className="text-primary" />}
+                            Subido: {new Date(uploadedDoc.fecha_subida).toLocaleDateString()} {uploadedDoc.version ? `(v${uploadedDoc.version})` : ''}
+                          </span>
                         ) : pendingFile ? (
-                          <span className="text-xs text-primary font-medium mt-1">Seleccionado: {pendingFile.file.name}</span>
+                          <span className="text-xs text-primary font-medium">Seleccionado: {pendingFile.file.name}</span>
                         ) : (
-                          <span className="text-xs text-outline mt-1">Pendiente</span>
+                          <span className="text-xs text-outline font-medium">Pendiente</span>
                         )}
                       </div>
                       
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/30 mt-auto">
                         {uploadedDoc && (
                           <a 
-                            href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${uploadedDoc.ruta_archivo}`} 
+                            href={(() => {
+                              const apiUrl = import.meta.env.VITE_API_URL || '';
+                              if (!apiUrl || apiUrl.includes('//backend')) return uploadedDoc.ruta_archivo;
+                              return `${apiUrl}${uploadedDoc.ruta_archivo}`;
+                            })()} 
                             target="_blank" 
                             rel="noreferrer"
-                            className="text-primary text-xs font-semibold hover:underline"
+                            className="flex items-center justify-center flex-1 sm:flex-none gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant/50 text-primary text-xs font-semibold hover:bg-primary/5 transition-colors"
                           >
+                            <Eye size={16} />
                             Ver Archivo
                           </a>
                         )}
                         
-                        {isCurrent && (
-                          <div className="relative">
+                        {canUpload && (
+                          <div className="relative flex-1 sm:flex-none">
                             <input
                               type="file"
                               accept=".pdf,image/*"
                               onChange={(e) => handleFileUpload(etapa.id, docType.id, e)}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
                               disabled={uploading !== null && !isNewMode}
                             />
                             <button
                               type="button"
                               disabled={uploading !== null && !isNewMode}
-                              className={`flex items-center justify-center w-10 h-10 rounded-full ${uploadedDoc || pendingFile ? 'bg-surface-variant text-on-surface-variant hover:bg-outline-variant/30' : 'bg-primary-container text-on-primary-container hover:bg-primary/20'} transition-colors`}
+                              className={`flex items-center justify-center w-full gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                                uploadedDoc || pendingFile 
+                                  ? 'bg-outline-variant/20 text-on-surface hover:bg-outline-variant/40' 
+                                  : 'bg-primary-container text-on-primary-container hover:bg-primary/20'
+                              } transition-colors`}
                             >
-                              {uploading === docType.id ? <Loader2 className="animate-spin" size={18} /> : <UploadCloud size={18} />}
+                              {uploading === docType.id ? (
+                                <Loader2 className="animate-spin" size={16} />
+                              ) : uploadedDoc || pendingFile ? (
+                                <>
+                                  <UploadCloud size={16} />
+                                  <span>Reemplazar</span>
+                                </>
+                              ) : (
+                                <>
+                                  <UploadCloud size={16} />
+                                  <span>Subir Archivo</span>
+                                </>
+                              )}
                             </button>
-                          </div>
-                        )}
-                        {isCompleted && !uploadedDoc && (
-                          <div className="text-outline" title="Etapa bloqueada">
-                            <Lock size={18} />
                           </div>
                         )}
                       </div>

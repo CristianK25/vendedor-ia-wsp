@@ -58,6 +58,7 @@ services:
       - INITIAL_BOT_PASSWORD=${INITIAL_BOT_PASSWORD:-bot1234}
     volumes:
       - ./backend/fotos:/app/fotos
+      - ./backend/documentos:/app/documentos
     command: sh -c "python init_db.py && uvicorn main:app --host 0.0.0.0 --port 8000"
     logging:
       driver: "json-file"

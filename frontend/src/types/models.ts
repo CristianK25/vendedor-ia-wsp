@@ -19,6 +19,7 @@ export interface DocumentoVehiculo {
   tipo_documento: TipoDocumento;
   ruta_archivo: string;
   nombre_original: string;
+  version?: number;
   fecha_subida: string;
 }
 

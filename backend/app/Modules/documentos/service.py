@@ -7,6 +7,8 @@ from sqlmodel import Session, select
 from app.Modules.documentos.model import DocumentoVehiculo, TipoDocumento
 from app.Modules.vehiculos.model import EtapaVehiculo
 
+from datetime import datetime
+
 UPLOAD_DIR = "documentos"
 
 class DocumentosService:
@@ -35,37 +37,39 @@ class DocumentosService:
         if not extension:
             extension = ".pdf" # Default fallback
             
-        uuid_corto = uuid.uuid4().hex[:6]
-        # Formato: {vehiculo_id}_{etapa}_{tipo_documento}_{uuid_corto}{extension}
-        filename = f"{vehiculo_id}_{etapa.value}_{tipo_documento.value}_{uuid_corto}{extension}"
-        filepath = os.path.join(UPLOAD_DIR, filename)
-        
-        # Check if this type of document already exists for this stage and vehicle (optional: replace it or just add another, we will replace for simplicity)
+        # Check if this type of document already exists for this vehicle
         statement = select(DocumentoVehiculo).where(
             DocumentoVehiculo.vehiculo_id == vehiculo_id,
             DocumentoVehiculo.tipo_documento == tipo_documento
         )
         doc_existente = self.session.exec(statement).first()
         
+        uuid_corto = uuid.uuid4().hex[:6]
+        
         if doc_existente:
-            # Delete old physical file
-            old_filepath = os.path.join(UPLOAD_DIR, doc_existente.ruta_archivo.replace("/documentos/", ""))
-            if os.path.exists(old_filepath):
-                os.remove(old_filepath)
+            nueva_version = (doc_existente.version or 1) + 1
+            filename = f"{vehiculo_id}_{etapa.value}_{tipo_documento.value}_v{nueva_version}_{uuid_corto}{extension}"
             
-            # Update record
+            # Update record (without deleting old physical file)
             doc_existente.ruta_archivo = f"/documentos/{filename}"
             doc_existente.nombre_original = file.filename
+            doc_existente.version = nueva_version
+            doc_existente.fecha_subida = datetime.utcnow()
             documento_bd = doc_existente
         else:
+            version = 1
+            filename = f"{vehiculo_id}_{etapa.value}_{tipo_documento.value}_v{version}_{uuid_corto}{extension}"
             # Create new record
             documento_bd = DocumentoVehiculo(
                 vehiculo_id=vehiculo_id,
                 etapa=etapa,
                 tipo_documento=tipo_documento,
                 ruta_archivo=f"/documentos/{filename}",
-                nombre_original=file.filename
+                nombre_original=file.filename,
+                version=version
             )
+        
+        filepath = os.path.join(UPLOAD_DIR, filename)
         
         # Save physical file
         try:
@@ -92,8 +96,6 @@ class DocumentosService:
                         siguiente_etapa = EtapaVehiculo.comprado
                     elif vehiculo.etapa == EtapaVehiculo.comprado:
                         siguiente_etapa = EtapaVehiculo.en_stock
-                    elif vehiculo.etapa == EtapaVehiculo.en_stock:
-                        siguiente_etapa = EtapaVehiculo.vendido
                     
                     if siguiente_etapa:
                         vehiculo.etapa = siguiente_etapa

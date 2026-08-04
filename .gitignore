@@ -10,6 +10,7 @@ info.txt
 docker-compose.override.yml
 _tickets/
 archivos_prueba/
+backend/documentos
 
 # Python / FastAPI
 __pycache__/

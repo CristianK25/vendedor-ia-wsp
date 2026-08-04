@@ -50,29 +50,29 @@ export default function VehiculoDocumentacionPage() {
   return (
     <div className="px-4 md:px-10 py-8 max-w-5xl mx-auto animate-fade-in">
       {/* Header y Navegación */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-outline-variant">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-8 mb-8 pb-6 border-b border-outline-variant">
+        <div className="flex items-start gap-4 flex-1 min-w-0">
           <button
             onClick={() => navigate(`/vehiculos/${vehiculo.id}`)}
-            className="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors"
+            className="w-10 h-10 flex-shrink-0 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors mt-1"
             title="Volver a la ficha técnica"
           >
             <ArrowLeft size={20} />
           </button>
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 text-primary font-semibold text-sm">
               <Car size={16} />
               <span>{vehiculo.patente.toUpperCase()}</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-on-surface mt-1">
-              Documentación: {vehiculo.modelo}
+            <h1 className="text-2xl md:text-3xl font-bold text-on-surface mt-1 leading-tight text-balance break-words">
+              Documentación: <span className="text-primary">{vehiculo.modelo}</span>
             </h1>
           </div>
         </div>
         
         <button
           onClick={() => navigate(`/vehiculos/${vehiculo.id}`)}
-          className="flex items-center gap-2 px-4 py-2 bg-surface border border-outline-variant text-on-surface rounded-xl text-sm font-semibold hover:bg-surface-container-high transition-all"
+          className="flex items-center justify-center flex-shrink-0 gap-2 px-4 py-2.5 bg-surface border border-outline-variant text-on-surface rounded-xl text-sm font-semibold hover:bg-surface-container-high transition-all md:mt-1"
         >
           <FileText size={16} />
           Volver a la Ficha Técnica

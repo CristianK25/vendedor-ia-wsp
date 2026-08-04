@@ -76,7 +76,7 @@ export default function VehiculosView() {
   const size = 50;
 
   type SortConfig = {
-    key: 'modelo' | 'kilometraje' | 'transmision' | 'traccion' | 'tipo' | 'condicion' | 'estado' | 'precio_venta' | null;
+    key: 'modelo' | 'kilometraje' | 'transmision' | 'traccion' | 'tipo' | 'condicion' | 'estado' | 'precio_venta' | 'etapa' | null;
     direction: 'asc' | 'desc';
   }
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
@@ -95,6 +95,21 @@ export default function VehiculosView() {
       return sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />;
     }
     return <ChevronDown size={14} className="opacity-30" />;
+  };
+
+  const renderEtapaBadge = (etapa: string) => {
+    const mapping: Record<string, { label: string; className: string }> = {
+      pre_compra: { label: 'Pre-Compra', className: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
+      comprado: { label: 'Comprado', className: 'bg-blue-50 text-blue-700 border-blue-100' },
+      en_stock: { label: 'En Stock', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+      vendido: { label: 'Vendido', className: 'bg-gray-100 text-gray-700 border-gray-200' },
+    };
+    const info = mapping[etapa] || { label: etapa || '-', className: 'bg-gray-50 text-gray-600 border-gray-200' };
+    return (
+      <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${info.className}`}>
+        {info.label}
+      </span>
+    );
   };
 
   // Debounce para búsqueda
@@ -653,6 +668,11 @@ export default function VehiculosView() {
                         Estado {renderSortIcon('estado')}
                       </div>
                     </th>
+                    <th className="py-4 px-6 text-center">
+                      <div onClick={() => handleSort('etapa')} className="flex items-center justify-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max mx-auto">
+                        Fase {renderSortIcon('etapa')}
+                      </div>
+                    </th>
                     <th className="py-4 px-6 text-right">
                       <div onClick={() => handleSort('precio_venta')} className="flex items-center justify-end gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max ml-auto">
                         Precio de Venta {renderSortIcon('precio_venta')}
@@ -664,7 +684,7 @@ export default function VehiculosView() {
                 <tbody className="divide-y divide-outline-variant">
                   {vehiculos.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-8 text-center text-on-surface-variant">No hay vehículos registrados.</td>
+                      <td colSpan={10} className="py-8 text-center text-on-surface-variant">No hay vehículos registrados.</td>
                     </tr>
                   ) : (
                     vehiculos.map(v => (
@@ -697,6 +717,9 @@ export default function VehiculosView() {
                           <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : v.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
                             {v.estado === 'disponible' ? 'Disponible' : v.estado === 'reventa' ? 'Reventa' : 'Vendido'}
                           </span>
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          {renderEtapaBadge(v.etapa)}
                         </td>
                         <td className="py-4 px-6 font-bold text-primary text-right">${v.precio_venta.toLocaleString()}</td>
                         <td className="py-4 px-6">
