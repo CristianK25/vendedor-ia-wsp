@@ -132,38 +132,3 @@ class DocumentosService:
         docs_subidos = self.session.exec(statement).all()
         
         return all(doc in docs_subidos for doc in docs_requeridos)
-
-    def validar_requisitos_etapa(self, vehiculo_id: int, etapa: EtapaVehiculo) -> bool:
-        """
-        Devuelve True si todos los documentos obligatorios de la etapa están cargados.
-        De lo contrario, lanza una excepción HTTPException indicando lo que falta.
-        """
-        # Definición de documentos requeridos por etapa según el plan
-        requisitos = {
-            EtapaVehiculo.pre_compra: [TipoDocumento.informe_dominio, TipoDocumento.deuda_patentes],
-            EtapaVehiculo.comprado: [TipoDocumento.boleto_compra, TipoDocumento.dni_vendedor, TipoDocumento.formulario_08, TipoDocumento.cedula_vehiculo],
-            EtapaVehiculo.en_stock: [], # Consignación es opcional
-            EtapaVehiculo.vendido: [TipoDocumento.boleto_venta, TipoDocumento.verificacion_policial, TipoDocumento.dni_comprador, TipoDocumento.formulario_08_12] # Factura y circuito de plata son variables, pero por ahora simplificamos a estos obligatorios
-        }
-        
-        docs_requeridos = requisitos.get(etapa, [])
-        
-        if not docs_requeridos:
-            return True
-            
-        statement = select(DocumentoVehiculo.tipo_documento).where(
-            DocumentoVehiculo.vehiculo_id == vehiculo_id,
-            DocumentoVehiculo.etapa == etapa
-        )
-        docs_subidos = self.session.exec(statement).all()
-        
-        faltantes = [doc.value for doc in docs_requeridos if doc not in docs_subidos]
-        
-        if faltantes:
-            faltantes_str = ", ".join(faltantes)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"No se puede avanzar a la etapa '{etapa.value}' porque faltan los siguientes documentos obligatorios: {faltantes_str}"
-            )
-            
-        return True

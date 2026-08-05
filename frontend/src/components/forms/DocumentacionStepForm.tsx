@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { CheckCircle2, UploadCloud, FileText, Loader2, AlertTriangle, Eye, Image } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { CheckCircle2, UploadCloud, FileText, Loader2, AlertTriangle, Eye, Image, X } from 'lucide-react'
 import { vehiculosApi } from '../../api/vehiculos'
 import type { Vehiculo, DocumentoVehiculo } from '../../types/models'
 
@@ -48,6 +49,15 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
   const [uploading, setUploading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Modal para confirmar reemplazo de documento
+  const [pendingReplace, setPendingReplace] = useState<{
+    file: File;
+    etapa: string;
+    tipoDocumento: string;
+    existingDoc: DocumentoVehiculo;
+    docLabel: string;
+  } | null>(null)
+
   const fetchData = async () => {
     if (isNewMode) {
       setLoading(false)
@@ -74,15 +84,7 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
     fetchData()
   }, [vehiculoId, isNewMode])
 
-  const handleFileUpload = async (etapa: string, tipoDocumento: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (isNewMode && onArchivoPendienteChange) {
-      onArchivoPendienteChange(tipoDocumento, file, etapa)
-      return
-    }
-
+  const ejecutarSubida = async (etapa: string, tipoDocumento: string, file: File) => {
     setUploading(tipoDocumento)
     setError(null)
     
@@ -95,7 +97,34 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
       setError('Error al subir el documento: ' + (err.message || ''))
     } finally {
       setUploading(null)
+      setPendingReplace(null)
     }
+  }
+
+  const handleFileUpload = async (etapa: string, tipoDocumento: string, docLabel: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (isNewMode && onArchivoPendienteChange) {
+      onArchivoPendienteChange(tipoDocumento, file, etapa)
+      return
+    }
+
+    const existingDoc = documentos.find(d => d.etapa === etapa && d.tipo_documento === tipoDocumento)
+    if (existingDoc) {
+      setPendingReplace({
+        file,
+        etapa,
+        tipoDocumento,
+        existingDoc,
+        docLabel
+      })
+      e.target.value = ''
+      return
+    }
+
+    await ejecutarSubida(etapa, tipoDocumento, file)
+    e.target.value = ''
   }
 
   // Auto-avance en modo local (creación)
@@ -236,7 +265,7 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                             <input
                               type="file"
                               accept=".pdf,image/*"
-                              onChange={(e) => handleFileUpload(etapa.id, docType.id, e)}
+                              onChange={(e) => handleFileUpload(etapa.id, docType.id, docType.label, e)}
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
                               disabled={uploading !== null && !isNewMode}
                             />
@@ -274,6 +303,73 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
           )
         })}
       </div>
+      {/* Modal de Confirmación para Reemplazo */}
+      {pendingReplace && createPortal(
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4" onClick={() => setPendingReplace(null)}>
+          <div 
+            className="bg-surface rounded-2xl shadow-2xl flex flex-col p-6 relative border border-outline-variant"
+            style={{ width: '100%', maxWidth: '480px', maxHeight: '90vh' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setPendingReplace(null)}
+              className="absolute top-4 right-4 text-outline hover:text-on-surface p-1 rounded-lg transition-colors"
+              disabled={uploading !== null}
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+                <UploadCloud size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-on-surface text-lg">Confirmar Reemplazo</h3>
+                <p className="text-xs text-on-surface-variant">{pendingReplace.docLabel}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 my-5 text-sm bg-background p-4 rounded-xl border border-outline-variant/50">
+              <div className="flex justify-between items-center text-xs pb-2 border-b border-outline-variant/30">
+                <span className="text-outline">Archivo actual (v{pendingReplace.existingDoc.version || 1}):</span>
+                <span className="font-medium text-on-surface truncate max-w-[180px]">{pendingReplace.existingDoc.nombre_original}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs pt-1">
+                <span className="text-primary font-semibold">Nuevo archivo (v{(pendingReplace.existingDoc.version || 1) + 1}):</span>
+                <span className="font-bold text-primary truncate max-w-[180px]">{pendingReplace.file.name}</span>
+              </div>
+              <div className="text-[11px] text-outline text-right font-medium">
+                {(pendingReplace.file.size / (1024 * 1024)).toFixed(2)} MB
+              </div>
+            </div>
+
+            <p className="text-xs text-on-surface-variant mb-6 bg-surface-variant/40 p-3 rounded-lg border border-outline-variant/20">
+              💡 <strong>Nota:</strong> Se conservará el archivo anterior en el historial del servidor y la versión aumentará a v{(pendingReplace.existingDoc.version || 1) + 1}.
+            </p>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingReplace(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors text-on-surface"
+                disabled={uploading !== null}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => ejecutarSubida(pendingReplace.etapa, pendingReplace.tipoDocumento, pendingReplace.file)}
+                disabled={uploading !== null}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-colors disabled:opacity-50"
+              >
+                {uploading !== null ? <Loader2 className="animate-spin" size={16} /> : <UploadCloud size={16} />}
+                Confirmar y Reemplazar
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
