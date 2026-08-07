@@ -13,3 +13,8 @@ class Venta(SQLModel, table=True):
     tipo_venta: str = Field(default="vendido")
     notas: Optional[str] = None
     activo: bool = Field(default=True)
+    
+    # Consignment financial fields (optional for backward compatibility)
+    comision_retenida: Optional[float] = Field(default=None, nullable=True)
+    monto_girado_dueno: Optional[float] = Field(default=None, nullable=True)
+    monto_girado_entregado: Optional[bool] = Field(default=False, nullable=True)

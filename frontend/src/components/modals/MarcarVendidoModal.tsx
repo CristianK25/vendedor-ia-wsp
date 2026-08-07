@@ -70,13 +70,31 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
         return;
       }
 
+      const pFinal = parseFloat(precioFinal) || 0;
+      let comisionRetenida: number | null = null;
+      let montoGiradoDueno: number | null = null;
+      let montoGiradoEntregado: boolean | null = null;
+
+      if (vehiculo.tipo_alta === 'consignacion') {
+        if (vehiculo.comision_tipo === 'porcentaje') {
+          comisionRetenida = pFinal * ((vehiculo.comision_valor || 0) / 100);
+        } else {
+          comisionRetenida = vehiculo.comision_valor || 0;
+        }
+        montoGiradoDueno = pFinal - comisionRetenida;
+        montoGiradoEntregado = false;
+      }
+
       const ventaData = {
         vehiculo_id: vehiculo.id,
         cliente_telefono: finalTelefono,
-        precio_final: parseFloat(precioFinal),
+        precio_final: pFinal,
         metodo_pago: metodoPago,
         notas: notas,
-        estado_vehiculo: esReventa ? 'reventa' : 'vendido'
+        estado_vehiculo: esReventa ? 'reventa' : 'vendido',
+        comision_retenida: comisionRetenida,
+        monto_girado_dueno: montoGiradoDueno,
+        monto_girado_entregado: montoGiradoEntregado
       };
 
       await ventasApi.create(ventaData);
@@ -88,6 +106,16 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
       setLoading(false);
     }
   };
+
+  // Derived state for Consignment breakdown
+  const pFinalNum = parseFloat(precioFinal) || 0;
+  let computedComision = 0;
+  if (vehiculo.tipo_alta === 'consignacion') {
+    computedComision = vehiculo.comision_tipo === 'porcentaje' 
+      ? pFinalNum * ((vehiculo.comision_valor || 0) / 100) 
+      : (vehiculo.comision_valor || 0);
+  }
+  const computedDueno = pFinalNum - computedComision;
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60">
@@ -224,6 +252,25 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
               </select>
             </div>
           </div>
+
+          {vehiculo.tipo_alta === 'consignacion' && (
+            <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4">
+              <h4 className="text-sm font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                Desglose Financiero (Consignación)
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
+                  <p className="text-xs font-semibold text-indigo-600/70 uppercase tracking-wide mb-1">Comisión Agencia</p>
+                  <p className="text-lg font-bold text-indigo-700">${computedComision.toLocaleString()}</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
+                  <p className="text-xs font-semibold text-indigo-600/70 uppercase tracking-wide mb-1">A Pagar al Dueño</p>
+                  <p className="text-lg font-bold text-indigo-700">${computedDueno.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div>
             <label className="block text-sm font-medium text-on-surface-variant mb-1">Notas / Observaciones (Opcional)</label>

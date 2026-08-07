@@ -9,6 +9,9 @@ class VentaCreate(BaseModel):
     metodo_pago: Optional[str] = "Efectivo"
     estado_vehiculo: Optional[str] = "vendido"
     notas: Optional[str] = None
+    comision_retenida: Optional[float] = None
+    monto_girado_dueno: Optional[float] = None
+    monto_girado_entregado: Optional[bool] = False
 
 class VentaResponse(BaseModel):
     id: int
@@ -21,6 +24,9 @@ class VentaResponse(BaseModel):
     precio_final: float
     metodo_pago: str
     notas: Optional[str]
+    comision_retenida: Optional[float] = None
+    monto_girado_dueno: Optional[float] = None
+    monto_girado_entregado: Optional[bool] = None
 
 class PaginatedVentasResponse(BaseModel):
     items: List[VentaResponse]

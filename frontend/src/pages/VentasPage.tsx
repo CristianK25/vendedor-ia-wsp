@@ -194,28 +194,51 @@ export default function VentasView() {
                 ) : (
                   ventas.map(v => (
                     <tr key={v.id} className="hover:bg-surface-container-low transition-colors">
-                      <td className="py-4 px-6 text-on-surface-variant">
+                      <td className="py-4 px-6 text-on-surface-variant align-top">
                         <div className="font-semibold text-on-surface">{v.vehiculo_modelo || 'N/A'}</div>
                         <div className="text-xs">ID: {v.vehiculo_id}</div>
                       </td>
-                      <td className="py-4 px-6 text-on-surface-variant">
+                      <td className="py-4 px-6 text-on-surface-variant align-top">
                         <div className="font-semibold text-on-surface">{v.cliente_nombre || 'N/A'}</div>
                         <div className="text-xs">{v.cliente_telefono}</div>
                       </td>
-                      <td className="py-4 px-6 text-on-surface-variant">{new Date(v.fecha).toLocaleDateString()}</td>
-                      <td className="py-4 px-6 text-center">
-                        {v.tipo_venta === 'reventa' ? (
-                          <span className="px-2.5 py-1 text-xs font-semibold rounded-full border bg-orange-50 text-orange-700 border-orange-100">
-                            Reventa
-                          </span>
+                      <td className="py-4 px-6 text-on-surface-variant align-top">{new Date(v.fecha).toLocaleDateString()}</td>
+                      <td className="py-4 px-6 align-top">
+                        <div className="flex flex-col gap-1.5 items-start">
+                          {v.tipo_venta === 'reventa' ? (
+                            <span className="px-2.5 py-1 text-[11px] font-semibold rounded-md border bg-orange-50 text-orange-700 border-orange-100 uppercase tracking-wide">
+                              Reventa
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 text-[11px] font-semibold rounded-md border bg-surface-container-high text-on-surface-variant border-outline-variant uppercase tracking-wide">
+                              Convencional
+                            </span>
+                          )}
+                          {v.comision_retenida !== null && v.comision_retenida !== undefined && (
+                            <span className="px-2.5 py-1 text-[11px] font-bold rounded-md border bg-indigo-50 text-indigo-700 border-indigo-100 uppercase tracking-wide">
+                              Consignación
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 align-top">
+                        {v.comision_retenida !== null && v.comision_retenida !== undefined ? (
+                          <div className="flex flex-col">
+                            <span className="font-bold text-emerald-600" title="Ganancia Neta (Comisión)">
+                              +${v.comision_retenida.toLocaleString()}
+                            </span>
+                            <span className="text-[10px] font-semibold text-on-surface-variant mt-1 uppercase tracking-wide">
+                              Bruto: ${v.precio_final.toLocaleString()}
+                            </span>
+                            <span className="text-[10px] font-semibold text-indigo-600 mt-0.5 uppercase tracking-wide">
+                              A dueño: ${(v.monto_girado_dueno || 0).toLocaleString()}
+                            </span>
+                          </div>
                         ) : (
-                          <span className="px-2.5 py-1 text-xs font-semibold rounded-full border bg-surface-container-high text-on-surface-variant border-outline-variant">
-                            Convencional
-                          </span>
+                          <span className="font-bold text-primary">${v.precio_final.toLocaleString()}</span>
                         )}
                       </td>
-                      <td className="py-4 px-6 font-bold text-primary">${v.precio_final.toLocaleString()}</td>
-                      <td className="py-4 px-6 text-center">
+                      <td className="py-4 px-6 text-center align-top">
                         <button 
                           className={`p-1.5 rounded-lg transition-colors ${v.notas ? 'text-primary hover:bg-primary-container/50' : 'text-on-surface-variant/30 hover:bg-surface-container cursor-not-allowed'}`}
                           title={v.notas ? 'Ver notas' : 'Sin notas'}
