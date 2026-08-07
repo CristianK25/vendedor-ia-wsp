@@ -6,8 +6,11 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import MarcarVendidoModal from '../components/modals/MarcarVendidoModal'
 import DeleteVehiculoModal from '../components/modals/DeleteVehiculoModal'
+import { useAuthStore } from '../store/authStore'
 export default function VehiculosView() {
   const navigate = useNavigate()
+  const { usuario } = useAuthStore()
+  const isStock = usuario?.rol === 'STOCK'
   const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
     return (localStorage.getItem('vehiculosViewMode') as 'list' | 'grid') || 'list'
   })
@@ -624,12 +627,16 @@ export default function VehiculosView() {
                       <div className="mt-auto flex items-center justify-between">
                         <span className="text-primary font-bold text-xl">${v.precio_venta.toLocaleString()}</span>
                         {v.estado === 'disponible' ? (
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
-                            className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors"
-                          >
-                            Marcar Vendido
-                          </button>
+                          !isStock ? (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
+                              className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors"
+                            >
+                              Marcar Vendido
+                            </button>
+                          ) : (
+                            <span className="text-xs text-on-surface-variant uppercase font-semibold">Disponible</span>
+                          )
                         ) : (
                           <span className="text-xs text-on-surface-variant uppercase font-semibold">{v.estado === 'reventa' ? 'Reventa' : 'Vendido'}</span>
                         )}
@@ -720,12 +727,16 @@ export default function VehiculosView() {
                         <td className="py-4 px-6">
                           <div className="flex items-center justify-center gap-2">
                             {v.estado === 'disponible' ? (
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
-                                className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors w-32 whitespace-nowrap text-center"
-                              >
-                                Marcar Vendido
-                              </button>
+                              !isStock ? (
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
+                                  className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors w-32 whitespace-nowrap text-center"
+                                >
+                                  Marcar Vendido
+                                </button>
+                              ) : (
+                                <span className="text-xs text-on-surface-variant uppercase font-semibold w-32 whitespace-nowrap text-center px-3 py-1.5">Disponible</span>
+                              )
                             ) : (
                               <span className="text-xs text-on-surface-variant uppercase font-semibold w-32 whitespace-nowrap text-center px-3 py-1.5">{v.estado === 'reventa' ? 'Reventa' : 'Vendido'}</span>
                             )}

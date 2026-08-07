@@ -41,13 +41,16 @@ function App() {
     )
   }
 
+  const isStock = usuario?.rol === 'STOCK'
   const tabs = [
-    { path: '/calendario', icon: Calendar, label: 'Calendario' },
+    ...(!isStock ? [{ path: '/calendario', icon: Calendar, label: 'Calendario' }] : []),
     { path: '/vehiculos', icon: Car, label: 'Vehículos' },
-    { path: '/ventas', icon: ClipboardList, label: 'Ventas' },
-    { path: '/clientes', icon: Users, label: 'Clientes' },
-    { path: '/promociones', icon: Megaphone, label: 'Promociones' },
-    { path: '/trabajadores', icon: UserCircle2, label: 'Trabajadores' },
+    ...(!isStock ? [
+      { path: '/ventas', icon: ClipboardList, label: 'Ventas' },
+      { path: '/clientes', icon: Users, label: 'Clientes' },
+      { path: '/promociones', icon: Megaphone, label: 'Promociones' },
+      { path: '/trabajadores', icon: UserCircle2, label: 'Trabajadores' },
+    ] : []),
   ]
 
   return (
@@ -127,7 +130,7 @@ function App() {
         <div className="max-w-[1600px] mx-auto w-full flex-1 flex flex-col">
           <Routes>
             <Route element={<ProtectedRoute />}>
-              <Route path="/calendario" element={<CalendarPage />} />
+              {!isStock && <Route path="/calendario" element={<CalendarPage />} />}
 
               <Route path="/vehiculos" element={<VehiculosPage />} />
               <Route path="/vehiculos/nuevo" element={<VehiculoForm />} />
@@ -135,20 +138,24 @@ function App() {
               <Route path="/vehiculos/:id" element={<VehiculoDetailPage />} />
               <Route path="/vehiculos/:id/documentacion" element={<VehiculoDocumentacionPage />} />
 
-              <Route path="/ventas" element={<VentasPage />} />
-              <Route path="/ventas/nuevo" element={<VentaForm />} />
+              {!isStock && (
+                <>
+                  <Route path="/ventas" element={<VentasPage />} />
+                  <Route path="/ventas/nuevo" element={<VentaForm />} />
 
-              <Route path="/clientes" element={<ClientesPage />} />
-              <Route path="/clientes/nuevo" element={<ClienteForm />} />
+                  <Route path="/clientes" element={<ClientesPage />} />
+                  <Route path="/clientes/nuevo" element={<ClienteForm />} />
 
-              <Route path="/promociones" element={<PromocionesPage />} />
-              <Route path="/promociones/nuevo" element={<PromocionForm />} />
+                  <Route path="/promociones" element={<PromocionesPage />} />
+                  <Route path="/promociones/nuevo" element={<PromocionForm />} />
 
-              <Route path="/trabajadores" element={<TrabajadoresPage />} />
-              <Route path="/trabajadores/nuevo" element={<TrabajadorForm />} />
+                  <Route path="/trabajadores" element={<TrabajadoresPage />} />
+                  <Route path="/trabajadores/nuevo" element={<TrabajadorForm />} />
+                </>
+              )}
             </Route>
 
-            <Route path="*" element={<Navigate to="/calendario" replace />} />
+            <Route path="*" element={<Navigate to={isStock ? "/vehiculos" : "/calendario"} replace />} />
           </Routes>
         </div>
       </main>

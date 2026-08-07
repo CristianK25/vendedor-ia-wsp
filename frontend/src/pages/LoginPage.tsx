@@ -12,9 +12,10 @@ export default function LoginPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Si ya está autenticado, redirigir al calendario
+    // Si ya está autenticado, redirigir según el rol
     if (isAuthenticated) {
-      navigate('/calendario', { replace: true })
+      const isStock = useAuthStore.getState().usuario?.rol === 'STOCK'
+      navigate(isStock ? '/vehiculos' : '/calendario', { replace: true })
     }
     return () => {
       clearError()
@@ -33,7 +34,8 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-      navigate('/calendario', { replace: true })
+      const isStock = useAuthStore.getState().usuario?.rol === 'STOCK'
+      navigate(isStock ? '/vehiculos' : '/calendario', { replace: true })
     } catch (err: any) {
       // El error global del store ya se actualiza automáticamente
     }

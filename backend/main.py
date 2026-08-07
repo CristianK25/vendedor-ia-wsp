@@ -9,7 +9,7 @@ from app.Modules.usuarios.model import Usuario, RefreshToken, UserRole
 from app.Core.Security.jwt import get_password_hash
 from app.Modules.usuarios.router import router as auth_router
 from app.Core.config import settings
-from app.Core.Security.deps import require_admin
+from app.Core.Security.deps import require_admin, require_role
 from app.Modules.resenas.model import Resena
 from app.Modules.peticiones.model import Peticion
 
@@ -103,7 +103,7 @@ from app.Modules.peticiones.router import router as peticiones_router
 from app.Modules.peticiones.public_router import router as peticiones_public_router
 
 app.include_router(auth_router, prefix="/api")
-app.include_router(vehiculos_router, prefix="/api", dependencies=[Depends(require_admin)])
+app.include_router(vehiculos_router, prefix="/api", dependencies=[Depends(require_role([UserRole.ADMIN, UserRole.STOCK]))])
 app.include_router(clientes_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(trabajadores_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(ventas_router, prefix="/api", dependencies=[Depends(require_admin)])
