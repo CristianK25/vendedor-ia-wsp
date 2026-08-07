@@ -81,7 +81,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
         } else {
           comisionRetenida = vehiculo.comision_valor || 0;
         }
-        montoGiradoDueno = pFinal - comisionRetenida;
+        montoGiradoDueno = pFinal - (comisionRetenida || 0);
         montoGiradoEntregado = false;
       }
 
