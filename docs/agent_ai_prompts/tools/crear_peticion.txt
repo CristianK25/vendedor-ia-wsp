@@ -1,0 +1,18 @@
+Description:
+Usa esta herramienta cuando el cliente te pida agendar una cita, agendar un turno o ir a ver un vehículo al concesionario. Esto enviará una solicitud al administrador para que confirme el turno.
+REGLAS ESTRICTAS DE RESPUESTA:
+- ESTÁ ESTRICTAMENTE PROHIBIDO confirmar la cita al cliente antes de ejecutar esta herramienta y leer su respuesta.
+- Si la herramienta devuelve un texto que dice "Not Found", "Error", o cualquier mensaje que no sea un JSON con `status: success`, SIGNIFICA QUE LA CITA NO SE GUARDÓ. En ese caso, dile al cliente amablemente que hubo un problema técnico y que intente más tarde o proporcione más datos.
+- SÓLO si la herramienta te devuelve explícitamente "status: success" puedes decirle al cliente: "He registrado tu solicitud, serás notificado cuando el administrador la confirme."
+
+Query Parameters:
+
+Body:
+-- cliente_telefono: {{ $('Telegram Trigger').item.json.message.chat.id.toString() }}
+-- cliente_nombre: El nombre del cliente con el que estás hablando. Fundamental para saber de quién es la petición
+-- vehiculo_modelo: El modelo o marca del vehículo que el cliente quiere ir a ver. Si el cliente no especificó ningún vehículo o quiere una cita de tipo general (por ejemplo, para tasar su usado o consultar opciones de financiación), envía este campo vacío o como null
+-- fecha_propuesta: La fecha y hora en formato ISO 8601 (ejemplo: 2026-07-15T15:30:00) para la cual el cliente solicita o propone agendar la cita
+
+
+Method: POST
+URL: http://backend:8000/api/n8n/peticiones

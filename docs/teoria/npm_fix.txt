@@ -1,0 +1,95 @@
+El 4 de agosto de 2026 (hace solo un par de días), se registró un importante ataque en la cadena de suministro de npm. Un gusano malicioso afectó a paquetes de altísimo uso como keyv, flat-cache, cache-manager y cacheable-request, expandiéndose a cientos de paquetes adicionales mediante la técnica de "preinstall script".  Detalles del ataque  Mecanismo: Las versiones comprometidas (como keyv@6.0.0) agregaron un script de preinstall (setup.mjs) que descarga e instala un payload de segunda etapa.  Impacto: El código se ejecuta automáticamente al hacer npm install (sin necesidad de importar ni requerir el paquete en la aplicación).  Objetivo del malware: Robo de tokens de GitHub y npm, credenciales en la nube (AWS, Azure, GCP), claves de base de datos, claves SSH y persistencia en herramientas como VS Code y Claude Code.Estado actual: El equipo de npm y los investigadores de seguridad (Snyk, SafeDep) ya han revertido y removido las versiones maliciosas del registro principal (latest vuelve a apuntar a versiones seguras como keyv@5.6.0).
+
+Aquí tienes un prompt diseñado específicamente para pedirle a una IA (o herramienta de análisis) que realice una revisión estrictamente de lectura y diagnóstico en tu repositorio local, sin modificar archivos ni ejecutar código.
+
+Puedes copiar y pegar el siguiente bloque:
+
+```markdown
+Actúa como un experto en ciberseguridad y auditoría de software Node.js / JavaScript.
+
+Tengo un proyecto local que quiero auditar antes de desplegar cambios a mi servidor VPS. Necesito que analices el proyecto DE FORMA COMPLETAMENTE ESTÁTICA Y PASIVA. 
+
+REGLAS STRICTAS PARA TU ANÁLISIS:
+1. NO ejecutes ningún comando que instale o corra código (como `npm install`, `npm test`, `node index.js`, etc.).
+2. NO modifiques, crees ni elimines ningún archivo en el proyecto.
+3. Limítate exclusivamente a inspeccionar el contenido de los archivos de texto/configuración existentes.
+
+TAREAS DE REVISIÓN QUE DEBES REALIZAR:
+1. **Inspección de `package.json`:**
+   - Revisa la lista de `dependencies` y `devDependencies`.
+   - Revisa la sección `scripts` buscando comandos sospechosos en hooks automáticos (`preinstall`, `install`, `postinstall`, `prepare`).
+   - Identifica si hay paquetes conocidos recientemente comprometidos o con typosquatting.
+
+2. **Inspección de `package-lock.json` (o `yarn.lock` / `pnpm-lock.yaml`):**
+   - Revisa si hay versiones de dependencias transitivas o directas sospechosas o agregadas recientemente.
+
+3. **Inspección de Archivos Sensibles y Variables de Entorno:**
+   - Verifica que archivos como `.env`, claves SSH, credenciales o tokens de API NO estén siendo rastreados por Git (revisa `.gitignore`).
+
+DELIVERABLES QUE DEBES ENTREGARME:
+1. Un resumen claro de lo que encontraste (sin anomalías / alertas detectadas).
+2. Un reporte de cualquier versión o script sospechoso.
+3. Un paso a paso de comandos seguros que YO deba ejecutar manualmente en mi terminal para limpiar la caché local y auditar la seguridad.
+4. Instrucciones sobre cómo desplegar de forma limpia y segura los cambios a la VPS sin riesgo de infección.
+
+```
+
+---
+
+### Pasos recomendados que debes seguir tú en tu máquina local y en la VPS
+
+Mientras la IA revisa la estructura de tu proyecto, aquí tienes la guía práctica de prevención y mitigación:
+
+#### 1. En tu máquina Local (antes de tocar la VPS)
+
+* **Limpia la caché global de npm:**
+Si por error se descargó un paquete malicioso en tu máquina, elimina la caché local para evitar que se reinstale.
+```bash
+npm cache clean --force
+
+```
+
+
+* **Instala siempre ignorando scripts de instalación:**
+Para probar tus dependencias en local sin riesgo de que ejecuten malware en segundo plano:
+```bash
+npm install --ignore-scripts
+
+```
+
+
+* **Audita vulnerabilidades conocidas:**
+```bash
+npm audit
+
+```
+
+
+
+#### 2. Preparar el código antes de subirlo (Git)
+
+* Asegúrate de que el archivo `package-lock.json` esté congelado y subido al repositorio. Esto garantiza que la VPS instale exactamente las mismas versiones probadas en local y no resuelva versiones más recientes que puedan estar comprometidas.
+* Verifica que `.env` esté listado en `.gitignore` para no subir secretos a la VPS.
+
+#### 3. En la VPS (Despliegue seguro)
+
+Al conectarte por SSH a tu servidor para actualizar el proyecto:
+
+1. **Usa siempre `npm ci` en lugar de `npm install`:**
+`npm ci` lee directamente el `package-lock.json` existente y falla si hay discrepancias, evitando descargar versiones no deseadas.
+```bash
+npm ci --ignore-scripts --only=production
+
+```
+
+
+2. **Desactiva los scripts globales en la VPS (Opcional pero recomendado):**
+Puedes configurar tu entorno en la VPS para que nunca ejecute scripts de instalación por defecto:
+```bash
+npm config set ignore-scripts true
+
+```
+
+
+3. **Reinicia el servicio:**
+Una vez verificadas e instaladas las dependencias, reinicia tu proceso (por ejemplo, con `pm2 restart app` o `systemctl restart tu-servicio`).

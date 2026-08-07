@@ -1,0 +1,13 @@
+Description:
+"Usa esta herramienta cuando el cliente pregunte qué autos, 
+vehículos o camionetas hay disponibles en venta, o si está buscando algo en específico."
+
+Query Parameters:
+-search: Término de búsqueda opcional. Puede ser la marca, modelo o palabra clave del vehículo que el cliente está buscando (ejemplo: 'Toyota', 'Gol', 'Rojo').
+-precio_max: Precio máximo opcional. Si el cliente dice 'tengo hasta 20000 dólares' o 'algo barato', envía el monto máximo aquí en formato numérico (ej: 20000).
+
+Body:
+
+
+Method: GET
+URL: http://backend:8000/api/n8n/vehiculos/buscar
