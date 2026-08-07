@@ -137,7 +137,7 @@ export default function TrabajadoresView() {
                   <p className="text-on-surface-variant text-sm mt-1">{t.rol || 'Vendedor'}</p>
                   
                   <div className="mt-5 w-full bg-surface-container-low rounded-xl p-3 text-center border border-outline-variant/50">
-                    <p className="text-on-surface font-medium text-sm">{t.telefono}</p>
+                    <p className="text-on-surface font-medium text-sm">{t.telefono || 'Sin teléfono'}</p>
                   </div>
                   
                   <div className="mt-5 flex gap-2 w-full">

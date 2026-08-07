@@ -10,7 +10,6 @@ from app.Modules.usuarios.model import Usuario, RefreshToken, PasswordResetToken
 from app.Modules.clientes.model import Cliente
 from app.Modules.vehiculos.model import Vehiculo
 from app.Modules.imagenes.model import Imagen
-from app.Modules.trabajadores.model import Trabajador
 from app.Modules.citas.model import Cita
 from app.Modules.ventas.model import Venta
 from app.Modules.promociones.model import Promocion

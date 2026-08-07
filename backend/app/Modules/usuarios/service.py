@@ -8,7 +8,7 @@ from app.Core.Security.jwt import get_password_hash, verify_password, create_acc
 from app.Core.config import settings
 from app.Modules.usuarios.model import Usuario, RefreshToken, UserRole, PasswordResetToken
 from app.Modules.usuarios.repository import UsuarioRepository
-from app.Modules.usuarios.schema import LoginRequest, RegisterRequest
+from app.Modules.usuarios.schema import LoginRequest, RegisterRequest, UsuarioCreate, UsuarioUpdate
 
 class UsuarioService:
     def __init__(self, session: Session):
@@ -32,6 +32,60 @@ class UsuarioService:
             rol=UserRole.ADMIN  # Forzar admin por requerimiento
         )
         return self.repository.create_usuario(new_user)
+
+    def create_usuario_admin(self, data: UsuarioCreate) -> Usuario:
+        existing = self.repository.get_by_email(data.email)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El email ya está registrado"
+            )
+
+        hashed_pass = get_password_hash(data.password)
+        new_user = Usuario(
+            nombre=data.nombre,
+            apellido=data.apellido,
+            email=data.email,
+            password_hash=hashed_pass,
+            rol=data.rol,
+            es_trabajador=data.es_trabajador,
+            telefono=data.telefono,
+            rol_trabajador=data.rol_trabajador,
+            recibe_notificaciones=data.recibe_notificaciones,
+            is_active=True
+        )
+        return self.repository.create_usuario(new_user)
+
+    def update_usuario_admin(self, user_id: int, data: UsuarioUpdate) -> Usuario:
+        user = self.repository.get_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+        
+        if data.email and data.email != user.email:
+            existing = self.repository.get_by_email(data.email)
+            if existing:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El email ya está registrado por otro usuario")
+
+        update_data = data.model_dump(exclude_unset=True)
+        
+        if "password" in update_data and update_data["password"]:
+            update_data["password_hash"] = get_password_hash(update_data.pop("password"))
+        elif "password" in update_data:
+            update_data.pop("password")
+
+        for key, value in update_data.items():
+            setattr(user, key, value)
+            
+        return self.repository.update_usuario(user)
+
+    def delete_usuario_admin(self, user_id: int):
+        user = self.repository.get_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+        
+        self.repository.session.delete(user)
+        self.repository.session.commit()
+        return {"message": "Usuario eliminado exitosamente"}
 
     def login(self, data: LoginRequest):
         user = self.repository.get_by_email(data.email)

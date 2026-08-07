@@ -122,14 +122,18 @@ export interface PromocionCreate {
 export interface Trabajador {
   id: number
   nombre: string
-  telefono: string
-  rol: string
+  telefono?: string
+  rol?: string
 }
 
 export interface TrabajadorCreate {
   nombre: string
-  telefono: string
-  rol?: string
+  apellido: string
+  email: string
+  password?: string
+  rol: string
+  telefono?: string
+  rol_trabajador?: string
 }
 
 export interface Cita {

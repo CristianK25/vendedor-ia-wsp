@@ -6,6 +6,7 @@ from typing import Optional
 class UserRole(str, Enum):
     ADMIN = "ADMIN"
     BOT = "BOT"
+    STOCK = "STOCK"
 
 class Usuario(SQLModel, table=True):
     __tablename__ = "usuarios"
@@ -17,6 +18,13 @@ class Usuario(SQLModel, table=True):
     password_hash: str = Field(max_length=255)
     rol: UserRole = Field(default=UserRole.ADMIN)
     is_active: bool = Field(default=True)
+    
+    # Nuevos campos de trabajador integrados
+    es_trabajador: bool = Field(default=False)
+    telefono: Optional[str] = Field(default=None, max_length=50)
+    rol_trabajador: Optional[str] = Field(default=None, max_length=100)
+    recibe_notificaciones: bool = Field(default=True)
+    
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
