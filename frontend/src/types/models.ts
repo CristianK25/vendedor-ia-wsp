@@ -27,8 +27,8 @@ export interface Vehiculo {
   id: number
   modelo: string
   precio_venta: number
-  precio_compra: number
-  origen_compra: 'particular' | 'ri_factura_a'
+  precio_compra?: number
+  origen_compra?: 'particular' | 'ri_factura_a'
   kilometraje: number
   detalle_interior?: string
   detalle_exterior?: string
@@ -43,13 +43,18 @@ export interface Vehiculo {
   condicion?: string
   etapa?: EtapaVehiculo
   documentos?: DocumentoVehiculo[]
+  tipo_alta?: 'compra_directa' | 'consignacion'
+  dueno_telefono?: string
+  precio_acordado?: number
+  comision_tipo?: 'porcentaje' | 'monto_fijo'
+  comision_valor?: number
 }
 
 export interface VehiculoCreate {
   modelo: string
   precio_venta: number
-  precio_compra: number
-  origen_compra: 'particular' | 'ri_factura_a'
+  precio_compra?: number
+  origen_compra?: 'particular' | 'ri_factura_a'
   kilometraje: number
   detalle_interior?: string
   detalle_exterior?: string
@@ -60,6 +65,11 @@ export interface VehiculoCreate {
   traccion: string
   tipo: string
   condicion: string
+  tipo_alta?: 'compra_directa' | 'consignacion'
+  dueno_telefono?: string
+  precio_acordado?: number
+  comision_tipo?: 'porcentaje' | 'monto_fijo'
+  comision_valor?: number
 }
 
 export interface Venta {

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from app.Modules.vehiculos.model import EstadoVehiculo, OrigenCompra, EtapaVehiculo
+from app.Modules.vehiculos.model import EstadoVehiculo, OrigenCompra, EtapaVehiculo, TipoAlta, ComisionTipo
 
 class ImagenResponse(BaseModel):
     id: int
@@ -11,8 +11,8 @@ class ImagenResponse(BaseModel):
 class VehiculoCreate(BaseModel):
     modelo: str
     precio_venta: float
-    precio_compra: float
-    origen_compra: OrigenCompra
+    precio_compra: Optional[float] = None
+    origen_compra: Optional[OrigenCompra] = None
     kilometraje: int
     detalle_interior: Optional[str] = None
     detalle_exterior: Optional[str] = None
@@ -24,6 +24,11 @@ class VehiculoCreate(BaseModel):
     tipo: Optional[str] = None
     condicion: Optional[str] = None
     etapa: Optional[EtapaVehiculo] = EtapaVehiculo.pre_compra
+    tipo_alta: Optional[TipoAlta] = TipoAlta.compra_directa
+    dueno_telefono: Optional[str] = None
+    precio_acordado: Optional[float] = None
+    comision_tipo: Optional[ComisionTipo] = None
+    comision_valor: Optional[float] = None
 
 class VehiculoUpdate(BaseModel):
     modelo: Optional[str] = None
@@ -42,6 +47,11 @@ class VehiculoUpdate(BaseModel):
     tipo: Optional[str] = None
     condicion: Optional[str] = None
     etapa: Optional[EtapaVehiculo] = None
+    tipo_alta: Optional[TipoAlta] = None
+    dueno_telefono: Optional[str] = None
+    precio_acordado: Optional[float] = None
+    comision_tipo: Optional[ComisionTipo] = None
+    comision_valor: Optional[float] = None
 
 class VehiculoResponse(BaseModel):
     id: int
@@ -62,6 +72,11 @@ class VehiculoResponse(BaseModel):
     tipo: Optional[str] = None
     condicion: Optional[str] = None
     etapa: EtapaVehiculo
+    tipo_alta: TipoAlta
+    dueno_telefono: Optional[str] = None
+    precio_acordado: Optional[float] = None
+    comision_tipo: Optional[ComisionTipo] = None
+    comision_valor: Optional[float] = None
 
 class PaginatedVehiculosResponse(BaseModel):
     items: List[VehiculoResponse]

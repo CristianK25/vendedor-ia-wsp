@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { vehiculosApi } from '../api/vehiculos'
+import { clientesApi } from '../api/clientes'
 import { 
   ArrowLeft, Edit2, CheckCircle2, 
   FileText,
@@ -45,6 +46,7 @@ export default function VehiculoDetailPage() {
   const [documentos, setDocumentos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [duenoNombre, setDuenoNombre] = useState<string | null>(null)
   
   // Galería
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -60,6 +62,18 @@ export default function VehiculoDetailPage() {
       .then(([vehiculoData, documentosData]) => {
         setVehiculo(vehiculoData)
         setDocumentos(documentosData)
+        
+        if (vehiculoData.dueno_telefono) {
+          clientesApi.getAll(1, 5, vehiculoData.dueno_telefono).then((res: any) => {
+            if (res.items && res.items.length > 0) {
+              const matched = res.items.find((c: any) => c.telefono === vehiculoData.dueno_telefono)
+              setDuenoNombre(matched ? matched.nombre : vehiculoData.dueno_telefono)
+            } else {
+              setDuenoNombre(vehiculoData.dueno_telefono)
+            }
+          }).catch(() => setDuenoNombre(vehiculoData.dueno_telefono))
+        }
+        
         setLoading(false)
       })
       .catch(err => {
@@ -261,17 +275,52 @@ export default function VehiculoDetailPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 text-sm">
               <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Origen de compra</span>
+                <span className="text-on-surface-variant">Tipo de Alta</span>
                 <span className="font-semibold text-on-surface capitalize">
-                  {vehiculo.origen_compra === 'ri_factura_a' ? 'RI con Factura A' : 'Particular'}
+                  {vehiculo.tipo_alta === 'consignacion' ? 'Consignación' : 'Compra Directa'}
                 </span>
               </div>
-              <div className="flex justify-between py-2 border-b border-outline-variant/30">
-                <span className="text-on-surface-variant">Precio de compra</span>
-                <span className="font-semibold text-on-surface">
-                  ${vehiculo.precio_compra?.toLocaleString() || '-'}
-                </span>
-              </div>
+              {vehiculo.tipo_alta === 'consignacion' ? (
+                <>
+                  <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                    <span className="text-on-surface-variant">Dueño del auto</span>
+                    <span className="font-semibold text-on-surface">
+                      {duenoNombre || vehiculo.dueno_telefono || '-'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                    <span className="text-on-surface-variant">Precio acordado</span>
+                    <span className="font-semibold text-on-surface">
+                      ${vehiculo.precio_acordado?.toLocaleString() || '-'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                    <span className="text-on-surface-variant">Comisión</span>
+                    <span className="font-semibold text-on-surface">
+                      {vehiculo.comision_valor ? (
+                        vehiculo.comision_tipo === 'porcentaje' 
+                          ? `${vehiculo.comision_valor}%`
+                          : `$${vehiculo.comision_valor.toLocaleString()}`
+                      ) : '-'}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                    <span className="text-on-surface-variant">Origen de compra</span>
+                    <span className="font-semibold text-on-surface capitalize">
+                      {vehiculo.origen_compra === 'ri_factura_a' ? 'RI con Factura A' : 'Particular'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                    <span className="text-on-surface-variant">Precio de compra</span>
+                    <span className="font-semibold text-on-surface">
+                      ${vehiculo.precio_compra?.toLocaleString() || '-'}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
           

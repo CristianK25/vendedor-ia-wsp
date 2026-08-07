@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { vehiculosApi } from '../api/vehiculos'
-import { Plus, Search, ListFilter, Trash2, Gauge, Settings2, ImageOff, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Search, ListFilter, Trash2, ImageOff, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import MarcarVendidoModal from '../components/modals/MarcarVendidoModal'
@@ -576,8 +576,8 @@ export default function VehiculosView() {
                       </div>
                     </div>
                     <div className="p-5 flex flex-col flex-1">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-semibold text-on-surface leading-tight">{v.modelo}</h3>
+                      <div className="flex justify-between items-start mb-1">
+                        <h3 className="text-lg font-semibold text-on-surface leading-tight">{v.modelo} <span className="text-on-surface-variant font-normal text-sm">({v.anio})</span></h3>
                         <button 
                           onClick={(e) => { e.stopPropagation(); setVehiculoParaEliminar(v); }} 
                           className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
@@ -586,28 +586,39 @@ export default function VehiculosView() {
                           <Trash2 size={18} />
                         </button>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-xs text-on-surface-variant mb-4">
-                        <span className="flex items-center gap-1 bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">
-                          <Gauge size={12} />
-                          {v.kilometraje.toLocaleString()} km
-                        </span>
-                        <span className="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">
-                          {v.transmision}
-                        </span>
+                      
+                      {/* Technical Info Subtitle */}
+                      <div className="text-xs text-on-surface-variant mb-3 flex items-center flex-wrap gap-x-2 gap-y-1">
+                        <span className="font-medium text-on-surface">{v.condicion || 'Usado'}</span>
+                        <span>•</span>
+                        <span>{v.kilometraje.toLocaleString()} km</span>
+                        <span>•</span>
+                        <span>{v.transmision}</span>
                         {v.traccion && (
-                          <span className="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30 font-medium">
-                            {v.traccion}
-                          </span>
+                          <>
+                            <span>•</span>
+                            <span>{v.traccion}</span>
+                          </>
                         )}
-                        {v.tipo && (
-                          <span className="bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30">
-                            {v.tipo}
-                          </span>
-                        )}
-                        {v.condicion && (
-                          <span className={`px-2 py-0.5 rounded border font-semibold ${v.condicion === 'Nuevo' ? 'bg-primary/5 text-primary border-primary/20' : 'bg-surface-container-low text-on-surface-variant border-outline-variant/30'}`}>
-                            {v.condicion}
-                          </span>
+                      </div>
+
+                      {/* Commercial Modality Badge */}
+                      <div className="mb-4">
+                        {v.tipo_alta === 'consignacion' ? (
+                          <div className="inline-flex flex-col bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1.5">
+                            <span className="text-xs font-bold text-indigo-700 uppercase tracking-wide flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Consignación
+                            </span>
+                            <span className="text-[10px] font-semibold text-indigo-600/80 mt-0.5">
+                              Comisión: {v.comision_tipo === 'porcentaje' ? `${v.comision_valor}%` : `$${v.comision_valor?.toLocaleString()}`}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="inline-flex flex-col bg-surface-container-low border border-outline-variant/30 rounded-lg px-2.5 py-1.5">
+                            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wide flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span> Stock Propio
+                            </span>
+                          </div>
                         )}
                       </div>
                       <div className="mt-auto flex items-center justify-between">
@@ -638,29 +649,9 @@ export default function VehiculosView() {
                         Vehículo {renderSortIcon('modelo')}
                       </div>
                     </th>
-                    <th className="py-4 px-6">
-                      <div onClick={() => handleSort('kilometraje')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
-                        Kilometraje {renderSortIcon('kilometraje')}
-                      </div>
-                    </th>
-                    <th className="py-4 px-6">
-                      <div onClick={() => handleSort('transmision')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
-                        Transmisión {renderSortIcon('transmision')}
-                      </div>
-                    </th>
-                    <th className="py-4 px-6">
-                      <div onClick={() => handleSort('traccion')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
-                        Tracción {renderSortIcon('traccion')}
-                      </div>
-                    </th>
-                    <th className="py-4 px-6">
-                      <div onClick={() => handleSort('tipo')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
-                        Tipo {renderSortIcon('tipo')}
-                      </div>
-                    </th>
-                    <th className="py-4 px-6">
-                      <div onClick={() => handleSort('condicion')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
-                        Condición {renderSortIcon('condicion')}
+                    <th className="py-4 px-6 text-center">
+                      <div className="flex items-center justify-center gap-1 cursor-default select-none w-max mx-auto text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+                        Modalidad
                       </div>
                     </th>
                     <th className="py-4 px-6 text-center">
@@ -684,7 +675,7 @@ export default function VehiculosView() {
                 <tbody className="divide-y divide-outline-variant">
                   {vehiculos.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="py-8 text-center text-on-surface-variant">No hay vehículos registrados.</td>
+                      <td colSpan={6} className="py-8 text-center text-on-surface-variant">No hay vehículos registrados.</td>
                     </tr>
                   ) : (
                     vehiculos.map(v => (
@@ -693,25 +684,29 @@ export default function VehiculosView() {
                         onClick={() => navigate(`/vehiculos/${v.id}`)}
                         className="hover:bg-surface-container-low transition-colors cursor-pointer group"
                       >
-                        <td className="py-4 px-6 font-bold text-on-surface">{v.modelo}</td>
-                        <td className="py-4 px-6 text-on-surface-variant">
-                          <div className="flex items-center gap-1.5">
-                            <Gauge size={14} />{v.kilometraje.toLocaleString()} km
+                        <td className="py-4 px-6">
+                          <div className="font-bold text-on-surface">{v.modelo} <span className="font-normal text-on-surface-variant">({v.anio})</span></div>
+                          <div className="text-xs text-on-surface-variant mt-1">
+                            {v.condicion || 'Usado'} • {v.kilometraje.toLocaleString()} km • {v.transmision}
                           </div>
                         </td>
-                        <td className="py-4 px-6 text-on-surface-variant">
-                          <div className="flex items-center gap-1.5">
-                            <Settings2 size={14} />{v.transmision}
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-on-surface-variant font-medium">{v.traccion || '-'}</td>
-                        <td className="py-4 px-6 text-on-surface-variant font-medium">{v.tipo || '-'}</td>
-                        <td className="py-4 px-6 text-on-surface-variant">
-                          {v.condicion ? (
-                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-md border ${v.condicion === 'Nuevo' ? 'bg-primary/5 text-primary border-primary/20' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                              {v.condicion}
-                            </span>
-                          ) : '-'}
+                        <td className="py-4 px-6 text-center">
+                          {v.tipo_alta === 'consignacion' ? (
+                            <div className="inline-flex flex-col">
+                              <span className="text-xs font-bold text-indigo-700 uppercase flex items-center justify-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Consignación
+                              </span>
+                              <span className="text-[10px] font-semibold text-indigo-600/80 mt-0.5">
+                                Comisión: {v.comision_tipo === 'porcentaje' ? `${v.comision_valor}%` : `$${v.comision_valor?.toLocaleString()}`}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="inline-flex flex-col">
+                              <span className="text-xs font-bold text-on-surface-variant uppercase flex items-center justify-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span> Stock Propio
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="py-4 px-6 text-center">
                           <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : v.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
