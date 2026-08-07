@@ -12,8 +12,12 @@ def _map_to_response(u):
     return TrabajadorResponse(
         id=u.id,
         nombre=u.nombre,
+        apellido=u.apellido,
+        email=u.email,
+        rol_sistema=u.rol.value if hasattr(u.rol, 'value') else u.rol,
+        rol=u.rol_trabajador,
         telefono=u.telefono,
-        rol=u.rol_trabajador
+        recibe_notificaciones=u.recibe_notificaciones
     )
 
 @router.get("/", response_model=PaginatedTrabajadoresResponse)

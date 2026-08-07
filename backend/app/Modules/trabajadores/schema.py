@@ -4,8 +4,12 @@ from typing import Optional, List
 class TrabajadorResponse(BaseModel):
     id: int
     nombre: str
-    telefono: Optional[str] = None
+    apellido: str
+    email: str
+    rol_sistema: str
     rol: Optional[str] = None
+    telefono: Optional[str] = None
+    recibe_notificaciones: bool = True
     
 class PaginatedTrabajadoresResponse(BaseModel):
     items: List[TrabajadorResponse]

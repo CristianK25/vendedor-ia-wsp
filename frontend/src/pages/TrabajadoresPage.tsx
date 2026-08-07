@@ -35,6 +35,18 @@ export default function TrabajadoresView() {
       })
   }, [currentPage, debouncedSearch])
 
+  const handleDelete = async (id: number) => {
+    if (window.confirm('¿Está seguro de que desea eliminar este trabajador/usuario?')) {
+      try {
+        await trabajadoresApi.delete(id)
+        setTrabajadores(prev => prev.filter(t => t.id !== id))
+      } catch (err) {
+        console.error('Error al eliminar trabajador:', err)
+        alert('Error al eliminar trabajador')
+      }
+    }
+  }
+
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
@@ -124,7 +136,7 @@ export default function TrabajadoresView() {
             <p className="text-on-surface-variant">No hay trabajadores registrados.</p>
           ) : (
             trabajadores.map(t => {
-              const initials = t.nombre ? t.nombre.substring(0, 2).toUpperCase() : 'NN';
+              const initials = t.nombre ? (t.apellido ? `${t.nombre[0]}${t.apellido[0]}`.toUpperCase() : t.nombre.substring(0, 2).toUpperCase()) : 'NN';
               return (
                 <div key={t.id} className="premium-card-hover bg-white border border-outline-variant rounded-2xl p-6 flex flex-col items-center group relative cursor-pointer">
                   <div className="absolute top-4 right-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
@@ -133,7 +145,7 @@ export default function TrabajadoresView() {
                   <div className="w-20 h-20 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center text-3xl font-bold mb-4">
                     {initials}
                   </div>
-                  <h3 className="font-semibold text-lg text-on-surface">{t.nombre}</h3>
+                  <h3 className="font-semibold text-lg text-on-surface">{t.nombre} {t.apellido}</h3>
                   <p className="text-on-surface-variant text-sm mt-1">{t.rol || 'Vendedor'}</p>
                   
                   <div className="mt-5 w-full bg-surface-container-low rounded-xl p-3 text-center border border-outline-variant/50">
@@ -141,10 +153,16 @@ export default function TrabajadoresView() {
                   </div>
                   
                   <div className="mt-5 flex gap-2 w-full">
-                    <button className="flex-1 bg-white border border-outline-variant text-on-surface py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2">
+                    <button 
+                      onClick={() => navigate(`/trabajadores/editar/${t.id}`)}
+                      className="flex-1 bg-white border border-outline-variant text-on-surface py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2"
+                    >
                       <Edit2 size={16} /> Editar
                     </button>
-                    <button className="flex-1 bg-white border border-error-container text-error py-2.5 rounded-xl text-sm font-semibold hover:bg-error-container transition-colors flex items-center justify-center gap-2">
+                    <button 
+                      onClick={() => handleDelete(t.id)}
+                      className="flex-1 bg-white border border-error-container text-error py-2.5 rounded-xl text-sm font-semibold hover:bg-error-container transition-colors flex items-center justify-center gap-2"
+                    >
                       <Trash2 size={16} /> Eliminar
                     </button>
                   </div>

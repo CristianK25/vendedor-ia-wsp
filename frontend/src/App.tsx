@@ -151,6 +151,7 @@ function App() {
 
                   <Route path="/trabajadores" element={<TrabajadoresPage />} />
                   <Route path="/trabajadores/nuevo" element={<TrabajadorForm />} />
+                  <Route path="/trabajadores/editar/:id" element={<TrabajadorForm />} />
                 </>
               )}
             </Route>

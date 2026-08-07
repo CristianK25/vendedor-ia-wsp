@@ -122,8 +122,12 @@ export interface PromocionCreate {
 export interface Trabajador {
   id: number
   nombre: string
+  apellido?: string
+  email?: string
+  rol_sistema?: string
   telefono?: string
   rol?: string
+  recibe_notificaciones?: boolean
 }
 
 export interface TrabajadorCreate {

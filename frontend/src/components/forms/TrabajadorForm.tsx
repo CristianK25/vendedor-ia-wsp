@@ -1,31 +1,63 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { UserCircle2, User, Phone, Briefcase, Loader2, Mail, Lock, Shield } from 'lucide-react'
 import { trabajadoresApi } from '../../api/trabajadores'
 import type { TrabajadorCreate } from '../../types/models'
 
 export default function TrabajadorForm() {
+  const { id } = useParams<{ id: string }>()
+  const isEdit = !!id
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<TrabajadorCreate>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<TrabajadorCreate>({
     defaultValues: {
       rol: 'STOCK'
     }
   })
+
+  useEffect(() => {
+    if (isEdit) {
+      setLoading(true)
+      trabajadoresApi.getById(Number(id))
+        .then(data => {
+          reset({
+            nombre: data.nombre,
+            apellido: data.apellido || '',
+            email: data.email || '',
+            rol: data.rol_sistema || 'STOCK',
+            rol_trabajador: data.rol || '',
+            telefono: data.telefono || '',
+          })
+        })
+        .catch(err => {
+          console.error('Error al cargar trabajador:', err)
+          setError('Error al cargar los datos del trabajador')
+        })
+        .finally(() => setLoading(false))
+    }
+  }, [id, reset])
 
   const onSubmit = async (data: TrabajadorCreate) => {
     try {
       setLoading(true)
       setError(null)
       
-      await trabajadoresApi.create(data)
+      if (isEdit) {
+        const updateData = { ...data }
+        if (!updateData.password) {
+          delete updateData.password
+        }
+        await trabajadoresApi.update(Number(id), updateData)
+      } else {
+        await trabajadoresApi.create(data)
+      }
       navigate('/trabajadores')
     } catch (err: any) {
-      console.error('Error al registrar trabajador:', err)
-      setError(err.message || 'Ocurrió un error al registrar el trabajador')
+      console.error('Error al guardar trabajador:', err)
+      setError(err.message || 'Ocurrió un error al guardar el trabajador')
     } finally {
       setLoading(false)
     }
@@ -37,7 +69,9 @@ export default function TrabajadorForm() {
         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
           <UserCircle2 size={20} />
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-on-surface">Registrar Nuevo Trabajador / Usuario</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-on-surface">
+          {isEdit ? 'Editar Trabajador / Usuario' : 'Registrar Nuevo Trabajador / Usuario'}
+        </h1>
       </div>
 
       {error && (
@@ -104,14 +138,16 @@ export default function TrabajadorForm() {
 
             {/* Password */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-on-surface-variant mb-2">Contraseña Inicial *</label>
+              <label className="block text-sm font-medium text-on-surface-variant mb-2">
+                Contraseña {isEdit ? '(Opcional)' : 'Inicial *'}
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
                 <input 
                   type="password"
-                  {...register('password', { required: 'La contraseña es requerida', minLength: { value: 6, message: 'Mínimo 6 caracteres' } })}
+                  {...register('password', { required: isEdit ? false : 'La contraseña es requerida', minLength: { value: 6, message: 'Mínimo 6 caracteres' } })}
                   className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                  placeholder="Establecer contraseña inicial"
+                  placeholder={isEdit ? "Dejar en blanco para no cambiar" : "Establecer contraseña inicial"}
                 />
               </div>
               {errors.password && <p className="text-error text-xs mt-1 font-medium">{errors.password.message}</p>}
@@ -188,7 +224,7 @@ export default function TrabajadorForm() {
                 Guardando...
               </>
             ) : (
-              'Guardar Trabajador'
+              isEdit ? 'Actualizar Trabajador' : 'Guardar Trabajador'
             )}
           </button>
         </div>
