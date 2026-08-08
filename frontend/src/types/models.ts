@@ -25,6 +25,7 @@ export interface DocumentoVehiculo {
 
 export interface Vehiculo {
   id: number
+  marca: string
   modelo: string
   precio_venta: number
   precio_compra?: number
@@ -51,6 +52,7 @@ export interface Vehiculo {
 }
 
 export interface VehiculoCreate {
+  marca: string
   modelo: string
   precio_venta: number
   precio_compra?: number

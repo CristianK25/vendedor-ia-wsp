@@ -9,7 +9,7 @@ class CitaRepository:
         self.session = session
 
     def get_all(self):
-        statement = select(Cita, Cliente.nombre, Vehiculo.modelo, Vehiculo.patente).join(
+        statement = select(Cita, Cliente.nombre, Vehiculo.marca, Vehiculo.modelo, Vehiculo.patente).join(
             Cliente, Cita.cliente_telefono == Cliente.telefono, isouter=True
         ).join(
             Vehiculo, Cita.vehiculo_id == Vehiculo.id, isouter=True
@@ -17,11 +17,11 @@ class CitaRepository:
         results = self.session.exec(statement).all()
         
         citas_with_name = []
-        for cita, nombre, modelo, patente in results:
+        for cita, nombre, marca, modelo, patente in results:
             cita_dict = cita.model_dump()
             cita_dict['cliente_nombre'] = nombre or cita.cliente_telefono
             if modelo:
-                cita_dict['vehiculo_modelo'] = modelo
+                cita_dict['vehiculo_modelo'] = f"{marca} {modelo}".strip() if marca else modelo
             if patente:
                 cita_dict['vehiculo_patente'] = patente
             citas_with_name.append(cita_dict)
@@ -33,7 +33,7 @@ class CitaRepository:
 
     def get_hoy_by_vehiculo(self, vehiculo_id: int):
         from datetime import date
-        statement = select(Cita, Cliente.nombre, Vehiculo.modelo, Vehiculo.patente).join(
+        statement = select(Cita, Cliente.nombre, Vehiculo.marca, Vehiculo.modelo, Vehiculo.patente).join(
             Cliente, Cita.cliente_telefono == Cliente.telefono, isouter=True
         ).join(
             Vehiculo, Cita.vehiculo_id == Vehiculo.id, isouter=True
@@ -44,17 +44,17 @@ class CitaRepository:
         result = self.session.exec(statement).first()
         if not result:
             return None
-        cita, nombre, modelo, patente = result
+        cita, nombre, marca, modelo, patente = result
         cita_dict = cita.model_dump()
         cita_dict['cliente_nombre'] = nombre or cita.cliente_telefono
         if modelo:
-            cita_dict['vehiculo_modelo'] = modelo
+            cita_dict['vehiculo_modelo'] = f"{marca} {modelo}".strip() if marca else modelo
         if patente:
             cita_dict['vehiculo_patente'] = patente
         return cita_dict
 
     def get_by_id_with_name(self, cita_id: int):
-        statement = select(Cita, Cliente.nombre, Vehiculo.modelo, Vehiculo.patente).join(
+        statement = select(Cita, Cliente.nombre, Vehiculo.marca, Vehiculo.modelo, Vehiculo.patente).join(
             Cliente, Cita.cliente_telefono == Cliente.telefono, isouter=True
         ).join(
             Vehiculo, Cita.vehiculo_id == Vehiculo.id, isouter=True
@@ -62,11 +62,11 @@ class CitaRepository:
         result = self.session.exec(statement).first()
         if not result:
             return None
-        cita, nombre, modelo, patente = result
+        cita, nombre, marca, modelo, patente = result
         cita_dict = cita.model_dump()
         cita_dict['cliente_nombre'] = nombre or cita.cliente_telefono
         if modelo:
-            cita_dict['vehiculo_modelo'] = modelo
+            cita_dict['vehiculo_modelo'] = f"{marca} {modelo}".strip() if marca else modelo
         if patente:
             cita_dict['vehiculo_patente'] = patente
         return cita_dict

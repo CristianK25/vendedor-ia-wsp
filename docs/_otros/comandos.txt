@@ -77,11 +77,15 @@ from app.Core.Security.jwt import get_password_hash
 
 with Session(engine) as session:
     nuevo_usuario = Usuario(
-        nombre='Nombre',
-        apellido='Apellido',
-        email='correo@dominio.com',
-        password_hash=get_password_hash('TuContraseñaSegura123'),
-        rol=UserRole.ADMIN,
+        nombre='Juan Pablo',
+        apellido='Vanrell',
+        email='Juampi27van@gmail.com',
+        password_hash=get_password_hash('juampivan'),
+        rol=UserRole.STOCK,
+        es_trabajador=True,
+        telefono='+54 9 2617 08-2553',
+        rol_trabajador='Vendedor',
+        recibe_notificaciones=True,
         is_active=True
     )
     session.add(nuevo_usuario)

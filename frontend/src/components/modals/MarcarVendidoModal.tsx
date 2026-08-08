@@ -126,7 +126,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
         <div className="flex items-center justify-between p-6 border-b border-outline-variant">
           <div>
             <h2 className="text-xl font-bold text-on-surface">Vender Vehículo</h2>
-            <p className="text-sm text-on-surface-variant mt-1">{vehiculo.modelo}</p>
+            <p className="text-sm text-on-surface-variant mt-1">{vehiculo.marca ? `${vehiculo.marca} ${vehiculo.modelo}` : vehiculo.modelo}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant">
             <X size={20} />

@@ -141,7 +141,7 @@ export default function VehiculoDetailPage() {
       <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-on-surface leading-tight mb-2">
-            {vehiculo.modelo}
+            {vehiculo.marca ? `${vehiculo.marca} ${vehiculo.modelo}` : vehiculo.modelo}
           </h1>
         </div>
         <div className="text-right">
@@ -244,6 +244,14 @@ export default function VehiculoDetailPage() {
               Especificaciones Técnicas
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8 text-sm">
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Marca</span>
+                <span className="font-semibold text-on-surface">{vehiculo.marca || '-'}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-outline-variant/30">
+                <span className="text-on-surface-variant">Modelo</span>
+                <span className="font-semibold text-on-surface">{vehiculo.modelo}</span>
+              </div>
               <div className="flex justify-between py-2 border-b border-outline-variant/30">
                 <span className="text-on-surface-variant">Tipo</span>
                 <span className="font-semibold text-on-surface">{vehiculo.tipo || '-'}</span>

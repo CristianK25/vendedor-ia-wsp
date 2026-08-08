@@ -580,7 +580,7 @@ export default function VehiculosView() {
                     </div>
                     <div className="p-5 flex flex-col flex-1">
                       <div className="flex justify-between items-start mb-1">
-                        <h3 className="text-lg font-semibold text-on-surface leading-tight">{v.modelo} <span className="text-on-surface-variant font-normal text-sm">({v.anio})</span></h3>
+                        <h3 className="text-lg font-semibold text-on-surface leading-tight">{v.marca ? `${v.marca} ${v.modelo}` : v.modelo} <span className="text-on-surface-variant font-normal text-sm">({v.anio})</span></h3>
                         <button 
                           onClick={(e) => { e.stopPropagation(); setVehiculoParaEliminar(v); }} 
                           className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
@@ -692,7 +692,7 @@ export default function VehiculosView() {
                         className="hover:bg-surface-container-low transition-colors cursor-pointer group"
                       >
                         <td className="py-4 px-6">
-                          <div className="font-bold text-on-surface">{v.modelo} <span className="font-normal text-on-surface-variant">({v.anio})</span></div>
+                          <div className="font-bold text-on-surface">{v.marca ? `${v.marca} ${v.modelo}` : v.modelo} <span className="font-normal text-on-surface-variant">({v.anio})</span></div>
                           <div className="text-xs text-on-surface-variant mt-1">
                             {v.condicion || 'Usado'} • {v.kilometraje.toLocaleString()} km • {v.transmision}
                           </div>

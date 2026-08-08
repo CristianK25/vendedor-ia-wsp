@@ -28,7 +28,11 @@ class VehiculoRepository:
         query = select(Vehiculo).where(Vehiculo.activo == True)
         
         if search:
-            query = query.where(Vehiculo.modelo.ilike(f"%{search}%"))
+            query = query.where(
+                (Vehiculo.modelo.ilike(f"%{search}%")) |
+                (Vehiculo.marca.ilike(f"%{search}%")) |
+                (Vehiculo.patente.ilike(f"%{search}%"))
+            )
             
         if estado:
             query = query.where(Vehiculo.estado == estado)

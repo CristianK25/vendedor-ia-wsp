@@ -65,7 +65,7 @@ export default function VehiculoDocumentacionPage() {
               <span>{vehiculo.patente.toUpperCase()}</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold text-on-surface mt-1 leading-tight text-balance break-words">
-              Documentación: <span className="text-primary">{vehiculo.modelo}</span>
+              Documentación: <span className="text-primary">{vehiculo.marca ? `${vehiculo.marca} ${vehiculo.modelo}` : vehiculo.modelo}</span>
             </h1>
           </div>
         </div>

@@ -130,7 +130,7 @@ export default function VentaForm() {
           {selectedVehiculo ? (
             <div className="flex items-center justify-between bg-primary-container/30 text-on-surface p-4 rounded-xl border border-primary/20">
               <div>
-                <p className="font-bold text-lg">{selectedVehiculo.modelo}</p>
+                <p className="font-bold text-lg">{selectedVehiculo.marca ? `${selectedVehiculo.marca} ${selectedVehiculo.modelo}` : selectedVehiculo.modelo}</p>
                 <p className="text-sm text-on-surface-variant mt-1">Precio lista: ${selectedVehiculo.precio_venta.toLocaleString()} • {selectedVehiculo.kilometraje.toLocaleString()} km</p>
               </div>
               <button 
@@ -165,7 +165,7 @@ export default function VentaForm() {
                       className="p-4 hover:bg-surface-container-low cursor-pointer border-b border-outline-variant last:border-0 flex justify-between items-center group"
                     >
                       <div>
-                        <p className="font-semibold text-on-surface group-hover:text-primary transition-colors">{v.modelo}</p>
+                        <p className="font-semibold text-on-surface group-hover:text-primary transition-colors">{v.marca ? `${v.marca} ${v.modelo}` : v.modelo}</p>
                         <p className="text-sm text-on-surface-variant">{v.kilometraje.toLocaleString()} km</p>
                       </div>
                       <span className="font-bold text-primary">${v.precio_venta.toLocaleString()}</span>

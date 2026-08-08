@@ -29,6 +29,7 @@ class EtapaVehiculo(str, enum.Enum):
 class Vehiculo(SQLModel, table=True):
     __tablename__ = "vehiculos"
     id: Optional[int] = Field(default=None, primary_key=True)
+    marca: str = Field(default="")
     modelo: str
     precio_venta: float
     precio_compra: Optional[float] = Field(default=None, nullable=True)

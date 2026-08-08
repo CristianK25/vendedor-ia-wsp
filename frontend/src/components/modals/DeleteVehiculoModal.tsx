@@ -49,7 +49,7 @@ export default function DeleteVehiculoModal({ isOpen, onClose, vehiculo, onConfi
                   {isVendido ? 'Eliminación Unificada' : 'Eliminar Vehículo'}
                 </h2>
                 <p className={`text-sm ${isVendido ? 'text-orange-700' : 'text-red-700'}`}>
-                  {vehiculo.modelo} - {vehiculo.patente}
+                  {vehiculo.marca ? `${vehiculo.marca} ${vehiculo.modelo}` : vehiculo.modelo} - {vehiculo.patente}
                 </p>
               </div>
             </div>

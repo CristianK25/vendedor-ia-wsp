@@ -135,6 +135,7 @@ export default function VehiculoForm() {
       }
 
       const cleanData = {
+        marca: data.marca,
         modelo: data.modelo,
         precio_venta: data.precio_venta,
         kilometraje: data.kilometraje,
@@ -515,6 +516,20 @@ export default function VehiculoForm() {
           <div className="bg-surface border border-outline-variant rounded-2xl p-6 md:p-8 shadow-sm">
             <h2 className="text-lg font-semibold text-on-surface mb-6 border-b border-outline-variant pb-2">2. Características del Vehículo (Datos Técnicos)</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Marca */}
+              <div className="col-span-1 md:col-span-1">
+                <label className="block text-sm font-medium text-on-surface-variant mb-2">Marca</label>
+                <div className="relative">
+                  <Car className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
+                  <input 
+                    {...register('marca', { required: 'La marca es requerida' })}
+                    className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    placeholder="Ej: Toyota"
+                  />
+                </div>
+                {errors.marca && <p className="text-error text-xs mt-1 font-medium">{errors.marca.message}</p>}
+              </div>
+
               {/* Modelo */}
               <div className="col-span-1 md:col-span-1">
                 <label className="block text-sm font-medium text-on-surface-variant mb-2">Modelo</label>
@@ -523,7 +538,7 @@ export default function VehiculoForm() {
                   <input 
                     {...register('modelo', { required: 'El modelo es requerido' })}
                     className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                    placeholder="Ej: Toyota Corolla"
+                    placeholder="Ej: Corolla"
                   />
                 </div>
                 {errors.modelo && <p className="text-error text-xs mt-1 font-medium">{errors.modelo.message}</p>}

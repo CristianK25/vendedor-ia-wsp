@@ -9,7 +9,7 @@ class VentaRepository:
         self.session = session
 
     def get_all(self, skip: int = 0, limit: int = 50, search: str = "", sort_by: str = "", sort_dir: str = "asc") -> Tuple[List[dict], int]:
-        query = select(Venta, Vehiculo.modelo, Cliente.nombre).join(
+        query = select(Venta, Vehiculo.marca, Vehiculo.modelo, Cliente.nombre).join(
             Vehiculo, Venta.vehiculo_id == Vehiculo.id
         ).join(
             Cliente, Venta.cliente_telefono == Cliente.telefono
@@ -19,6 +19,7 @@ class VentaRepository:
             query = query.where(
                 (Venta.cliente_telefono.ilike(f"%{search}%")) |
                 (Vehiculo.modelo.ilike(f"%{search}%")) |
+                (Vehiculo.marca.ilike(f"%{search}%")) |
                 (Cliente.nombre.ilike(f"%{search}%"))
             )
             
@@ -44,9 +45,9 @@ class VentaRepository:
         results = self.session.exec(query).all()
         
         items = []
-        for venta, vehiculo_modelo, cliente_nombre in results:
+        for venta, vehiculo_marca, vehiculo_modelo, cliente_nombre in results:
             venta_dict = venta.model_dump()
-            venta_dict["vehiculo_modelo"] = vehiculo_modelo
+            venta_dict["vehiculo_modelo"] = f"{vehiculo_marca} {vehiculo_modelo}".strip() if vehiculo_marca else vehiculo_modelo
             venta_dict["tipo_venta"] = venta.tipo_venta
             venta_dict["cliente_nombre"] = cliente_nombre
             items.append(venta_dict)

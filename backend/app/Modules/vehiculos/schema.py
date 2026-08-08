@@ -9,6 +9,7 @@ class ImagenResponse(BaseModel):
     orden: int
 
 class VehiculoCreate(BaseModel):
+    marca: str
     modelo: str
     precio_venta: float
     precio_compra: Optional[float] = None
@@ -31,6 +32,7 @@ class VehiculoCreate(BaseModel):
     comision_valor: Optional[float] = None
 
 class VehiculoUpdate(BaseModel):
+    marca: Optional[str] = None
     modelo: Optional[str] = None
     precio_venta: Optional[float] = None
     precio_compra: Optional[float] = None
@@ -55,6 +57,7 @@ class VehiculoUpdate(BaseModel):
 
 class VehiculoResponse(BaseModel):
     id: int
+    marca: str = ""
     modelo: str
     precio_venta: float
     precio_compra: Optional[float] = None
