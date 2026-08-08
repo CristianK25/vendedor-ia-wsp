@@ -66,4 +66,27 @@ export const vehiculosApi = {
     })
   },
   avanzarEtapa: (id: number) => fetchApi(`/vehiculos/${id}/avanzar-etapa`, { method: 'PUT' }),
+  descargarLegajoPdf: async (id: number, patente?: string) => {
+    const response = await fetch(`/api/vehiculos/${id}/legajo/pdf`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'X-VendedorIA-CRM-Vehiculos': 'true'
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error('Error al descargar el legajo')
+    }
+    
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Legajo_${patente || id}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  },
 }

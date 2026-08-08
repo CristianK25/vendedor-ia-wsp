@@ -109,3 +109,21 @@ async def subir_documento(
 ):
     service = DocumentosService(session)
     return await service.subir_documento(vehiculo_id, etapa, tipo_documento, archivo)
+
+from fastapi.responses import StreamingResponse
+from app.Modules.documentos.legajo_service import LegajoService
+
+@router.get("/{vehiculo_id}/legajo/pdf")
+def descargar_legajo_pdf(vehiculo_id: int, session: Session = Depends(get_session)):
+    service = LegajoService(session)
+    pdf_stream = service.generar_legajo_completo_pdf(vehiculo_id)
+    
+    headers = {
+        'Content-Disposition': f'attachment; filename="legajo_{vehiculo_id}.pdf"'
+    }
+    
+    return StreamingResponse(
+        iter([pdf_stream.getvalue()]), 
+        media_type="application/pdf", 
+        headers=headers
+    )

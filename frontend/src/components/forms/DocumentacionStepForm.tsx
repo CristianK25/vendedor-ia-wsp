@@ -105,6 +105,12 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
     const file = e.target.files?.[0]
     if (!file) return
 
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setError('Solo se admiten documentos en formato PDF (.pdf)')
+      e.target.value = ''
+      return
+    }
+
     if (isNewMode && onArchivoPendienteChange) {
       onArchivoPendienteChange(tipoDocumento, file, etapa)
       return
@@ -264,7 +270,7 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                           <div className="relative flex-1 sm:flex-none">
                             <input
                               type="file"
-                              accept=".pdf,image/*"
+                              accept=".pdf,application/pdf"
                               onChange={(e) => handleFileUpload(etapa.id, docType.id, docType.label, e)}
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
                               disabled={uploading !== null && !isNewMode}

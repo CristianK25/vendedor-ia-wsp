@@ -11,3 +11,5 @@ python-jose[cryptography]
 email-validator
 requests
 alembic
+reportlab
+pypdf

@@ -34,8 +34,11 @@ class DocumentosService:
             raise HTTPException(status_code=400, detail="El archivo no tiene nombre")
             
         extension = os.path.splitext(file.filename)[1].lower()
-        if not extension:
-            extension = ".pdf" # Default fallback
+        if extension != ".pdf":
+            raise HTTPException(status_code=400, detail="Solo se admiten documentos en formato PDF (.pdf)")
+            
+        if file.content_type and file.content_type != "application/pdf":
+            raise HTTPException(status_code=400, detail="Solo se admiten documentos en formato PDF (.pdf)")
             
         # Check if this type of document already exists for this vehicle
         statement = select(DocumentoVehiculo).where(

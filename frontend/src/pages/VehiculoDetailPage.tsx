@@ -6,7 +6,8 @@ import {
   ArrowLeft, Edit2, CheckCircle2, 
   FileText,
   ImageOff, ChevronLeft, ChevronRight, UserCircle2, ShieldCheck,
-  Lock, AlertTriangle, ExternalLink, FileCheck2, UploadCloud
+  Lock, AlertTriangle, ExternalLink, FileCheck2, UploadCloud,
+  Download, Loader2
 } from 'lucide-react'
 
 const ETAPAS = [
@@ -47,6 +48,7 @@ export default function VehiculoDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [duenoNombre, setDuenoNombre] = useState<string | null>(null)
+  const [isDownloadingLegajo, setIsDownloadingLegajo] = useState(false)
   
   // Galería
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -82,6 +84,19 @@ export default function VehiculoDetailPage() {
         setLoading(false)
       })
   }, [id])
+
+  const handleDescargarLegajo = async () => {
+    if (!vehiculo) return
+    setIsDownloadingLegajo(true)
+    try {
+      await vehiculosApi.descargarLegajoPdf(vehiculo.id, vehiculo.patente || undefined)
+    } catch (error) {
+      console.error("Error al descargar el legajo", error)
+      alert("Ocurrió un error al descargar el legajo consolidado.")
+    } finally {
+      setIsDownloadingLegajo(false)
+    }
+  }
 
   if (loading) {
     return <div className="p-10 text-on-surface-variant flex items-center justify-center">Cargando detalles del vehículo...</div>
@@ -339,13 +354,23 @@ export default function VehiculoDetailPage() {
                 <FileText size={20} className="text-primary"/>
                 Documentos del Vehículo
               </h3>
-              <button 
-                onClick={() => navigate(`/vehiculos/${vehiculo.id}/documentacion`)}
-                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface text-sm font-semibold hover:bg-surface-container-high transition-colors"
-              >
-                <UploadCloud size={16} />
-                Gestionar
-              </button>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={handleDescargarLegajo}
+                  disabled={isDownloadingLegajo}
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary text-primary text-sm font-semibold hover:bg-primary/10 transition-colors disabled:opacity-50"
+                >
+                  {isDownloadingLegajo ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                  Descargar Legajo
+                </button>
+                <button 
+                  onClick={() => navigate(`/vehiculos/${vehiculo.id}/documentacion`)}
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface text-sm font-semibold hover:bg-surface-container-high transition-colors"
+                >
+                  <UploadCloud size={16} />
+                  Gestionar
+                </button>
+              </div>
             </div>
             
             <div className="space-y-6">
