@@ -24,6 +24,7 @@ export default function VehiculoForm() {
   
   const [imagenes, setImagenes] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
+  const [previewErrors, setPreviewErrors] = useState<Record<number, boolean>>({})
   
   const [archivosPendientes, setArchivosPendientes] = useState<Record<string, { file: File, etapa: string }>>({})
   const [localEtapaIndex, setLocalEtapaIndex] = useState(0)
@@ -113,7 +114,23 @@ export default function VehiculoForm() {
       URL.revokeObjectURL(prev[index])
       return prev.filter((_, i) => i !== index)
     })
+    setPreviewErrors(prev => {
+      const updated = { ...prev }
+      delete updated[index]
+      
+      const remapped: Record<number, boolean> = {}
+      Object.keys(updated).forEach(keyStr => {
+        const k = Number(keyStr)
+        if (k > index) {
+          remapped[k - 1] = updated[k]
+        } else {
+          remapped[k] = updated[k]
+        }
+      })
+      return remapped
+    })
   }
+
 
   const onSubmit = async (data: VehiculoFormData) => {
     try {
@@ -705,7 +722,7 @@ export default function VehiculoForm() {
               <div className="relative border-2 border-dashed border-outline-variant rounded-2xl p-10 flex flex-col items-center justify-center text-center bg-background hover:bg-surface-variant/50 transition-colors cursor-pointer group">
                 <ImageIcon className="text-outline mb-3 group-hover:text-primary transition-colors" size={32} />
                 <p className="text-on-surface-variant font-medium">Haz clic aquí para seleccionar fotos</p>
-                <p className="text-sm text-outline mt-1">Soporta JPG, PNG, WEBP</p>
+                <p className="text-sm text-outline mt-1">Soporta JPG, PNG, WEBP, HEIC (iPhone)</p>
                 <input 
                   type="file" 
                   multiple 
@@ -718,20 +735,50 @@ export default function VehiculoForm() {
               {/* Previews */}
               {previews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {previews.map((preview, index) => (
-                    <div key={index} className="relative aspect-square rounded-xl overflow-hidden group border border-outline-variant bg-surface-container-high">
-                      <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button 
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="w-10 h-10 bg-error text-on-error rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
-                        >
-                          <X size={20} />
-                        </button>
+                  {previews.map((preview, index) => {
+                    const isError = previewErrors[index];
+                    const isHEIC = imagenes[index] && (
+                      imagenes[index].name.toLowerCase().endsWith('.heic') ||
+                      imagenes[index].name.toLowerCase().endsWith('.heif')
+                    );
+                    
+                    return (
+                      <div key={index} className="relative aspect-square rounded-xl overflow-hidden group border border-outline-variant bg-surface-container-high flex flex-col items-center justify-center p-2 text-center">
+                        {isError ? (
+                          <div className="flex flex-col items-center justify-center h-full w-full p-3 bg-gradient-to-br from-surface-container-low to-surface-container-high">
+                            <ImageIcon className="text-primary/70 mb-2 shrink-0 animate-pulse" size={28} />
+                            <span className="text-[11px] font-semibold text-on-surface line-clamp-1 break-all px-1">
+                              {imagenes[index]?.name}
+                            </span>
+                            <span className="text-[9px] text-on-surface-variant font-medium mt-1 leading-normal">
+                              {isHEIC 
+                                ? 'Imagen HEIC (se convertirá a WebP al guardar)' 
+                                : 'Formato no soportado en este navegador (se convertirá al guardar)'
+                              }
+                            </span>
+                          </div>
+                        ) : (
+                          <img 
+                            src={preview} 
+                            alt={`Preview ${index}`} 
+                            className="w-full h-full object-cover" 
+                            onError={() => {
+                              setPreviewErrors(prev => ({ ...prev, [index]: true }));
+                            }}
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button 
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="w-10 h-10 bg-error text-on-error rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

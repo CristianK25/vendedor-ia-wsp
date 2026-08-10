@@ -13,3 +13,5 @@ requests
 alembic
 reportlab
 pypdf
+pillow-heif
+

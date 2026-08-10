@@ -5,7 +5,12 @@ from typing import List
 from fastapi import UploadFile
 from sqlmodel import Session
 from PIL import Image
+from pillow_heif import register_heif_opener
 from app.Modules.imagenes.model import Imagen
+
+# Registrar soporte para imágenes HEIC/HEIF (Apple)
+register_heif_opener()
+
 
 UPLOAD_DIR = "fotos"
 
