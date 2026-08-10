@@ -64,7 +64,7 @@ export interface VehiculoCreate {
   anio: number
   transmision: string
   patente: string
-  traccion: string
+  traccion?: string | null
   tipo: string
   condicion: string
   tipo_alta?: 'compra_directa' | 'consignacion'

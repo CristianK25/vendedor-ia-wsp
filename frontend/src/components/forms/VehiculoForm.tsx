@@ -51,7 +51,14 @@ export default function VehiculoForm() {
     })
   }
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<VehiculoFormData>()
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<VehiculoFormData>()
+  const selectedTipo = watch('tipo')
+
+  useEffect(() => {
+    if (selectedTipo && selectedTipo !== 'Camioneta') {
+      setValue('traccion', '')
+    }
+  }, [selectedTipo, setValue])
 
   useEffect(() => {
     if (duenoSearch.length > 2 && !isNewDueno) {
@@ -159,7 +166,7 @@ export default function VehiculoForm() {
         anio: data.anio,
         transmision: data.transmision,
         patente: data.patente,
-        traccion: data.traccion,
+        traccion: data.tipo === 'Camioneta' ? (data.traccion || null) : null,
         tipo: data.tipo,
         condicion: data.condicion,
         detalle_interior: data.detalle_interior,
@@ -627,22 +634,6 @@ export default function VehiculoForm() {
                 {errors.transmision && <p className="text-error text-xs mt-1 font-medium">{errors.transmision.message}</p>}
               </div>
 
-              {/* Tracción */}
-              <div className="col-span-1 md:col-span-1">
-                <label className="block text-sm font-medium text-on-surface-variant mb-2">Tracción</label>
-                <div className="relative">
-                  <select
-                    {...register('traccion', { required: 'La tracción es requerida' })}
-                    className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                  >
-                    <option value="">Seleccione...</option>
-                    <option value="4x2">4x2</option>
-                    <option value="4x4">4x4</option>
-                  </select>
-                </div>
-                {errors.traccion && <p className="text-error text-xs mt-1 font-medium">{errors.traccion.message}</p>}
-              </div>
-
               {/* Tipo */}
               <div className="col-span-1 md:col-span-1">
                 <label className="block text-sm font-medium text-on-surface-variant mb-2">Tipo</label>
@@ -658,6 +649,26 @@ export default function VehiculoForm() {
                 </div>
                 {errors.tipo && <p className="text-error text-xs mt-1 font-medium">{errors.tipo.message}</p>}
               </div>
+
+              {/* Tracción (Solo cuando tipo es Camioneta) */}
+              {selectedTipo === 'Camioneta' && (
+                <div className="col-span-1 md:col-span-1 animate-fade-in">
+                  <label className="block text-sm font-medium text-on-surface-variant mb-2">Tracción</label>
+                  <div className="relative">
+                    <select
+                      {...register('traccion', {
+                        required: selectedTipo === 'Camioneta' ? 'La tracción es requerida para camionetas' : false
+                      })}
+                      className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    >
+                      <option value="">Seleccione...</option>
+                      <option value="4x2">4x2</option>
+                      <option value="4x4">4x4</option>
+                    </select>
+                  </div>
+                  {errors.traccion && <p className="text-error text-xs mt-1 font-medium">{errors.traccion.message}</p>}
+                </div>
+              )}
 
               {/* Condición */}
               <div className="col-span-1 md:col-span-1">
