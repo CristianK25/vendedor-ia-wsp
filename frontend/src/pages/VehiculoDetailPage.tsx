@@ -7,8 +7,9 @@ import {
   FileText,
   ImageOff, ChevronLeft, ChevronRight, UserCircle2, ShieldCheck,
   Lock, AlertTriangle, ExternalLink, FileCheck2, UploadCloud,
-  Download, Loader2
+  Download, Loader2, Maximize2
 } from 'lucide-react'
+import ImageLightboxModal from '../components/modals/ImageLightboxModal'
 
 const ETAPAS = [
   { id: 'pre_compra', label: 'Pre-compra' },
@@ -52,6 +53,7 @@ export default function VehiculoDetailPage() {
   
   // Galería
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -172,27 +174,57 @@ export default function VehiculoDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Columna Izquierda: Galería y Datos */}
-        <div className="lg:col-span-2 flex flex-col gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-8 min-w-0">
           
           {/* Galería (Carrusel) */}
           <div className="bg-surface border border-outline-variant rounded-2xl p-4 overflow-hidden">
-            <div className="relative aspect-[16/9] md:aspect-[21/9] rounded-xl bg-surface-container overflow-hidden flex items-center justify-center mb-3">
+            <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] rounded-xl bg-zinc-950 overflow-hidden flex items-center justify-center mb-3 group">
               {hasImages ? (
                 <>
+                  {/* Fondo ambiental sutil (Ambient Backdrop) */}
+                  <img 
+                    src={vehiculo.imagenes[activeImageIndex].ruta} 
+                    alt="" 
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-110 pointer-events-none select-none"
+                  />
+
+                  {/* Imagen principal completa (sin recortes) */}
                   <img 
                     src={vehiculo.imagenes[activeImageIndex].ruta} 
                     alt={vehiculo.modelo} 
-                    className="w-full h-full object-cover transition-opacity duration-300"
+                    onClick={() => setIsLightboxOpen(true)}
+                    className="relative z-10 w-full h-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.01]"
+                    title="Click para ver en pantalla completa"
                   />
+
+                  {/* Botón Pantalla Completa / Expandir (Solo visible en celular) */}
+                  <button
+                    onClick={() => setIsLightboxOpen(true)}
+                    className="md:hidden absolute top-3 right-3 z-20 p-2.5 rounded-xl bg-black/50 text-white hover:bg-black/80 hover:scale-105 transition-all duration-200 backdrop-blur-sm shadow-md border border-white/10"
+                    title="Ver pantalla completa"
+                  >
+                    <Maximize2 size={18} />
+                  </button>
+
                   {vehiculo.imagenes.length > 1 && (
                     <>
-                      <button onClick={handlePrevImage} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors backdrop-blur-sm">
+                      {/* Flechas de navegación (Solo visibles en celular) */}
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handlePrevImage(); }} 
+                        className="md:hidden absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/80 hover:scale-105 transition-all duration-200 backdrop-blur-sm border border-white/10 shadow-lg"
+                        title="Foto anterior"
+                      >
                         <ChevronLeft size={24} />
                       </button>
-                      <button onClick={handleNextImage} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors backdrop-blur-sm">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleNextImage(); }} 
+                        className="md:hidden absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/80 hover:scale-105 transition-all duration-200 backdrop-blur-sm border border-white/10 shadow-lg"
+                        title="Foto siguiente"
+                      >
                         <ChevronRight size={24} />
                       </button>
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/40 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm font-medium">
+                      <div className="md:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-20 bg-black/60 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm font-medium border border-white/10 shadow">
                         {activeImageIndex + 1} / {vehiculo.imagenes.length}
                       </div>
                     </>
@@ -211,9 +243,9 @@ export default function VehiculoDetailPage() {
               <div className="flex gap-2 overflow-x-auto hide-scrollbar snap-x pb-1">
                 {vehiculo.imagenes.map((img: any, idx: number) => (
                   <button 
-                    key={img.id}
+                    key={img.id || idx}
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 snap-start transition-all ${activeImageIndex === idx ? 'border-primary shadow-sm' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                    className={`flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 snap-start transition-all bg-zinc-900 ${activeImageIndex === idx ? 'border-primary shadow-sm ring-2 ring-primary/30 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
                   >
                     <img 
                       src={img.ruta} 
@@ -500,6 +532,18 @@ export default function VehiculoDetailPage() {
         </div>
 
       </div>
+
+      {/* Visor Lightbox a Pantalla Completa */}
+      {hasImages && (
+        <ImageLightboxModal
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+          images={vehiculo.imagenes}
+          currentIndex={activeImageIndex}
+          onIndexChange={setActiveImageIndex}
+          title={vehiculo.marca ? `${vehiculo.marca} ${vehiculo.modelo}` : vehiculo.modelo}
+        />
+      )}
     </div>
   )
 }
