@@ -1,0 +1,54 @@
+Cliente habla por WhatsApp:
+
+    Nuevo Cliente (No registrado en base de datos):
+        Pregunta por Auto de Stock (Intención de Compra):
+            - El Agente busca disponibilidad en BD con la herramienta `buscar_vehiculos`.
+            - SI ENCUENTRA:
+                - Le muestra los detalles del auto, precio y le envía el link del catálogo oficial.
+                - Guarda al cliente en BD (nombre y teléfono) y asocia un Lead/Interés por ese `vehiculo_id`.
+                - Le ofrece agendar una visita presencial para ver el auto.
+            - NO ENCUENTRA:
+                - Le informa amablemente que no está en stock.
+                - Le ofrece alternativas similares o le pregunta presupuesto para registrar la búsqueda.
+                - Guarda al cliente en BD con etiqueta "Buscando Auto".
+        
+        Pregunta por Venta / Tasación de su propio auto (Intención de Venta):
+            - El Agente detecta que el usuario quiere entregar en parte de pago o consignar su vehículo.
+            - Le solicita datos mínimos del auto (Marca, Modelo, Año, Km y precio pretendido).
+            - Guarda al cliente en BD y registra la solicitud en una tabla de "Propuestas de Tasación" o "Consignaciones Pendientes" asociando el teléfono.
+            - Avisa al cliente que un tasador se comunicará con él.
+
+        Pregunta por Reunión / Cita General:
+            - El Agente le pide el nombre (fundamental porque es cliente nuevo).
+            - Le ofrece opciones de día/hora de acuerdo a la disponibilidad.
+            - Llama a `crear_peticion` con nombre, teléfono, fecha propuesta y sin `vehiculo_id` (cita general).
+            - Guarda al cliente en la BD.
+
+        Consulta General (Ubicación, horarios, métodos de pago):
+            - El Agente responde directamente según su base de conocimientos.
+            - Guarda al cliente en BD para futuras interacciones.
+
+
+    Cliente Existente (Ya registrado en base de datos):
+        Pregunta por Auto de Stock (Intención de Compra):
+            - n8n consulta el backend para ver si el cliente ya tiene un interés activo o si es un auto nuevo.
+            - SI CONSULTA POR EL MISMO AUTO ANTERIOR:
+                - El Agente lo reconoce: "¡Hola [Nombre]! Veo que sigues interesado en el [Modelo]. Sigue disponible..."
+                - Ofrece directamente agendar cita para cerrar el negocio.
+            - SI CONSULTA POR UN AUTO NUEVO:
+                - Busca stock, muestra info y registra este nuevo interés en el historial del cliente (Lead Multivehículo).
+            - SI EL AUTO ANTERIOR YA SE VENDIÓ:
+                - Le avisa amablemente y le recomienda vehículos similares del stock actual.
+
+        Pregunta por Venta / Tasación de su propio auto (Intención de Venta):
+            - Verifica si ya tiene registrado un auto para tasar.
+            - Si es el mismo: Le informa el estado de la cotización/tasación.
+            - Si es otro: Solicita datos del nuevo vehículo y registra una nueva solicitud de tasación vinculada a su ficha de cliente.
+
+        Pregunta por Reunión / Cita (o Estado de Cita):
+            - n8n consulta el backend para ver si tiene citas/peticiones activas.
+            - SI TIENE CITA CONFIRMADA O PETICIÓN PENDIENTE:
+                - El Agente le recuerda: "Tienes una cita agendada para el [Fecha/Hora]".
+                - Ofrece cancelar o reprogramar (si el usuario acepta, llama a los endpoints correspondientes de cancelación/reprogramación).
+            - SI NO TIENE CITA:
+                - Le ofrece agendar una directamente. Como ya conoce su nombre, va directo a acordar fecha/hora y llama a `crear_peticion`.

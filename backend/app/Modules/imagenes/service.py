@@ -2,9 +2,9 @@ import os
 import io
 import uuid
 from typing import List
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from sqlmodel import Session
-from PIL import Image
+from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
 from app.Modules.imagenes.model import Imagen
 
@@ -33,16 +33,17 @@ class ImagenesService:
                 # Abrir con Pillow
                 img = Image.open(io.BytesIO(content))
                 
+                # Auto-orientar según metadata EXIF (para fotos verticales de celulares)
+                img = ImageOps.exif_transpose(img)
+                
                 # Convertir a RGB para evitar problemas al guardar WebP
                 if img.mode in ("RGBA", "P"):
                     img = img.convert("RGB")
                     
-                # Redimensionar si es muy grande (máx 1200px ancho)
-                max_width = 1200
-                if img.width > max_width:
-                    ratio = max_width / img.width
-                    new_size = (max_width, int(img.height * ratio))
-                    img = img.resize(new_size, Image.Resampling.LANCZOS)
+                # Redimensionar si es muy grande (máx 1200px en cualquier dimensión)
+                max_dim = 1200
+                if img.width > max_dim or img.height > max_dim:
+                    img.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
                 
                 # Generar nombre único
                 filename = f"{vehiculo_id}_{uuid.uuid4().hex[:8]}.webp"
@@ -86,3 +87,22 @@ class ImagenesService:
                 filepath = os.path.join(UPLOAD_DIR, ruta.replace("/fotos/", ""))
                 if os.path.exists(filepath):
                     os.remove(filepath)
+
+    def rotar_imagen(self, imagen_id: int) -> Imagen:
+        """Rota la imagen guardada 90 grados en sentido horario"""
+        imagen = self.session.get(Imagen, imagen_id)
+        if not imagen:
+            raise HTTPException(status_code=404, detail="Imagen no encontrada")
+        
+        if imagen.ruta.startswith("/fotos/"):
+            filename = imagen.ruta.split("?")[0].replace("/fotos/", "")
+            filepath = os.path.join(UPLOAD_DIR, filename)
+            
+            if os.path.exists(filepath):
+                with Image.open(filepath) as img:
+                    rotated = img.rotate(-90, expand=True)
+                    if rotated.mode in ("RGBA", "P"):
+                        rotated = rotated.convert("RGB")
+                    rotated.save(filepath, "WEBP", quality=80)
+        
+        return imagen

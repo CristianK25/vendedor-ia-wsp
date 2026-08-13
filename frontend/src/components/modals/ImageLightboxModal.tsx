@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, RotateCw } from 'lucide-react'
 
 interface LightboxImage {
   id?: number | string
@@ -13,6 +13,8 @@ interface ImageLightboxModalProps {
   currentIndex: number
   onIndexChange: (index: number) => void
   title?: string
+  onRotarImagen?: (imagenId: number) => void
+  isRotating?: boolean
 }
 
 export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
@@ -21,7 +23,9 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
   images,
   currentIndex,
   onIndexChange,
-  title
+  title,
+  onRotarImagen,
+  isRotating = false
 }) => {
   const total = images.length
 
@@ -68,7 +72,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
       className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-black/95 backdrop-blur-md select-none animate-fade-in p-4 sm:p-6"
       onClick={onClose}
     >
-      {/* Barra Superior: Título, Contador y Botón Cerrar */}
+      {/* Barra Superior: Título, Contador y Botón Cerrar / Rotar */}
       <div 
         className="w-full flex items-center justify-between z-20 text-white pb-2 max-w-7xl mx-auto"
         onClick={(e) => e.stopPropagation()}
@@ -84,13 +88,25 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
           </span>
         </div>
 
-        <button
-          onClick={onClose}
-          className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors duration-200"
-          title="Cerrar (Esc)"
-        >
-          <X size={22} />
-        </button>
+        <div className="flex items-center gap-2">
+          {currentImage.id && onRotarImagen && (
+            <button
+              onClick={() => typeof currentImage.id === 'number' && onRotarImagen(currentImage.id)}
+              disabled={isRotating}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors duration-200"
+              title="Rotar 90°"
+            >
+              <RotateCw size={18} className={isRotating ? 'animate-spin' : ''} />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors duration-200"
+            title="Cerrar (Esc)"
+          >
+            <X size={22} />
+          </button>
+        </div>
       </div>
 
       {/* Área Central: Imagen Principal y Flechas */}

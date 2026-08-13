@@ -7,7 +7,7 @@ import {
   FileText,
   ImageOff, ChevronLeft, ChevronRight, UserCircle2, ShieldCheck,
   Lock, AlertTriangle, ExternalLink, FileCheck2, UploadCloud,
-  Download, Loader2, Maximize2
+  Download, Loader2, Maximize2, RotateCw
 } from 'lucide-react'
 import ImageLightboxModal from '../components/modals/ImageLightboxModal'
 
@@ -50,10 +50,36 @@ export default function VehiculoDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [duenoNombre, setDuenoNombre] = useState<string | null>(null)
   const [isDownloadingLegajo, setIsDownloadingLegajo] = useState(false)
+  const [isRotating, setIsRotating] = useState(false)
   
   // Galería
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+
+  const handleRotarImagen = async (imagenId: number) => {
+    if (!imagenId || isRotating) return
+    setIsRotating(true)
+    try {
+      await vehiculosApi.rotarImagen(imagenId)
+      setVehiculo((prev: any) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          imagenes: prev.imagenes.map((img: any) => {
+            if (img.id === imagenId) {
+              const basePath = img.ruta.split('?')[0]
+              return { ...img, ruta: `${basePath}?t=${Date.now()}` }
+            }
+            return img
+          })
+        }
+      })
+    } catch (err) {
+      console.error("Error al rotar imagen:", err)
+    } finally {
+      setIsRotating(false)
+    }
+  }
 
   useEffect(() => {
     if (!id) return
@@ -197,6 +223,21 @@ export default function VehiculoDetailPage() {
                     className="relative z-10 w-full h-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.01]"
                     title="Click para ver en pantalla completa"
                   />
+
+                  {/* Botón discreto Rotar 90° */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const activeImg = vehiculo.imagenes[activeImageIndex]
+                      if (activeImg?.id) handleRotarImagen(activeImg.id)
+                    }}
+                    disabled={isRotating}
+                    className="absolute top-3 left-3 z-20 p-2 rounded-xl bg-black/40 text-white/80 hover:text-white hover:bg-black/70 hover:scale-105 transition-all duration-200 backdrop-blur-sm border border-white/10 shadow-md flex items-center gap-1.5 text-xs font-medium"
+                    title="Rotar 90°"
+                  >
+                    <RotateCw size={15} className={isRotating ? 'animate-spin' : ''} />
+                    <span className="hidden sm:inline">Rotar</span>
+                  </button>
 
                   {/* Botón Pantalla Completa / Expandir (Solo visible en celular) */}
                   <button
@@ -542,6 +583,8 @@ export default function VehiculoDetailPage() {
           currentIndex={activeImageIndex}
           onIndexChange={setActiveImageIndex}
           title={vehiculo.marca ? `${vehiculo.marca} ${vehiculo.modelo}` : vehiculo.modelo}
+          onRotarImagen={handleRotarImagen}
+          isRotating={isRotating}
         />
       )}
     </div>

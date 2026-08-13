@@ -89,4 +89,5 @@ export const vehiculosApi = {
     window.URL.revokeObjectURL(url)
     document.body.removeChild(a)
   },
+  rotarImagen: (imagenId: number) => fetchApi(`/vehiculos/imagenes/${imagenId}/rotar`, { method: 'POST' }),
 }

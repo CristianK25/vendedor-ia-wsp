@@ -69,6 +69,13 @@ async def create_vehiculo(
     vehiculo_data = VehiculoCreate.model_validate_json(vehiculo)
     return await service.create_vehiculo_con_imagenes(vehiculo_data, imagenes)
 
+from app.Modules.imagenes.service import ImagenesService
+
+@router.post("/imagenes/{imagen_id}/rotar")
+def rotar_imagen(imagen_id: int, session: Session = Depends(get_session)):
+    service = ImagenesService(session)
+    return service.rotar_imagen(imagen_id)
+
 @router.get("/{vehiculo_id}", response_model=VehiculoResponse)
 def get_vehiculo(vehiculo_id: int, session: Session = Depends(get_session)):
     service = VehiculoService(session)
