@@ -31,6 +31,7 @@ from app.Modules.promociones.model import Promocion
 from app.Modules.resenas.model import Resena
 from app.Modules.etiquetas.model import Etiqueta
 from app.Modules.peticiones.model import Peticion
+from app.Modules.interacciones.model import Interaccion
 
 target_metadata = SQLModel.metadata
 

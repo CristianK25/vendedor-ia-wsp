@@ -11,6 +11,8 @@ from app.Modules.citas.schema import CitaCreate, CitaUpdate
 from app.Modules.clientes.service import ClienteService
 from app.Modules.clientes.schema import ClienteCreate, ClienteUpdate
 from app.Modules.peticiones.model import Peticion
+from app.Modules.interacciones.schema import InteraccionCreate
+from app.Modules.interacciones.service import InteraccionService
 
 router = APIRouter(prefix="/n8n", tags=["N8N"], dependencies=[Depends(verify_n8n_internal_request)])
 
@@ -143,3 +145,46 @@ def guardar_resena(resena_data: N8NResenaCreate, session: Session = Depends(get_
     session.refresh(nueva_resena)
     
     return {"status": "success", "message": "Reseña guardada exitosamente", "resena": nueva_resena}
+
+@router.get("/clientes/{telefono}/consultas/verificar")
+def verificar_consulta_vehiculo(telefono: str, vehiculo_id: int, session: Session = Depends(get_session)):
+    service = InteraccionService(session)
+    interaccion = service.get_ultima_interaccion_cliente_vehiculo(telefono, vehiculo_id)
+    
+    if not interaccion:
+        return {"status": "not_found", "message": "No hay consultas previas para este vehículo"}
+        
+    return {"status": "success", "message": "Interacción encontrada", "interaccion": interaccion}
+
+@router.get("/clientes/{telefono}/estado-citas")
+def verificar_estado_citas(telefono: str, session: Session = Depends(get_session)):
+    from app.Modules.citas.model import Cita
+    
+    # Check for active citas (future)
+    cita_activa = session.exec(
+        select(Cita).where(
+            Cita.cliente_telefono == telefono,
+            Cita.estado == "confirmada",
+            Cita.fecha >= datetime.utcnow()
+        ).order_by(Cita.fecha.asc())
+    ).first()
+    
+    # Check for pending peticiones
+    peticion_pendiente = session.exec(
+        select(Peticion).where(
+            Peticion.cliente_telefono == telefono,
+            Peticion.estado.in_(["pendiente_admin", "pendiente_cliente"])
+        ).order_by(Peticion.fecha_propuesta.asc())
+    ).first()
+    
+    return {
+        "status": "success",
+        "cita_activa": cita_activa,
+        "peticion_pendiente": peticion_pendiente
+    }
+
+@router.post("/interacciones")
+def crear_interaccion(data: InteraccionCreate, session: Session = Depends(get_session)):
+    service = InteraccionService(session)
+    nueva_interaccion = service.create(data)
+    return {"status": "success", "message": "Interacción registrada exitosamente", "interaccion": nueva_interaccion}
