@@ -55,6 +55,7 @@
 
 /* 🟢 Tema 1: Aston Martin Racing (Default Dark) */
 :root, [data-theme="aston-martin"] {
+  color-scheme: dark;
   --color-background: #0f1117;
   --color-surface: #181b24;
   --color-surface-dim: #12141a;
@@ -103,6 +104,7 @@
 
 /* 🍏 Tema 2: Porsche GT (Grafito + Lima Pastel) */
 [data-theme="porsche-gt"] {
+  color-scheme: dark;
   --color-background: #121418;
   --color-surface: #1b1e24;
   --color-surface-dim: #0e1013;
@@ -151,6 +153,7 @@
 
 /* ⚡ Tema 3: Racing Neón (Alto Contraste) */
 [data-theme="racing-neon"] {
+  color-scheme: dark;
   --color-background: #0a0a0a;
   --color-surface: #141414;
   --color-surface-dim: #050505;
@@ -199,6 +202,7 @@
 
 /* ☀️ Tema 4: Modo Claro Elegante */
 [data-theme="modo-claro"] {
+  color-scheme: light;
   --color-background: #f8f9fa;
   --color-surface: #ffffff;
   --color-surface-dim: #e9ecef;

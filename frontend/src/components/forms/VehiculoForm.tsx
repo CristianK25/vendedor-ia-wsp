@@ -348,7 +348,7 @@ export default function VehiculoForm() {
                             valueAsNumber: true,
                             min: { value: 0, message: 'No puede ser negativo' }
                           })}
-                          className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all hide-spin-buttons"
                           placeholder="0.00"
                         />
                       </div>
@@ -499,8 +499,8 @@ export default function VehiculoForm() {
                             valueAsNumber: true,
                             min: { value: 0, message: 'No puede ser negativo' }
                           })}
-                          className={`w-full py-3 pr-4 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all ${
-                            comisionTipo === 'monto_fijo' ? 'pl-10' : 'pl-4 hide-spin-buttons'
+                          className={`w-full py-3 pr-4 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all hide-spin-buttons ${
+                            comisionTipo === 'monto_fijo' ? 'pl-10' : 'pl-4'
                           }`}
                           placeholder={comisionTipo === 'porcentaje' ? 'Ej: 5' : 'Ej: 1000'}
                         />
@@ -525,7 +525,7 @@ export default function VehiculoForm() {
                           valueAsNumber: true,
                           min: { value: 0, message: 'No puede ser negativo' }
                         })}
-                        className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all hide-spin-buttons"
                         placeholder="0.00"
                       />
                     </div>
@@ -548,7 +548,7 @@ export default function VehiculoForm() {
                         valueAsNumber: true,
                         min: { value: 0, message: 'No puede ser negativo' }
                       })}
-                      className="w-full pl-10 pr-4 py-4 bg-primary/5 border border-primary/20 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-lg font-bold text-on-surface"
+                      className="w-full pl-10 pr-4 py-4 bg-primary/5 border border-primary/20 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-lg font-bold text-on-surface hide-spin-buttons"
                       placeholder="0.00"
                     />
                   </div>
@@ -608,7 +608,7 @@ export default function VehiculoForm() {
                       valueAsNumber: true,
                       min: { value: 1900, message: 'Año inválido' }
                     })}
-                    className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full px-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all hide-spin-buttons"
                     placeholder="Ej: 2022"
                   />
                 </div>
@@ -640,7 +640,7 @@ export default function VehiculoForm() {
                       valueAsNumber: true,
                       min: { value: 0, message: 'No puede ser negativo' }
                     })}
-                    className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all hide-spin-buttons"
                     placeholder="Ej: 45000"
                   />
                 </div>
