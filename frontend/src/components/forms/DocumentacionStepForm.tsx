@@ -181,15 +181,15 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
           const isCurrent = idx === currentEtapaIndex
           
           return (
-            <div key={etapa.id} className="relative z-10 flex flex-col items-center gap-2 bg-surface px-2">
+            <div key={etapa.id} className="relative z-10 flex flex-col items-center gap-2 bg-background px-2">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors ${
                 isCompleted ? 'bg-primary border-primary text-on-primary' :
                 isCurrent ? 'bg-primary-container border-primary text-on-primary-container ring-4 ring-primary/20' :
-                'bg-surface border-outline-variant text-outline'
+                'bg-surface border-outline-variant text-on-surface-variant'
               }`}>
                 {isCompleted ? <CheckCircle2 size={20} /> : (idx + 1)}
               </div>
-              <span className={`text-xs font-semibold ${isCurrent ? 'text-primary' : 'text-on-surface-variant'}`}>
+              <span className={`text-xs font-semibold ${isCurrent ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
                 {etapa.label}
               </span>
             </div>
