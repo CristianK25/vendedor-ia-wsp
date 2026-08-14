@@ -10,6 +10,7 @@ import {
   Download, Loader2, Maximize2, RotateCw
 } from 'lucide-react'
 import ImageLightboxModal from '../components/modals/ImageLightboxModal'
+import { useAuthStore } from '../store/authStore'
 
 const ETAPAS = [
   { id: 'pre_compra', label: 'Pre-compra' },
@@ -43,6 +44,7 @@ const DOCS_POR_ETAPA: Record<string, { id: string, label: string, optional?: boo
 export default function VehiculoDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { usuario } = useAuthStore()
   
   const [vehiculo, setVehiculo] = useState<any>(null)
   const [documentos, setDocumentos] = useState<any[]>([])
@@ -537,11 +539,15 @@ export default function VehiculoDetailPage() {
             </h3>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center font-bold">
-                JD
+                {usuario ? `${usuario.nombre[0]}${usuario.apellido ? usuario.apellido[0] : ''}`.toUpperCase() : 'US'}
               </div>
               <div>
-                <p className="font-semibold text-on-surface">Juan Delgado</p>
-                <p className="text-xs text-on-surface-variant">Contacto Principal</p>
+                <p className="font-semibold text-on-surface">
+                  {usuario ? `${usuario.nombre} ${usuario.apellido || ''}` : 'Usuario del Sistema'}
+                </p>
+                <p className="text-xs text-on-surface-variant capitalize">
+                  {usuario ? usuario.rol : 'Vendedor'}
+                </p>
               </div>
             </div>
           </div>
