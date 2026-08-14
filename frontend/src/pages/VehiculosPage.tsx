@@ -58,17 +58,17 @@ export default function VehiculosView() {
   const [filterTipo, setFilterTipo] = useState<string>('Todos');
   const [filterCondicion, setFilterCondicion] = useState<string>('Todas');
   const [appliedFilters, setAppliedFilters] = useState<{
-    precioRango: [number, number];
-    kmRango: [number, number];
-    anioRango: [number, number];
+    precioRango: [number, number] | null;
+    kmRango: [number, number] | null;
+    anioRango: [number, number] | null;
     filterTransmision: string;
     filterTraccion: string;
     filterTipo: string;
     filterCondicion: string;
   }>({
-    precioRango: [0, 100000],
-    kmRango: [0, 200000],
-    anioRango: [2000, new Date().getFullYear()],
+    precioRango: null,
+    kmRango: null,
+    anioRango: null,
     filterTransmision: '',
     filterTraccion: 'Todas',
     filterTipo: 'Todos',
@@ -166,15 +166,6 @@ export default function VehiculosView() {
       setPrecioRango(initialPrecio);
       setKmRango(initialKm);
       setAnioRango(initialAnio);
-      setAppliedFilters({
-        precioRango: initialPrecio,
-        kmRango: initialKm,
-        anioRango: initialAnio,
-        filterTransmision: '',
-        filterTraccion: 'Todas',
-        filterTipo: 'Todos',
-        filterCondicion: 'Todas'
-      });
     }).catch(console.error);
   }, []);
 
@@ -182,17 +173,11 @@ export default function VehiculosView() {
   useEffect(() => {
     setLoading(true);
     const estadoQuery = filterEstado === 'todos' ? '' : filterEstado;
-    const filters = {
+    const filters: any = {
       page: currentPage,
       size,
       search: debouncedSearch,
       estado: estadoQuery,
-      precio_min: appliedFilters.precioRango[0],
-      precio_max: appliedFilters.precioRango[1],
-      km_min: appliedFilters.kmRango[0],
-      km_max: appliedFilters.kmRango[1],
-      anio_min: appliedFilters.anioRango[0],
-      anio_max: appliedFilters.anioRango[1],
       transmision: appliedFilters.filterTransmision === 'Todas' ? '' : appliedFilters.filterTransmision,
       traccion: appliedFilters.filterTraccion === 'Todas' ? '' : appliedFilters.filterTraccion,
       tipo: appliedFilters.filterTipo === 'Todos' ? '' : appliedFilters.filterTipo,
@@ -200,6 +185,19 @@ export default function VehiculosView() {
       sortBy: sortConfig.key || '',
       sortDir: sortConfig.direction
     };
+
+    if (appliedFilters.precioRango) {
+      filters.precio_min = appliedFilters.precioRango[0];
+      filters.precio_max = appliedFilters.precioRango[1];
+    }
+    if (appliedFilters.kmRango) {
+      filters.km_min = appliedFilters.kmRango[0];
+      filters.km_max = appliedFilters.kmRango[1];
+    }
+    if (appliedFilters.anioRango) {
+      filters.anio_min = appliedFilters.anioRango[0];
+      filters.anio_max = appliedFilters.anioRango[1];
+    }
     vehiculosApi.getAll(filters)
       .then((data: any) => {
         setVehiculos(data.items);
@@ -519,37 +517,24 @@ export default function VehiculosView() {
                   setPrecioRango(defaultPrecio);
                   setKmRango(defaultKm);
                   setAnioRango(defaultAnio);
-                  setFilterTransmision('Todas');
-                  setFilterTraccion('Todas');
-                  setFilterTipo('Todos');
-                  setFilterCondicion('Todas');
-                  setAppliedFilters({
-                    precioRango: defaultPrecio,
-                    kmRango: defaultKm,
-                    anioRango: defaultAnio,
-                    filterTransmision: 'Todas',
-                    filterTraccion: 'Todas',
-                    filterTipo: 'Todos',
-                    filterCondicion: 'Todas'
-                  });
                 } else {
                   setPrecioRango([0, 100000]);
                   setKmRango([0, 200000]);
                   setAnioRango([2000, new Date().getFullYear()]);
-                  setFilterTransmision('Todas');
-                  setFilterTraccion('Todas');
-                  setFilterTipo('Todos');
-                  setFilterCondicion('Todas');
-                  setAppliedFilters({
-                    precioRango: [0, 100000],
-                    kmRango: [0, 200000],
-                    anioRango: [2000, new Date().getFullYear()],
-                    filterTransmision: 'Todas',
-                    filterTraccion: 'Todas',
-                    filterTipo: 'Todos',
-                    filterCondicion: 'Todas'
-                  });
                 }
+                setFilterTransmision('Todas');
+                setFilterTraccion('Todas');
+                setFilterTipo('Todos');
+                setFilterCondicion('Todas');
+                setAppliedFilters({
+                  precioRango: null,
+                  kmRango: null,
+                  anioRango: null,
+                  filterTransmision: 'Todas',
+                  filterTraccion: 'Todas',
+                  filterTipo: 'Todos',
+                  filterCondicion: 'Todas'
+                });
                 setFilterEstado('todos');
                 setSearchTerm('');
                 setCurrentPage(1);
@@ -599,6 +584,7 @@ export default function VehiculosView() {
                         <img 
                           src={v.imagenes[0].ruta.trim()}
                           alt={v.modelo}
+                          loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
