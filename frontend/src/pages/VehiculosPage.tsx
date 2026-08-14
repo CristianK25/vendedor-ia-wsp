@@ -260,9 +260,9 @@ export default function VehiculosView() {
       {/* Filters Bar (Minimalist) */}
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[280px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={20} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant" size={20} />
           <input 
-            className="w-full pl-10 pr-4 h-11 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" 
+            className="w-full pl-10 pr-4 h-11 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-on-surface placeholder:text-on-surface-variant" 
             placeholder="Buscar por marca, modelo o VIN..." 
             type="text"
             value={searchTerm}
@@ -271,54 +271,54 @@ export default function VehiculosView() {
         </div>
         <button 
           onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          className={`px-4 h-11 border rounded-lg flex items-center gap-2 transition-colors text-sm font-semibold ${showAdvancedFilters ? 'bg-primary-container text-on-primary-container border-primary/20' : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low'}`}
+          className={`px-4 h-11 border rounded-xl flex items-center gap-2 transition-colors text-sm font-semibold cursor-pointer ${showAdvancedFilters ? 'bg-primary text-on-primary border-primary' : 'bg-surface border-outline-variant text-on-surface hover:bg-surface-container-high'}`}
         >
           <ListFilter size={20} />
           Filtros
         </button>
 
         {/* Tabs de Filtro de Estado */}
-        <div className="flex bg-surface-container-low border border-outline-variant rounded-lg p-1 h-11">
+        <div className="flex bg-surface-container-low border border-outline-variant rounded-xl p-1 h-11">
           <button 
             onClick={() => setFilterEstado('todos')}
-            className={`px-4 rounded-md transition-colors text-sm font-semibold flex items-center gap-1 ${filterEstado === 'todos' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            className={`px-4 rounded-lg transition-colors text-sm font-semibold flex items-center gap-1 cursor-pointer ${filterEstado === 'todos' ? 'bg-surface-container-high text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
           >
             Todos
           </button>
           <button 
             onClick={() => setFilterEstado('disponible')}
-            className={`px-4 rounded-md transition-colors text-sm font-semibold flex items-center gap-1.5 ${filterEstado === 'disponible' ? 'bg-white shadow-sm text-emerald-600' : 'text-on-surface-variant hover:text-on-surface'}`}
+            className={`px-4 rounded-lg transition-colors text-sm font-semibold flex items-center gap-1.5 cursor-pointer ${filterEstado === 'disponible' ? 'bg-surface-container-high text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
           >
-            <span className={`w-2 h-2 rounded-full ${filterEstado === 'disponible' ? 'bg-emerald-500' : 'bg-emerald-500/50'}`}></span>
+            <span className={`w-2 h-2 rounded-full ${filterEstado === 'disponible' ? 'bg-primary' : 'bg-primary/50'}`}></span>
             Disponibles
           </button>
           <button 
             onClick={() => setFilterEstado('vendido')}
-            className={`px-4 rounded-md transition-colors text-sm font-semibold flex items-center gap-1.5 ${filterEstado === 'vendido' ? 'bg-white shadow-sm text-red-600' : 'text-on-surface-variant hover:text-on-surface'}`}
+            className={`px-4 rounded-lg transition-colors text-sm font-semibold flex items-center gap-1.5 cursor-pointer ${filterEstado === 'vendido' ? 'bg-surface-container-high text-error shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
           >
-            <span className={`w-2 h-2 rounded-full ${filterEstado === 'vendido' ? 'bg-red-500' : 'bg-red-500/50'}`}></span>
+            <span className={`w-2 h-2 rounded-full ${filterEstado === 'vendido' ? 'bg-error' : 'bg-error/50'}`}></span>
             Vendidos
           </button>
           <button 
             onClick={() => setFilterEstado('reventa')}
-            className={`px-4 rounded-md transition-colors text-sm font-semibold flex items-center gap-1.5 ${filterEstado === 'reventa' ? 'bg-white shadow-sm text-orange-600' : 'text-on-surface-variant hover:text-on-surface'}`}
+            className={`px-4 rounded-lg transition-colors text-sm font-semibold flex items-center gap-1.5 cursor-pointer ${filterEstado === 'reventa' ? 'bg-surface-container-high text-amber-400 shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
           >
-            <span className={`w-2 h-2 rounded-full ${filterEstado === 'reventa' ? 'bg-orange-500' : 'bg-orange-500/50'}`}></span>
+            <span className={`w-2 h-2 rounded-full ${filterEstado === 'reventa' ? 'bg-amber-400' : 'bg-amber-400/50'}`}></span>
             Reventa
           </button>
         </div>
 
-        <div className="ml-auto flex items-center bg-surface-container-low border border-outline-variant rounded-lg p-1 h-11">
+        <div className="ml-auto flex items-center bg-surface-container-low border border-outline-variant rounded-xl p-1 h-11">
           <button 
             onClick={() => handleViewModeChange('list')}
-            className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            className={`p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'list' ? 'bg-surface-container-high text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
             title="Vista de Lista"
           >
             <List size={20} />
           </button>
           <button 
             onClick={() => handleViewModeChange('grid')}
-            className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            className={`p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-surface-container-high text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
             title="Vista de Tarjetas"
           >
             <LayoutGrid size={20} />
@@ -560,9 +560,9 @@ export default function VehiculosView() {
                   <div 
                     key={v.id} 
                     onClick={() => navigate(`/vehiculos/${v.id}`)}
-                    className="premium-card-hover bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col group cursor-pointer"
+                    className="premium-card-hover bg-surface rounded-2xl border border-outline-variant overflow-hidden flex flex-col group cursor-pointer shadow-lg"
                   >
-                    <div className="relative h-48 w-full overflow-hidden bg-surface-container flex items-center justify-center text-outline">
+                    <div className="relative h-48 w-full overflow-hidden bg-surface-container-low flex items-center justify-center text-on-surface-variant">
                       {v.imagenes && v.imagenes.length > 0 ? (
                         <img 
                           src={v.imagenes[0].ruta.trim()}
@@ -573,17 +573,17 @@ export default function VehiculosView() {
                         <ImageOff size={48} className="opacity-20" />
                       )}
                       <div className="absolute top-3 right-3">
-                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : v.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-secondary-container text-secondary border-primary/20 shadow-sm' : v.estado === 'reventa' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-error-container text-error border-error/30'}`}>
                           {v.estado === 'disponible' ? 'Disponible' : v.estado === 'reventa' ? 'Reventa' : 'Vendido'}
                         </span>
                       </div>
                     </div>
                     <div className="p-5 flex flex-col flex-1">
                       <div className="flex justify-between items-start mb-1">
-                        <h3 className="text-lg font-semibold text-on-surface leading-tight">{v.marca ? `${v.marca} ${v.modelo}` : v.modelo} <span className="text-on-surface-variant font-normal text-sm">({v.anio})</span></h3>
+                        <h3 className="text-lg font-bold text-on-surface leading-tight">{v.marca ? `${v.marca} ${v.modelo}` : v.modelo} <span className="text-on-surface-variant font-normal text-sm">({v.anio})</span></h3>
                         <button 
                           onClick={(e) => { e.stopPropagation(); setVehiculoParaEliminar(v); }} 
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                          className="text-on-surface-variant hover:text-error hover:bg-error-container/20 p-1.5 rounded-lg transition-colors cursor-pointer"
                           title="Eliminar Vehículo"
                         >
                           <Trash2 size={18} />
@@ -592,7 +592,7 @@ export default function VehiculosView() {
                       
                       {/* Technical Info Subtitle */}
                       <div className="text-xs text-on-surface-variant mb-3 flex items-center flex-wrap gap-x-2 gap-y-1">
-                        <span className="font-medium text-on-surface">{v.condicion || 'Usado'}</span>
+                        <span className="font-semibold text-on-surface">{v.condicion || 'Usado'}</span>
                         <span>•</span>
                         <span>{v.kilometraje.toLocaleString()} km</span>
                         <span>•</span>
@@ -608,29 +608,29 @@ export default function VehiculosView() {
                       {/* Commercial Modality Badge */}
                       <div className="mb-4">
                         {v.tipo_alta === 'consignacion' ? (
-                          <div className="inline-flex flex-col bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1.5">
-                            <span className="text-xs font-bold text-indigo-700 uppercase tracking-wide flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Consignación
+                          <div className="inline-flex flex-col bg-indigo-950/40 border border-indigo-800/40 rounded-xl px-2.5 py-1.5">
+                            <span className="text-xs font-bold text-indigo-400 uppercase tracking-wide flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Consignación
                             </span>
-                            <span className="text-[10px] font-semibold text-indigo-600/80 mt-0.5">
+                            <span className="text-[10px] font-semibold text-indigo-300/80 mt-0.5">
                               Comisión: {v.comision_tipo === 'porcentaje' ? `${v.comision_valor}%` : `$${v.comision_valor?.toLocaleString()}`}
                             </span>
                           </div>
                         ) : (
-                          <div className="inline-flex flex-col bg-surface-container-low border border-outline-variant/30 rounded-lg px-2.5 py-1.5">
+                          <div className="inline-flex flex-col bg-surface-container-low border border-outline-variant/50 rounded-xl px-2.5 py-1.5">
                             <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wide flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span> Stock Propio
+                              <span className="w-1.5 h-1.5 rounded-full bg-outline"></span> Stock Propio
                             </span>
                           </div>
                         )}
                       </div>
                       <div className="mt-auto flex items-center justify-between">
-                        <span className="text-primary font-bold text-xl">${v.precio_venta.toLocaleString()}</span>
+                        <span className="text-secondary font-black text-xl tracking-tight">${v.precio_venta.toLocaleString()}</span>
                         {v.estado === 'disponible' ? (
                           !isStock ? (
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
-                              className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors"
+                              className="text-xs bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 px-3 py-1.5 rounded-xl uppercase font-bold transition-colors cursor-pointer"
                             >
                               Marcar Vendido
                             </button>
@@ -647,17 +647,17 @@ export default function VehiculosView() {
               )}
             </div>
           ) : (
-            <div className="mt-8 overflow-x-auto bg-white border border-outline-variant rounded-xl shadow-sm">
+            <div className="mt-8 overflow-x-auto bg-surface border border-outline-variant rounded-2xl shadow-xl">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-surface-container-low text-on-surface-variant text-xs font-semibold uppercase tracking-wider">
+                  <tr className="bg-surface-container-low text-on-surface-variant text-xs font-bold uppercase tracking-wider border-b border-outline-variant">
                     <th className="py-4 px-6">
                       <div onClick={() => handleSort('modelo')} className="flex items-center gap-1 cursor-pointer hover:text-on-surface transition-colors select-none w-max">
                         Vehículo {renderSortIcon('modelo')}
                       </div>
                     </th>
                     <th className="py-4 px-6 text-center">
-                      <div className="flex items-center justify-center gap-1 cursor-default select-none w-max mx-auto text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+                      <div className="flex items-center justify-center gap-1 cursor-default select-none w-max mx-auto text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                         Modalidad
                       </div>
                     </th>
@@ -689,7 +689,7 @@ export default function VehiculosView() {
                       <tr 
                         key={v.id} 
                         onClick={() => navigate(`/vehiculos/${v.id}`)}
-                        className="hover:bg-surface-container-low transition-colors cursor-pointer group"
+                        className="hover:bg-surface-container-high transition-colors cursor-pointer group"
                       >
                         <td className="py-4 px-6">
                           <div className="font-bold text-on-surface">{v.marca ? `${v.marca} ${v.modelo}` : v.modelo} <span className="font-normal text-on-surface-variant">({v.anio})</span></div>
@@ -700,37 +700,37 @@ export default function VehiculosView() {
                         <td className="py-4 px-6 text-center">
                           {v.tipo_alta === 'consignacion' ? (
                             <div className="inline-flex flex-col">
-                              <span className="text-xs font-bold text-indigo-700 uppercase flex items-center justify-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Consignación
+                              <span className="text-xs font-bold text-indigo-400 uppercase flex items-center justify-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Consignación
                               </span>
-                              <span className="text-[10px] font-semibold text-indigo-600/80 mt-0.5">
+                              <span className="text-[10px] font-semibold text-indigo-300/80 mt-0.5">
                                 Comisión: {v.comision_tipo === 'porcentaje' ? `${v.comision_valor}%` : `$${v.comision_valor?.toLocaleString()}`}
                               </span>
                             </div>
                           ) : (
                             <div className="inline-flex flex-col">
                               <span className="text-xs font-bold text-on-surface-variant uppercase flex items-center justify-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-outline-variant"></span> Stock Propio
+                                <span className="w-1.5 h-1.5 rounded-full bg-outline"></span> Stock Propio
                               </span>
                             </div>
                           )}
                         </td>
                         <td className="py-4 px-6 text-center">
-                          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : v.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${v.estado === 'disponible' ? 'bg-secondary-container text-secondary border-primary/20' : v.estado === 'reventa' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-error-container text-error border-error/30'}`}>
                             {v.estado === 'disponible' ? 'Disponible' : v.estado === 'reventa' ? 'Reventa' : 'Vendido'}
                           </span>
                         </td>
                         <td className="py-4 px-6 text-center">
                           {renderEtapaBadge(v.etapa)}
                         </td>
-                        <td className="py-4 px-6 font-bold text-primary text-right">${v.precio_venta.toLocaleString()}</td>
+                        <td className="py-4 px-6 font-bold text-secondary text-right text-base tracking-tight">${v.precio_venta.toLocaleString()}</td>
                         <td className="py-4 px-6">
                           <div className="flex items-center justify-center gap-2">
                             {v.estado === 'disponible' ? (
                               !isStock ? (
                                 <button 
                                   onClick={(e) => { e.stopPropagation(); handleMarcarVendido(v); }}
-                                  className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-lg uppercase font-semibold transition-colors w-32 whitespace-nowrap text-center"
+                                  className="text-xs bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 px-3 py-1.5 rounded-xl uppercase font-bold transition-colors w-32 whitespace-nowrap text-center cursor-pointer"
                                 >
                                   Marcar Vendido
                                 </button>
@@ -742,7 +742,7 @@ export default function VehiculosView() {
                             )}
                             <button 
                               onClick={(e) => { e.stopPropagation(); setVehiculoParaEliminar(v); }}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                              className="text-on-surface-variant hover:text-error hover:bg-error-container/20 p-1.5 rounded-xl transition-colors cursor-pointer"
                               title="Eliminar Vehículo"
                             >
                               <Trash2 size={18} />

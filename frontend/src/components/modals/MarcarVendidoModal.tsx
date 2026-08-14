@@ -151,58 +151,58 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
             {isNewClient ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-on-surface-variant mb-1">Nombre Completo</label>
+                  <label className="block text-sm font-semibold text-on-surface-variant mb-1">Nombre Completo</label>
                   <input 
                     type="text" 
                     required
                     value={newClientData.nombre}
                     onChange={e => setNewClientData({...newClientData, nombre: e.target.value})}
-                    className="w-full h-11 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" 
+                    className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface" 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-on-surface-variant mb-1">Teléfono (ID)</label>
+                  <label className="block text-sm font-semibold text-on-surface-variant mb-1">Teléfono (ID)</label>
                   <input 
                     type="text" 
                     required
                     value={newClientData.telefono}
                     onChange={e => setNewClientData({...newClientData, telefono: e.target.value})}
-                    className="w-full h-11 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" 
+                    className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface" 
                   />
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
                 {clienteTelefono ? (
-                  <div className="flex items-center justify-between bg-primary-container text-on-primary-container p-3 rounded-lg border border-primary/20">
+                  <div className="flex items-center justify-between bg-secondary-container text-on-surface p-3.5 rounded-xl border border-primary/20">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 size={18} className="text-primary" />
+                      <CheckCircle2 size={18} className="text-secondary" />
                       <div>
-                        <p className="font-semibold text-sm">{clienteNombre}</p>
-                        <p className="text-xs opacity-80">{clienteTelefono}</p>
+                        <p className="font-bold text-sm">{clienteNombre}</p>
+                        <p className="text-xs text-on-surface-variant">{clienteTelefono}</p>
                       </div>
                     </div>
                     <button 
                       type="button" 
                       onClick={() => { setClienteTelefono(''); setClienteNombre(''); }}
-                      className="text-xs uppercase font-bold text-primary hover:bg-primary/10 px-2 py-1 rounded"
+                      className="text-xs uppercase font-bold text-primary hover:bg-primary/10 px-2 py-1 rounded cursor-pointer"
                     >
                       Cambiar
                     </button>
                   </div>
                 ) : (
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
                     <input 
                       type="text" 
                       placeholder="Buscar cliente por nombre o teléfono..." 
                       value={search}
                       onChange={e => setSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 h-11 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" 
+                      className="w-full pl-10 pr-4 h-11 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface placeholder:text-on-surface-variant" 
                     />
                     
                     {searchResults.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-outline-variant rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-outline-variant rounded-xl shadow-2xl z-10 max-h-48 overflow-y-auto">
                         {searchResults.map(client => (
                           <div 
                             key={client.telefono}
@@ -211,9 +211,9 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
                               setClienteNombre(client.nombre || client.telefono);
                               setSearch('');
                             }}
-                            className="p-3 hover:bg-surface-container-low cursor-pointer border-b border-outline-variant last:border-0"
+                            className="p-3 hover:bg-surface-container-high cursor-pointer border-b border-outline-variant last:border-0"
                           >
-                            <p className="font-semibold text-sm text-on-surface">{client.nombre}</p>
+                            <p className="font-bold text-sm text-on-surface">{client.nombre}</p>
                             <p className="text-xs text-on-surface-variant">{client.telefono}</p>
                           </div>
                         ))}
@@ -228,22 +228,22 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
           {/* Sale Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant mb-1">Precio Final ($)</label>
+              <label className="block text-sm font-semibold text-on-surface-variant mb-1">Precio Final ($)</label>
               <input 
                 type="number" 
                 step="0.01"
                 required
                 value={precioFinal}
                 onChange={e => setPrecioFinal(e.target.value)}
-                className="w-full h-11 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none font-bold text-lg" 
+                className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none font-bold text-lg text-secondary" 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant mb-1">Método de Pago</label>
+              <label className="block text-sm font-semibold text-on-surface-variant mb-1">Método de Pago</label>
               <select 
                 value={metodoPago}
                 onChange={e => setMetodoPago(e.target.value)}
-                className="w-full h-11 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface"
               >
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>

@@ -1,53 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  --color-inverse-surface: #2e3132;
-  --color-surface-tint: #4d44e3;
-  --color-on-surface-variant: #464555;
-  --color-primary-fixed-dim: #c3c0ff;
-  --color-on-primary-fixed: #0f0069;
-  --color-tertiary-container: #4b4dd8;
-  --color-inverse-primary: #c3c0ff;
-  --color-secondary: #565e74;
-  --color-outline-variant: #c7c4d8;
-  --color-primary: #3525cd;
-  --color-surface-container-high: #e7e8e9;
-  --color-secondary-fixed-dim: #bec6e0;
-  --color-outline: #777587;
-  --color-on-surface: #191c1d;
-  --color-surface-container-highest: #e1e3e4;
-  --color-tertiary: #3130c0;
-  --color-surface-container: #edeeef;
-  --color-surface-container-low: #f3f4f5;
-  --color-surface-dim: #d9dadb;
-  --color-on-tertiary-fixed-variant: #2f2ebe;
-  --color-on-background: #191c1d;
-  --color-on-tertiary-container: #d9d8ff;
+  --color-background: #0f1117;
+  --color-surface: #181b24;
+  --color-surface-dim: #12141a;
+  --color-surface-bright: #202430;
+  --color-surface-container-lowest: #0b0c10;
+  --color-surface-container-low: #14161d;
+  --color-surface-container: #181b24;
+  --color-surface-container-high: #202430;
+  --color-surface-container-highest: #282d3c;
+  --color-surface-variant: #1c202b;
+
+  --color-outline: #363c4d;
+  --color-outline-variant: #262a36;
+
+  --color-primary: #10b981;
+  --color-primary-container: #059669;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #dad7ff;
-  --color-on-error-container: #93000a;
-  --color-error: #ba1a1a;
-  --color-secondary-fixed: #dae2fd;
-  --color-tertiary-fixed: #e1e0ff;
-  --color-tertiary-fixed-dim: #c0c1ff;
-  --color-surface-variant: #e1e3e4;
-  --color-surface: #f8f9fa;
-  --color-inverse-on-surface: #f0f1f2;
-  --color-on-primary-fixed-variant: #3323cc;
-  --color-surface-container-lowest: #ffffff;
-  --color-primary-container: #4f46e5;
-  --color-primary-fixed: #e2dfff;
-  --color-on-secondary-fixed: #131b2e;
-  --color-background: #f8f9fa;
-  --color-on-tertiary: #ffffff;
+  --color-on-primary-container: #d1fae5;
+  --color-primary-fixed: #10b981;
+  --color-primary-fixed-dim: #34d399;
+  --color-on-primary-fixed: #064e3b;
+  --color-on-primary-fixed-variant: #047857;
+
+  --color-secondary: #34d399;
+  --color-secondary-container: rgba(16, 185, 129, 0.12);
+  --color-on-secondary: #0f1117;
+  --color-on-secondary-container: #34d399;
+
+  --color-tertiary: #10b981;
+  --color-tertiary-container: #181b24;
+
+  --color-on-surface: #f3f4f6;
+  --color-on-surface-variant: #9ca3af;
+  --color-on-background: #f3f4f6;
+
+  --color-error: #f87171;
+  --color-error-container: rgba(248, 113, 113, 0.15);
   --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
-  --color-on-tertiary-fixed: #07006c;
-  --color-on-secondary-fixed-variant: #3f465c;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #dae2fd;
-  --color-surface-bright: #f8f9fa;
-  --color-on-secondary-container: #5c647a;
+  --color-on-error-container: #fca5a5;
 
   --spacing-md: 1.5rem;
   --spacing-base: 4px;
@@ -75,12 +67,12 @@
   }
 
   .premium-card-hover {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .premium-card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04), 0 4px 6px -2px rgba(0,0,0,0.02);
-      border-color: var(--color-outline-variant, #c7c4d8);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.4), 0 0 12px rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.3);
   }
 }
 
@@ -93,30 +85,39 @@ body {
 }
 
 /* FullCalendar Customizations */
+.fc {
+  --fc-border-color: #262a36 !important;
+  --fc-page-bg-color: transparent !important;
+  --fc-neutral-bg-color: #14161d !important;
+  --fc-list-event-hover-bg-color: #202430 !important;
+  --fc-today-bg-color: rgba(16, 185, 129, 0.08) !important;
+}
+
 .fc .fc-button-primary {
   background-color: var(--color-surface-container-high) !important;
-  border-color: transparent !important;
+  border-color: var(--color-outline-variant) !important;
   color: var(--color-on-surface-variant) !important;
   font-weight: 500 !important;
-  border-radius: 0.5rem !important; /* Tailwind rounded-lg */
+  border-radius: 0.5rem !important;
   text-transform: capitalize;
   box-shadow: none !important;
   transition: all 0.2s ease-in-out !important;
 }
 
 .fc .fc-button-primary:hover {
-  background-color: var(--color-surface-variant) !important;
+  background-color: var(--color-surface-bright) !important;
+  color: var(--color-on-surface) !important;
 }
 
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-  background-color: var(--color-secondary-container) !important;
-  color: var(--color-on-secondary-container) !important;
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
   font-weight: 700 !important;
 }
 
 .fc-direction-ltr .fc-button-group > .fc-button:not(:first-child) {
-  margin-left: 0.25rem !important; /* Tailwind gap-1 */
+  margin-left: 0.25rem !important;
   border-top-left-radius: 0.5rem !important;
   border-bottom-left-radius: 0.5rem !important;
 }
@@ -127,11 +128,10 @@ body {
 }
 
 .fc .fc-toolbar-title {
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   color: var(--color-on-surface) !important;
 }
 
-/* Color de fondo para el día actual (Hoy) */
 .fc .fc-day-today {
   background-color: var(--color-secondary-container) !important;
 }

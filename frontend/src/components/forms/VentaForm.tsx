@@ -122,13 +122,13 @@ export default function VentaForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Sección Vehículo */}
-        <div className="bg-white border border-outline-variant rounded-2xl p-6 shadow-sm">
+        <div className="bg-surface border border-outline-variant rounded-2xl p-6 shadow-xl">
           <h2 className="text-lg font-bold text-on-surface mb-4 flex items-center gap-2">
             <Car size={20} className="text-primary" /> Vehículo Vendido
           </h2>
           
           {selectedVehiculo ? (
-            <div className="flex items-center justify-between bg-primary-container/30 text-on-surface p-4 rounded-xl border border-primary/20">
+            <div className="flex items-center justify-between bg-secondary-container text-on-surface p-4 rounded-xl border border-primary/20">
               <div>
                 <p className="font-bold text-lg">{selectedVehiculo.marca ? `${selectedVehiculo.marca} ${selectedVehiculo.modelo}` : selectedVehiculo.modelo}</p>
                 <p className="text-sm text-on-surface-variant mt-1">Precio lista: ${selectedVehiculo.precio_venta.toLocaleString()} • {selectedVehiculo.kilometraje.toLocaleString()} km</p>
@@ -136,7 +136,7 @@ export default function VentaForm() {
               <button 
                 type="button" 
                 onClick={() => { setSelectedVehiculo(null); setPrecioFinal(''); }}
-                className="text-sm uppercase font-bold text-primary hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors"
+                className="text-sm uppercase font-bold text-primary hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors cursor-pointer"
               >
                 Cambiar Vehículo
               </button>
@@ -149,11 +149,11 @@ export default function VentaForm() {
                 placeholder="Buscar vehículo por modelo o marca..." 
                 value={vehiculoSearch}
                 onChange={e => setVehiculoSearch(e.target.value)}
-                className="w-full pl-12 pr-4 h-12 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-base" 
+                className="w-full pl-12 pr-4 h-12 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-base text-on-surface placeholder:text-on-surface-variant" 
               />
               
               {vehiculosResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-outline-variant rounded-xl shadow-xl z-20 max-h-60 overflow-y-auto overflow-hidden">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-outline-variant rounded-xl shadow-2xl z-20 max-h-60 overflow-y-auto overflow-hidden">
                   {vehiculosResults.map(v => (
                     <div 
                       key={v.id}
@@ -162,13 +162,13 @@ export default function VentaForm() {
                         setVehiculoSearch('');
                         setPrecioFinal(v.precio_venta.toString());
                       }}
-                      className="p-4 hover:bg-surface-container-low cursor-pointer border-b border-outline-variant last:border-0 flex justify-between items-center group"
+                      className="p-4 hover:bg-surface-container-high cursor-pointer border-b border-outline-variant last:border-0 flex justify-between items-center group"
                     >
                       <div>
-                        <p className="font-semibold text-on-surface group-hover:text-primary transition-colors">{v.marca ? `${v.marca} ${v.modelo}` : v.modelo}</p>
+                        <p className="font-bold text-on-surface group-hover:text-primary transition-colors">{v.marca ? `${v.marca} ${v.modelo}` : v.modelo}</p>
                         <p className="text-sm text-on-surface-variant">{v.kilometraje.toLocaleString()} km</p>
                       </div>
-                      <span className="font-bold text-primary">${v.precio_venta.toLocaleString()}</span>
+                      <span className="font-bold text-secondary">${v.precio_venta.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -178,7 +178,7 @@ export default function VentaForm() {
         </div>
 
         {/* Sección Cliente */}
-        <div className="bg-white border border-outline-variant rounded-2xl p-6 shadow-sm opacity-100 transition-opacity">
+        <div className="bg-surface border border-outline-variant rounded-2xl p-6 shadow-xl opacity-100 transition-opacity">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-on-surface flex items-center gap-2">
               <UserPlus size={20} className="text-primary" /> Datos del Cliente
@@ -186,7 +186,7 @@ export default function VentaForm() {
             <button 
               type="button"
               onClick={() => { setIsNewClient(!isNewClient); setClienteTelefono(''); setClienteNombre(''); setClienteSearch(''); }}
-              className="text-primary text-sm font-semibold hover:underline"
+              className="text-primary text-sm font-bold hover:underline cursor-pointer"
             >
               {isNewClient ? 'Buscar Cliente Existente' : 'Registrar Nuevo Cliente'}
             </button>
@@ -195,32 +195,32 @@ export default function VentaForm() {
           {isNewClient ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-on-surface-variant mb-1">Nombre Completo *</label>
+                <label className="block text-sm font-semibold text-on-surface-variant mb-1.5">Nombre Completo *</label>
                 <input 
                   type="text" 
                   required
                   value={newClientData.nombre}
                   onChange={e => setNewClientData({...newClientData, nombre: e.target.value})}
-                  className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" 
+                  className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-on-surface-variant mb-1">Teléfono (ID) *</label>
+                <label className="block text-sm font-semibold text-on-surface-variant mb-1.5">Teléfono (ID) *</label>
                 <input 
                   type="text" 
                   required
                   value={newClientData.telefono}
                   onChange={e => setNewClientData({...newClientData, telefono: e.target.value})}
-                  className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" 
+                  className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface" 
                 />
               </div>
             </div>
           ) : (
             <div>
               {clienteTelefono ? (
-                <div className="flex items-center justify-between bg-primary-container/30 text-on-surface p-4 rounded-xl border border-primary/20">
+                <div className="flex items-center justify-between bg-secondary-container text-on-surface p-4 rounded-xl border border-primary/20">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                    <div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-black">
                       {clienteNombre.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -231,7 +231,7 @@ export default function VentaForm() {
                   <button 
                     type="button" 
                     onClick={() => { setClienteTelefono(''); setClienteNombre(''); }}
-                    className="text-sm uppercase font-bold text-primary hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors"
+                    className="text-sm uppercase font-bold text-primary hover:bg-primary/10 px-3 py-2 rounded-lg transition-colors cursor-pointer"
                   >
                     Cambiar
                   </button>
@@ -244,11 +244,11 @@ export default function VentaForm() {
                     placeholder="Buscar cliente por nombre o teléfono..." 
                     value={clienteSearch}
                     onChange={e => setClienteSearch(e.target.value)}
-                    className="w-full pl-12 pr-4 h-12 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-base" 
+                    className="w-full pl-12 pr-4 h-12 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-base text-on-surface placeholder:text-on-surface-variant" 
                   />
                   
                   {clientesResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-outline-variant rounded-xl shadow-xl z-20 max-h-60 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-outline-variant rounded-xl shadow-2xl z-20 max-h-60 overflow-y-auto">
                       {clientesResults.map(client => (
                         <div 
                           key={client.telefono}
@@ -257,7 +257,7 @@ export default function VentaForm() {
                             setClienteNombre(client.nombre || client.telefono);
                             setClienteSearch('');
                           }}
-                          className="p-4 hover:bg-surface-container-low cursor-pointer border-b border-outline-variant last:border-0"
+                          className="p-4 hover:bg-surface-container-high cursor-pointer border-b border-outline-variant last:border-0"
                         >
                           <p className="font-semibold text-on-surface">{client.nombre}</p>
                           <p className="text-sm text-on-surface-variant">{client.telefono}</p>
@@ -272,12 +272,12 @@ export default function VentaForm() {
         </div>
 
         {/* Detalles Finales de Venta */}
-        <div className="bg-white border border-outline-variant rounded-2xl p-6 shadow-sm">
+        <div className="bg-surface border border-outline-variant rounded-2xl p-6 shadow-xl">
           <h2 className="text-lg font-bold text-on-surface mb-4">Detalles de la Transacción</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant mb-1">Precio Final ($) *</label>
+              <label className="block text-sm font-semibold text-on-surface-variant mb-1.5">Precio Final ($) *</label>
               <input 
                 type="number" 
                 step="0.01"
@@ -285,15 +285,15 @@ export default function VentaForm() {
                 value={precioFinal}
                 onChange={e => setPrecioFinal(e.target.value)}
                 disabled={!selectedVehiculo}
-                className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold text-xl disabled:opacity-50" 
+                className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-black text-xl text-secondary disabled:opacity-50" 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant mb-1">Método de Pago *</label>
+              <label className="block text-sm font-semibold text-on-surface-variant mb-1.5">Método de Pago *</label>
               <select 
                 value={metodoPago}
                 onChange={e => setMetodoPago(e.target.value)}
-                className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface"
               >
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
@@ -302,24 +302,24 @@ export default function VentaForm() {
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-on-surface-variant mb-1">Tipo de Venta *</label>
+              <label className="block text-sm font-semibold text-on-surface-variant mb-1.5">Tipo de Venta *</label>
               <select 
                 value={estadoVehiculo}
                 onChange={e => setEstadoVehiculo(e.target.value)}
-                className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface"
               >
                 <option value="vendido">Venta Convencional</option>
                 <option value="reventa">Venta de Reventa</option>
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-on-surface-variant mb-1">Notas / Observaciones (Opcional)</label>
+              <label className="block text-sm font-semibold text-on-surface-variant mb-1.5">Notas / Observaciones (Opcional)</label>
               <textarea 
                 rows={3}
                 value={notas}
                 onChange={e => setNotas(e.target.value)}
                 placeholder="Ej: Se entregó con medio tanque, falta firmar formulario..."
-                className="w-full p-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none" 
+                className="w-full p-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none text-on-surface placeholder:text-on-surface-variant" 
               />
             </div>
           </div>

@@ -80,7 +80,7 @@ export default function EtiquetasModal({ isOpen, onClose, etiquetas, refreshEtiq
                 placeholder="Nombre de la etiqueta..."
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                className="w-full px-4 py-2 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 text-sm outline-none"
+                className="w-full px-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 text-sm outline-none text-on-surface placeholder:text-on-surface-variant"
               />
               <div className="flex flex-wrap gap-2 mt-1">
                 {Object.entries(PALETA_COLORES).map(([key, val]) => (

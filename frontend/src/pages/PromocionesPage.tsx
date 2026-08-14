@@ -105,9 +105,9 @@ export default function PromocionesView() {
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[280px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={20} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant" size={20} />
           <input 
-            className="w-full pl-10 pr-4 h-11 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" 
+            className="w-full pl-10 pr-4 h-11 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-on-surface placeholder:text-on-surface-variant" 
             placeholder="Buscar promoción..." 
             type="text"
             value={searchTerm}
@@ -124,16 +124,16 @@ export default function PromocionesView() {
             <p className="text-on-surface-variant">No hay promociones registradas.</p>
           ) : (
             promociones.map(p => (
-              <div key={p.id} className="premium-card-hover bg-white border border-outline-variant rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div key={p.id} className="premium-card-hover bg-surface border border-outline-variant rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-semibold text-xl text-on-surface">{p.titulo}</h3>
-                    <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${p.estado === 'activa' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-surface-container-high text-on-surface-variant border-outline-variant'}`}>
+                    <h3 className="font-bold text-xl text-on-surface">{p.titulo}</h3>
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${p.estado === 'activa' ? 'bg-secondary-container text-secondary border-primary/20 shadow-sm' : 'bg-surface-container-high text-on-surface-variant border-outline-variant'}`}>
                       {p.estado === 'activa' ? 'Activa' : 'Inactiva'}
                     </span>
                   </div>
                   <p className="text-on-surface-variant mb-3">{p.descripcion}</p>
-                  <p className="text-sm font-medium text-primary">
+                  <p className="text-sm font-bold text-secondary">
                     Válida: {new Date(p.fecha_inicio).toLocaleDateString()} - {new Date(p.fecha_fin).toLocaleDateString()}
                   </p>
                 </div>

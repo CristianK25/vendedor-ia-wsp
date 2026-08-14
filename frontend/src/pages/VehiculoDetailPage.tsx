@@ -188,8 +188,8 @@ export default function VehiculoDetailPage() {
           </h1>
         </div>
         <div className="text-right">
-          <div className="text-primary font-bold text-4xl mb-1">${vehiculo.precio_venta.toLocaleString()}</div>
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${vehiculo.estado === 'disponible' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : vehiculo.estado === 'reventa' ? 'bg-orange-50 text-orange-700 border-orange-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+          <div className="text-secondary font-black text-3xl md:text-4xl mb-1 tracking-tight">${vehiculo.precio_venta.toLocaleString()}</div>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${vehiculo.estado === 'disponible' ? 'bg-secondary-container text-secondary border-primary/20 shadow-sm' : vehiculo.estado === 'reventa' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-error-container text-error border-error/30'}`}>
             <CheckCircle2 size={14} />
             {vehiculo.estado === 'disponible' ? 'Disponible para la Venta' : vehiculo.estado === 'reventa' ? 'Vendido (Reventa)' : 'Vendido'}
           </div>

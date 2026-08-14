@@ -117,9 +117,9 @@ export default function TrabajadoresView() {
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[280px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={20} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant" size={20} />
           <input 
-            className="w-full pl-10 pr-4 h-11 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" 
+            className="w-full pl-10 pr-4 h-11 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-on-surface placeholder:text-on-surface-variant" 
             placeholder="Buscar trabajador..." 
             type="text"
             value={searchTerm}
@@ -138,30 +138,30 @@ export default function TrabajadoresView() {
             trabajadores.map(t => {
               const initials = t.nombre ? (t.apellido ? `${t.nombre[0]}${t.apellido[0]}`.toUpperCase() : t.nombre.substring(0, 2).toUpperCase()) : 'NN';
               return (
-                <div key={t.id} className="premium-card-hover bg-white border border-outline-variant rounded-2xl p-6 flex flex-col items-center group relative cursor-pointer">
+                <div key={t.id} className="premium-card-hover bg-surface border border-outline-variant rounded-2xl p-6 flex flex-col items-center group relative cursor-pointer shadow-xl">
                   <div className="absolute top-4 right-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-1 hover:bg-surface-container-low rounded-full"><MoreVertical size={20}/></button>
+                    <button className="p-1 hover:bg-surface-container-high rounded-full"><MoreVertical size={20}/></button>
                   </div>
-                  <div className="w-20 h-20 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center text-3xl font-bold mb-4">
+                  <div className="w-20 h-20 bg-primary text-on-primary rounded-full flex items-center justify-center text-3xl font-black mb-4 shadow-md">
                     {initials}
                   </div>
-                  <h3 className="font-semibold text-lg text-on-surface">{t.nombre} {t.apellido}</h3>
+                  <h3 className="font-bold text-lg text-on-surface">{t.nombre} {t.apellido}</h3>
                   <p className="text-on-surface-variant text-sm mt-1">{t.rol || 'Vendedor'}</p>
                   
-                  <div className="mt-5 w-full bg-surface-container-low rounded-xl p-3 text-center border border-outline-variant/50">
-                    <p className="text-on-surface font-medium text-sm">{t.telefono || 'Sin teléfono'}</p>
+                  <div className="mt-5 w-full bg-surface-container-lowest rounded-xl p-3 text-center border border-outline-variant">
+                    <p className="text-on-surface font-semibold text-sm">{t.telefono || 'Sin teléfono'}</p>
                   </div>
                   
-                  <div className="mt-5 flex gap-2 w-full">
+                  <div className="mt-5 flex gap-2.5 w-full">
                     <button 
                       onClick={() => navigate(`/trabajadores/editar/${t.id}`)}
-                      className="flex-1 bg-white border border-outline-variant text-on-surface py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 bg-surface-container-high border border-outline-variant text-on-surface py-2.5 rounded-xl text-sm font-semibold hover:bg-surface-bright transition-colors flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Edit2 size={16} /> Editar
                     </button>
                     <button 
                       onClick={() => handleDelete(t.id)}
-                      className="flex-1 bg-white border border-error-container text-error py-2.5 rounded-xl text-sm font-semibold hover:bg-error-container transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 bg-error-container border border-error/30 text-error py-2.5 rounded-xl text-sm font-semibold hover:bg-error-container/80 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 size={16} /> Eliminar
                     </button>

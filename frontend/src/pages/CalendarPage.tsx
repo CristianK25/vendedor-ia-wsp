@@ -209,12 +209,12 @@ export default function CalendarView() {
         {/* Botón de Peticiones */}
         <button 
           onClick={() => setIsDrawerOpen(true)}
-          className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow"
+          className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md bg-surface text-on-surface border border-outline-variant hover:bg-surface-container-high cursor-pointer"
         >
-          <Bell size={16} className={peticiones.filter(p => p.estado === 'pendiente_admin').length > 0 ? "text-blue-600" : ""} />
+          <Bell size={16} className={peticiones.filter(p => p.estado === 'pendiente_admin').length > 0 ? "text-primary" : "text-on-surface-variant"} />
           <span>Peticiones</span>
           {peticiones.filter(p => p.estado === 'pendiente_admin').length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-[10px] w-5 h-5 flex items-center justify-center font-bold border-2 border-white shadow-sm">
+            <span className="absolute -top-2 -right-2 bg-error text-on-error rounded-full text-[10px] w-5 h-5 flex items-center justify-center font-extrabold border-2 border-background shadow-sm">
               {peticiones.filter(p => p.estado === 'pendiente_admin').length}
             </span>
           )}
@@ -224,17 +224,17 @@ export default function CalendarView() {
         <button 
           onClick={handleManualRefresh}
           disabled={cooldown > 0 || isRefreshing}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm cursor-pointer
             ${cooldown > 0 || isRefreshing 
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200' 
-              : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50 hover:shadow'}`}
+              ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border border-outline-variant' 
+              : 'bg-surface text-primary border border-primary/30 hover:bg-primary/10'}`}
         >
           <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
           {cooldown > 0 ? `Espera ${cooldown}s` : 'Actualizar Calendario'}
         </button>
       </div>
 
-      <div className="flex-1 bg-white p-6 rounded-2xl border border-outline-variant shadow-sm overflow-hidden flex flex-col min-h-0 relative">
+      <div className="flex-1 bg-surface p-6 rounded-2xl border border-outline-variant shadow-xl overflow-hidden flex flex-col min-h-0 relative">
         <div className="flex-1 relative">
           <div className="absolute inset-0">
             <FullCalendar
@@ -284,54 +284,54 @@ export default function CalendarView() {
           />
           
           {/* Contenedor del Drawer */}
-          <div className="relative w-[800px] max-w-[90vw] shrink-0 bg-white h-full shadow-2xl flex flex-col z-10 border-l border-gray-200">
+          <div className="relative w-[800px] max-w-[90vw] shrink-0 bg-surface h-full shadow-2xl flex flex-col z-10 border-l border-outline-variant">
             {/* Header del Drawer */}
-            <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-md">
+            <div className="px-5 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low backdrop-blur-md">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                <div className="bg-secondary-container p-2 rounded-xl text-secondary">
                   <Bell size={20} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-800 leading-tight">Peticiones de Citas</h2>
-                  <p className="text-xs text-gray-500 font-medium">Gestiona solicitudes de IA</p>
+                  <h2 className="text-lg font-bold text-on-surface leading-tight">Peticiones de Citas</h2>
+                  <p className="text-xs text-on-surface-variant font-medium">Gestiona solicitudes de IA</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsDrawerOpen(false)} 
-                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors"
+                className="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-full transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
             </div>
             
             {/* Pestañas de Navegación */}
-            <div className="flex border-b border-gray-200 bg-white shadow-sm shrink-0">
+            <div className="flex border-b border-outline-variant bg-surface shrink-0">
               <button 
                 onClick={() => setActiveTab('recibidas')}
-                className={`flex-1 py-3 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 outline-none
+                className={`flex-1 py-3.5 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 outline-none cursor-pointer
                   ${activeTab === 'recibidas' 
-                    ? 'border-blue-600 text-blue-700 bg-blue-50/50' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+                    ? 'border-primary text-primary bg-secondary-container' 
+                    : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}
               >
-                <Clock size={16} className={activeTab === 'recibidas' ? 'text-blue-600' : 'text-gray-400'} /> 
+                <Clock size={16} className={activeTab === 'recibidas' ? 'text-primary' : 'text-on-surface-variant'} /> 
                 Recibidas (IA)
                 {peticiones.filter(p => p.estado === 'pendiente_admin').length > 0 && (
-                  <span className={`ml-1 text-[10px] px-2 py-0.5 rounded-full ${activeTab === 'recibidas' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  <span className={`ml-1 text-[10px] px-2 py-0.5 rounded-full font-extrabold ${activeTab === 'recibidas' ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'}`}>
                     {peticiones.filter(p => p.estado === 'pendiente_admin').length}
                   </span>
                 )}
               </button>
               <button 
                 onClick={() => setActiveTab('esperando')}
-                className={`flex-1 py-3 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 outline-none
+                className={`flex-1 py-3.5 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 outline-none cursor-pointer
                   ${activeTab === 'esperando' 
-                    ? 'border-orange-500 text-orange-700 bg-orange-50/50' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
+                    ? 'border-amber-400 text-amber-400 bg-amber-500/10' 
+                    : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}
               >
-                <Check size={16} className={activeTab === 'esperando' ? 'text-orange-500' : 'text-gray-400'} /> 
+                <Check size={16} className={activeTab === 'esperando' ? 'text-amber-400' : 'text-on-surface-variant'} /> 
                 Esperando Confirmación
                 {peticiones.filter(p => p.estado === 'pendiente_cliente').length > 0 && (
-                  <span className={`ml-1 text-[10px] px-2 py-0.5 rounded-full ${activeTab === 'esperando' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  <span className={`ml-1 text-[10px] px-2 py-0.5 rounded-full font-extrabold ${activeTab === 'esperando' ? 'bg-amber-400 text-slate-950' : 'bg-surface-container-high text-on-surface-variant'}`}>
                     {peticiones.filter(p => p.estado === 'pendiente_cliente').length}
                   </span>
                 )}
@@ -339,66 +339,66 @@ export default function CalendarView() {
             </div>
 
             {/* Cuerpo del Drawer (Listas) */}
-            <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-8 bg-gray-50/30">
+            <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-8 bg-surface-container-low">
               
               {/* Sección: Pendientes por Admin */}
               {activeTab === 'recibidas' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                   <Clock size={14} className="text-blue-500" /> Peticiones Recibidas (IA)
+                <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
+                   <Clock size={14} className="text-primary" /> Peticiones Recibidas (IA)
                 </h3>
                 <div className="flex flex-col gap-3">
                   {peticiones.filter(p => p.estado === 'pendiente_admin').length === 0 ? (
-                    <div className="text-center py-6 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+                    <div className="text-center py-6 text-sm text-on-surface-variant border-2 border-dashed border-outline-variant rounded-xl">
                       No hay peticiones nuevas
                     </div>
                   ) : (
                     peticiones.filter(p => p.estado === 'pendiente_admin').map(p => (
-                      <div key={p.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
+                      <div key={p.id} className="bg-surface border border-outline-variant rounded-xl p-4 shadow-lg hover:border-primary/40 transition-all relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex flex-col">
-                            <span className="font-bold text-gray-800 text-sm">{p.cliente_nombre}</span>
-                            <span className="text-xs text-gray-500">{p.cliente_telefono}</span>
+                            <span className="font-bold text-on-surface text-sm">{p.cliente_nombre}</span>
+                            <span className="text-xs text-on-surface-variant">{p.cliente_telefono}</span>
                           </div>
-                          <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-wide">
+                          <span className="text-[10px] font-bold bg-secondary-container text-secondary px-2 py-0.5 rounded-full border border-primary/20 uppercase tracking-wide">
                             Nueva
                           </span>
                         </div>
-                        <div className="bg-gray-50 rounded-lg p-3 text-[13px] text-gray-700 flex flex-col gap-1.5 mb-4 border border-gray-100">
+                        <div className="bg-surface-container-lowest rounded-lg p-3 text-[13px] text-on-surface flex flex-col gap-1.5 mb-4 border border-outline-variant">
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Vehículo:</span>
-                            <span className="font-semibold">{getVehiculoLabel(p.vehiculo_modelo)}</span>
+                            <span className="text-on-surface-variant">Vehículo:</span>
+                            <span className="font-semibold text-on-surface">{getVehiculoLabel(p.vehiculo_modelo)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-500">Horario:</span>
-                            <span className="font-semibold text-blue-700">
+                            <span className="text-on-surface-variant">Horario:</span>
+                            <span className="font-bold text-secondary">
                               {new Date(p.fecha_propuesta).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}hs
                             </span>
                           </div>
                         </div>
                         
                         {posponerId === p.id ? (
-                          <div className="flex flex-col gap-2 bg-gray-100 p-2.5 rounded-lg border border-gray-200">
-                            <label className="text-xs font-semibold text-gray-700">Nueva Fecha Propuesta:</label>
+                          <div className="flex flex-col gap-2 bg-surface-container-lowest p-2.5 rounded-lg border border-outline-variant">
+                            <label className="text-xs font-semibold text-on-surface">Nueva Fecha Propuesta:</label>
                             <input 
                               type="datetime-local" 
                               value={nuevaFecha}
                               onChange={(e) => setNuevaFecha(e.target.value)}
-                              className="text-xs p-1.5 border border-gray-300 rounded bg-white shadow-sm outline-none focus:border-blue-500"
+                              className="text-xs p-2 border border-outline-variant rounded bg-surface text-on-surface shadow-sm outline-none focus:border-primary"
                             />
                             <div className="flex gap-2 mt-1">
                               <button 
                                 onClick={() => handlePosponer(p.id)}
                                 disabled={isActionLoading || !nuevaFecha}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold py-1.5 rounded disabled:opacity-50 transition-colors shadow-sm"
+                                className="flex-1 bg-primary hover:bg-primary-container text-on-primary text-[11px] font-extrabold py-1.5 rounded disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
                               >
                                 Confirmar
                               </button>
                               <button 
                                 onClick={() => { setPosponerId(null); setNuevaFecha(''); }}
                                 disabled={isActionLoading}
-                                className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-[11px] font-semibold py-1.5 rounded disabled:opacity-50 transition-colors"
+                                className="flex-1 bg-surface border border-outline-variant hover:bg-surface-container-high text-on-surface text-[11px] font-semibold py-1.5 rounded disabled:opacity-50 transition-colors cursor-pointer"
                               >
                                 Cancelar
                               </button>
@@ -409,14 +409,14 @@ export default function CalendarView() {
                             <button 
                               onClick={() => handleAceptar(p.id)}
                               disabled={isActionLoading}
-                              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                              className="flex-1 bg-primary hover:bg-primary-container text-on-primary text-xs font-extrabold py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
                             >
                               Aceptar
                             </button>
                             <button 
                               onClick={() => { setPosponerId(p.id); setNuevaFecha(''); }}
                               disabled={isActionLoading}
-                              className="flex-1 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
+                              className="flex-1 bg-surface border border-outline-variant hover:bg-surface-container-high text-on-surface text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                             >
                               Posponer
                             </button>
@@ -432,22 +432,22 @@ export default function CalendarView() {
               {/* Sección: Pendientes por Cliente */}
               {activeTab === 'esperando' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                   <Check size={14} className="text-orange-500" /> Esperando Confirmación
+                <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
+                   <Check size={14} className="text-amber-400" /> Esperando Confirmación
                 </h3>
                 <div className="flex flex-col gap-3">
                   {peticiones.filter(p => p.estado === 'pendiente_cliente').length === 0 ? (
-                    <div className="text-center py-6 text-sm text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+                    <div className="text-center py-6 text-sm text-on-surface-variant border-2 border-dashed border-outline-variant rounded-xl">
                       No hay peticiones esperando al cliente
                     </div>
                   ) : (
                     peticiones.filter(p => p.estado === 'pendiente_cliente').map(p => (
-                      <div key={p.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm relative overflow-hidden opacity-90">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-orange-400" />
+                      <div key={p.id} className="bg-surface border border-outline-variant rounded-xl p-4 shadow-lg relative overflow-hidden opacity-90">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-amber-400" />
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex flex-col">
-                            <span className="font-bold text-gray-800 text-sm">{p.cliente_nombre}</span>
-                            <span className="text-xs text-gray-500">{p.cliente_telefono}</span>
+                            <span className="font-bold text-on-surface text-sm">{p.cliente_nombre}</span>
+                            <span className="text-xs text-on-surface-variant">{p.cliente_telefono}</span>
                           </div>
                           <span className="text-[9px] font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full border border-orange-100 uppercase tracking-wide flex items-center gap-1">
                             WhatsApp <Check size={10} />
