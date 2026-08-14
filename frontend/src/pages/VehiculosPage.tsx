@@ -101,15 +101,47 @@ export default function VehiculosView() {
   };
 
   const renderEtapaBadge = (etapa: string) => {
-    const mapping: Record<string, { label: string; className: string }> = {
-      pre_compra: { label: 'Pre-Compra', className: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
-      comprado: { label: 'Comprado', className: 'bg-blue-50 text-blue-700 border-blue-100' },
-      en_stock: { label: 'En Stock', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
-      vendido: { label: 'Vendido', className: 'bg-gray-100 text-gray-700 border-gray-200' },
+    const mapping: Record<string, { label: string; bg: string; text: string; border: string }> = {
+      pre_compra: { 
+        label: 'Pre-Compra', 
+        bg: 'var(--phase-precompra-bg)', 
+        text: 'var(--phase-precompra-text)', 
+        border: 'var(--phase-precompra-border)' 
+      },
+      comprado: { 
+        label: 'Comprado', 
+        bg: 'var(--phase-comprado-bg)', 
+        text: 'var(--phase-comprado-text)', 
+        border: 'var(--phase-comprado-border)' 
+      },
+      en_stock: { 
+        label: 'En Stock', 
+        bg: 'var(--phase-stock-bg)', 
+        text: 'var(--phase-stock-text)', 
+        border: 'var(--phase-stock-border)' 
+      },
+      vendido: { 
+        label: 'Vendido', 
+        bg: 'var(--phase-vendido-bg)', 
+        text: 'var(--phase-vendido-text)', 
+        border: 'var(--phase-vendido-border)' 
+      },
     };
-    const info = mapping[etapa] || { label: etapa || '-', className: 'bg-gray-50 text-gray-600 border-gray-200' };
+    const info = mapping[etapa] || { 
+      label: etapa || '-', 
+      bg: 'var(--color-surface-container-high)', 
+      text: 'var(--color-on-surface-variant)', 
+      border: 'var(--color-outline-variant)' 
+    };
     return (
-      <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${info.className}`}>
+      <span 
+        className="px-2.5 py-1 text-xs font-bold rounded-full border shadow-sm transition-colors"
+        style={{
+          backgroundColor: info.bg,
+          color: info.text,
+          borderColor: info.border,
+        }}
+      >
         {info.label}
       </span>
     );

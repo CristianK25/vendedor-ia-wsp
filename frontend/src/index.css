@@ -82,6 +82,23 @@
   --color-on-surface: #f3f4f6;
   --color-on-surface-variant: #9ca3af;
   --color-on-background: #f3f4f6;
+
+  /* Variables de Fases */
+  --phase-precompra-bg: rgba(99, 102, 241, 0.15);
+  --phase-precompra-text: #a5b4fc;
+  --phase-precompra-border: rgba(99, 102, 241, 0.35);
+
+  --phase-comprado-bg: rgba(14, 165, 233, 0.15);
+  --phase-comprado-text: #7dd3fc;
+  --phase-comprado-border: rgba(14, 165, 233, 0.35);
+
+  --phase-stock-bg: rgba(16, 185, 129, 0.15);
+  --phase-stock-text: #6ee7b7;
+  --phase-stock-border: rgba(16, 185, 129, 0.35);
+
+  --phase-vendido-bg: rgba(100, 116, 139, 0.15);
+  --phase-vendido-text: #cbd5e1;
+  --phase-vendido-border: rgba(100, 116, 139, 0.35);
 }
 
 /* 🍏 Tema 2: Porsche GT (Grafito + Lima Pastel) */
@@ -113,6 +130,23 @@
   --color-on-surface: #f9fafb;
   --color-on-surface-variant: #9ca3af;
   --color-on-background: #f9fafb;
+
+  /* Variables de Fases */
+  --phase-precompra-bg: rgba(168, 85, 247, 0.15);
+  --phase-precompra-text: #c084fc;
+  --phase-precompra-border: rgba(168, 85, 247, 0.35);
+
+  --phase-comprado-bg: rgba(59, 130, 246, 0.15);
+  --phase-comprado-text: #93c5fd;
+  --phase-comprado-border: rgba(59, 130, 246, 0.35);
+
+  --phase-stock-bg: rgba(74, 222, 128, 0.15);
+  --phase-stock-text: #86efac;
+  --phase-stock-border: rgba(74, 222, 128, 0.35);
+
+  --phase-vendido-bg: rgba(113, 113, 122, 0.15);
+  --phase-vendido-text: #d4d4d8;
+  --phase-vendido-border: rgba(113, 113, 122, 0.35);
 }
 
 /* ⚡ Tema 3: Racing Neón (Alto Contraste) */
@@ -144,6 +178,23 @@
   --color-on-surface: #ffffff;
   --color-on-surface-variant: #a1a1aa;
   --color-on-background: #ffffff;
+
+  /* Variables de Fases */
+  --phase-precompra-bg: rgba(129, 140, 248, 0.2);
+  --phase-precompra-text: #c7d2fe;
+  --phase-precompra-border: rgba(129, 140, 248, 0.6);
+
+  --phase-comprado-bg: rgba(6, 182, 212, 0.2);
+  --phase-comprado-text: #67e8f9;
+  --phase-comprado-border: rgba(6, 182, 212, 0.6);
+
+  --phase-stock-bg: rgba(57, 255, 20, 0.18);
+  --phase-stock-text: #39ff14;
+  --phase-stock-border: rgba(57, 255, 20, 0.6);
+
+  --phase-vendido-bg: rgba(244, 63, 94, 0.2);
+  --phase-vendido-text: #fda4af;
+  --phase-vendido-border: rgba(244, 63, 94, 0.6);
 }
 
 /* ☀️ Tema 4: Modo Claro Elegante */
@@ -175,6 +226,23 @@
   --color-on-surface: #111827;
   --color-on-surface-variant: #6b7280;
   --color-on-background: #111827;
+
+  /* Variables de Fases */
+  --phase-precompra-bg: #eef2ff;
+  --phase-precompra-text: #4338ca;
+  --phase-precompra-border: #c7d2fe;
+
+  --phase-comprado-bg: #eff6ff;
+  --phase-comprado-text: #1d4ed8;
+  --phase-comprado-border: #bfdbfe;
+
+  --phase-stock-bg: #ecfdf5;
+  --phase-stock-text: #047857;
+  --phase-stock-border: #a7f3d0;
+
+  --phase-vendido-bg: #f3f4f6;
+  --phase-vendido-text: #374151;
+  --phase-vendido-border: #e5e7eb;
 }
 
 @layer utilities {
