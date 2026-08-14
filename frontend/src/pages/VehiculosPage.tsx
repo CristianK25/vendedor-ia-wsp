@@ -657,7 +657,7 @@ export default function VehiculosView() {
                         )}
                       </div>
                       <div className="mt-auto flex items-center justify-between">
-                        <span className="text-secondary font-black text-xl tracking-tight">${v.precio_venta.toLocaleString()}</span>
+                        <span className="text-secondary font-black text-xl tracking-tight">${v.precio_venta.toLocaleString()} {v.moneda_venta === 'USD' ? 'USD' : 'ARS'}</span>
                         {v.estado === 'disponible' ? (
                           !isStock ? (
                             <button 
@@ -755,7 +755,7 @@ export default function VehiculosView() {
                         <td className="py-4 px-6 text-center">
                           {renderEtapaBadge(v.etapa)}
                         </td>
-                        <td className="py-4 px-6 font-bold text-secondary text-right text-base tracking-tight">${v.precio_venta.toLocaleString()}</td>
+                        <td className="py-4 px-6 font-bold text-secondary text-right text-base tracking-tight">${v.precio_venta.toLocaleString()} {v.moneda_venta === 'USD' ? 'USD' : 'ARS'}</td>
                         <td className="py-4 px-6">
                           <div className="flex items-center justify-center gap-2">
                             {v.estado === 'disponible' ? (

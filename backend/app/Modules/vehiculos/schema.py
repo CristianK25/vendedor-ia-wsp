@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
-from app.Modules.vehiculos.model import EstadoVehiculo, OrigenCompra, EtapaVehiculo, TipoAlta, ComisionTipo
+from app.Modules.vehiculos.model import EstadoVehiculo, OrigenCompra, EtapaVehiculo, TipoAlta, ComisionTipo, Moneda
 
 class ImagenResponse(BaseModel):
     id: int
@@ -12,7 +12,9 @@ class VehiculoCreate(BaseModel):
     marca: str
     modelo: str
     precio_venta: float
+    moneda_venta: Moneda
     precio_compra: Optional[float] = None
+    moneda_compra: Optional[Moneda]
     origen_compra: Optional[OrigenCompra] = None
     kilometraje: int
     detalle_interior: Optional[str] = None
@@ -35,7 +37,9 @@ class VehiculoUpdate(BaseModel):
     marca: Optional[str] = None
     modelo: Optional[str] = None
     precio_venta: Optional[float] = None
+    moneda_venta: Optional[Moneda] = None
     precio_compra: Optional[float] = None
+    moneda_compra: Optional[Moneda] = None
     origen_compra: Optional[OrigenCompra] = None
     kilometraje: Optional[int] = None
     detalle_interior: Optional[str] = None
@@ -60,7 +64,9 @@ class VehiculoResponse(BaseModel):
     marca: str = ""
     modelo: str
     precio_venta: float
+    moneda_venta: Optional[Moneda] = None
     precio_compra: Optional[float] = None
+    moneda_compra: Optional[Moneda] = None
     origen_compra: Optional[OrigenCompra] = None
     kilometraje: int
     detalle_interior: Optional[str] = None

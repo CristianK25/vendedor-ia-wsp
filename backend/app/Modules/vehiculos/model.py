@@ -26,13 +26,19 @@ class EtapaVehiculo(str, enum.Enum):
     en_stock = "en_stock"
     vendido = "vendido"
 
+class Moneda(str, enum.Enum):
+    USD = "USD"
+    PESOS = "PESOS"
+
 class Vehiculo(SQLModel, table=True):
     __tablename__ = "vehiculos"
     id: Optional[int] = Field(default=None, primary_key=True)
     marca: str = Field(default="")
     modelo: str
     precio_venta: float
+    moneda_venta: Optional[Moneda] = Field(default=Moneda.PESOS, nullable=True)
     precio_compra: Optional[float] = Field(default=None, nullable=True)
+    moneda_compra: Optional[Moneda] = Field(default=Moneda.PESOS, nullable=True)
     origen_compra: Optional[OrigenCompra] = Field(default=None, nullable=True)
     kilometraje: int
     detalle_interior: Optional[str] = None

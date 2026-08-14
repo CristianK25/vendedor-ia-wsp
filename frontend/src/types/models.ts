@@ -6,6 +6,7 @@ export interface Imagen {
 }
 
 export type EtapaVehiculo = 'pre_compra' | 'comprado' | 'en_stock' | 'vendido';
+export type Moneda = 'USD' | 'PESOS';
 export type TipoDocumento = 
   | 'informe_dominio' | 'deuda_patentes' 
   | 'boleto_compra' | 'dni_vendedor' | 'cedula_vehiculo' | 'formulario_08' 
@@ -28,7 +29,9 @@ export interface Vehiculo {
   marca: string
   modelo: string
   precio_venta: number
+  moneda_venta?: Moneda
   precio_compra?: number
+  moneda_compra?: Moneda
   origen_compra?: 'particular' | 'ri_factura_a'
   kilometraje: number
   detalle_interior?: string
@@ -55,7 +58,9 @@ export interface VehiculoCreate {
   marca: string
   modelo: string
   precio_venta: number
+  moneda_venta: Moneda
   precio_compra?: number
+  moneda_compra?: Moneda | null
   origen_compra?: 'particular' | 'ri_factura_a'
   kilometraje: number
   detalle_interior?: string

@@ -188,7 +188,7 @@ export default function VehiculoDetailPage() {
           </h1>
         </div>
         <div className="text-right">
-          <div className="text-secondary font-black text-3xl md:text-4xl mb-1 tracking-tight">${vehiculo.precio_venta.toLocaleString()}</div>
+          <div className="text-secondary font-black text-3xl md:text-4xl mb-1 tracking-tight">${vehiculo.precio_venta.toLocaleString()} <span className="text-xl font-bold uppercase">{vehiculo.moneda_venta === 'USD' ? 'USD' : 'ARS'}</span></div>
           <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${vehiculo.estado === 'disponible' ? 'bg-secondary-container text-secondary border-primary/20 shadow-sm' : vehiculo.estado === 'reventa' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-error-container text-error border-error/30'}`}>
             <CheckCircle2 size={14} />
             {vehiculo.estado === 'disponible' ? 'Disponible para la Venta' : vehiculo.estado === 'reventa' ? 'Vendido (Reventa)' : 'Vendido'}
@@ -412,7 +412,7 @@ export default function VehiculoDetailPage() {
                   <div className="flex justify-between py-2 border-b border-outline-variant/30">
                     <span className="text-on-surface-variant">Precio de compra</span>
                     <span className="font-semibold text-on-surface">
-                      ${vehiculo.precio_compra?.toLocaleString() || '-'}
+                      {vehiculo.precio_compra ? `$${vehiculo.precio_compra.toLocaleString()} ${vehiculo.moneda_compra === 'USD' ? 'USD' : 'ARS'}` : '-'}
                     </span>
                   </div>
                 </>

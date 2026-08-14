@@ -51,7 +51,12 @@ export default function VehiculoForm() {
     })
   }
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<VehiculoFormData>()
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<VehiculoFormData>({
+    defaultValues: {
+      moneda_venta: 'PESOS',
+      moneda_compra: 'PESOS'
+    }
+  })
   const selectedTipo = watch('tipo')
 
   useEffect(() => {
@@ -75,7 +80,11 @@ export default function VehiculoForm() {
       setLoading(true)
       vehiculosApi.getById(Number(id))
         .then(data => {
-          reset(data)
+          reset({
+            ...data,
+            moneda_venta: data.moneda_venta || 'PESOS',
+            moneda_compra: data.moneda_compra || 'PESOS',
+          })
           if (data.tipo_alta) {
             setTipoAlta(data.tipo_alta)
           }
@@ -162,6 +171,7 @@ export default function VehiculoForm() {
         marca: data.marca,
         modelo: data.modelo,
         precio_venta: data.precio_venta,
+        moneda_venta: data.moneda_venta || 'PESOS',
         kilometraje: data.kilometraje,
         anio: data.anio,
         transmision: data.transmision,
@@ -174,6 +184,7 @@ export default function VehiculoForm() {
         informacion_extra: data.informacion_extra,
         tipo_alta: tipoAlta,
         precio_compra: tipoAlta === 'compra_directa' ? data.precio_compra : null,
+        moneda_compra: tipoAlta === 'compra_directa' ? (data.moneda_compra || 'PESOS') : null,
         origen_compra: tipoAlta === 'compra_directa' ? data.origen_compra : null,
         dueno_telefono: tipoAlta === 'consignacion' ? finalDuenoTelefono : null,
         precio_acordado: tipoAlta === 'consignacion' ? data.precio_acordado : null,
@@ -308,7 +319,7 @@ export default function VehiculoForm() {
               {tipoAlta === 'compra_directa' ? (
                 <>
                   {/* Origen de Compra */}
-                  <div className="col-span-1 md:col-span-1">
+                  <div className="col-span-1 md:col-span-2">
                     <label className="block text-sm font-medium text-on-surface-variant mb-2">Origen de Compra</label>
                     <div className="relative">
                       <select
@@ -324,21 +335,30 @@ export default function VehiculoForm() {
                   </div>
 
                   {/* Precio de Compra */}
-                  <div>
+                  <div className="col-span-1 md:col-span-2">
                     <label className="block text-sm font-medium text-on-surface-variant mb-2">Precio de Compra</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
-                      <input 
-                        type="number"
-                        step="0.01"
-                        {...register('precio_compra', { 
-                          required: tipoAlta === 'compra_directa' ? 'El precio de compra es requerido' : false,
-                          valueAsNumber: true,
-                          min: { value: 0, message: 'No puede ser negativo' }
-                        })}
-                        className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                        placeholder="0.00"
-                      />
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
+                        <input 
+                          type="number"
+                          step="0.01"
+                          {...register('precio_compra', { 
+                            required: tipoAlta === 'compra_directa' ? 'El precio de compra es requerido' : false,
+                            valueAsNumber: true,
+                            min: { value: 0, message: 'No puede ser negativo' }
+                          })}
+                          className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <select
+                        {...register('moneda_compra')}
+                        className="w-28 px-3 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-semibold"
+                      >
+                        <option value="PESOS">Pesos</option>
+                        <option value="USD">USD</option>
+                      </select>
                     </div>
                     {errors.precio_compra && <p className="text-error text-xs mt-1 font-medium">{errors.precio_compra.message}</p>}
                   </div>
@@ -517,19 +537,28 @@ export default function VehiculoForm() {
               {/* Precio de Venta al Público - OCUPA DOS COLUMNAS COMO CIERRE DEL BLOQUE */}
               <div className="col-span-1 md:col-span-2 pt-4 border-t border-outline-variant mt-2">
                 <label className="block text-sm font-bold text-on-surface mb-2">Precio de Venta (Publicación)</label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" size={20} />
-                  <input 
-                    type="number"
-                    step="0.01"
-                    {...register('precio_venta', { 
-                      required: 'El precio de venta es requerido',
-                      valueAsNumber: true,
-                      min: { value: 0, message: 'No puede ser negativo' }
-                    })}
-                    className="w-full pl-10 pr-4 py-4 bg-primary/5 border border-primary/20 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-lg font-bold text-on-surface"
-                    placeholder="0.00"
-                  />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" size={20} />
+                    <input 
+                      type="number"
+                      step="0.01"
+                      {...register('precio_venta', { 
+                        required: 'El precio de venta es requerido',
+                        valueAsNumber: true,
+                        min: { value: 0, message: 'No puede ser negativo' }
+                      })}
+                      className="w-full pl-10 pr-4 py-4 bg-primary/5 border border-primary/20 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-lg font-bold text-on-surface"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <select
+                    {...register('moneda_venta')}
+                    className="w-32 px-3 py-4 bg-primary/5 border border-primary/20 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all text-base font-bold text-on-surface"
+                  >
+                    <option value="PESOS">Pesos</option>
+                    <option value="USD">USD</option>
+                  </select>
                 </div>
                 {errors.precio_venta && <p className="text-error text-xs mt-1 font-medium">{errors.precio_venta.message}</p>}
               </div>
