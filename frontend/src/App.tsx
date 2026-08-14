@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Calendar, Car, Users, ClipboardList, Megaphone, UserCircle2, LogOut } from 'lucide-react'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import CalendarPage from './pages/CalendarPage'
@@ -14,6 +15,7 @@ import VentaForm from './components/forms/VentaForm'
 import ClienteForm from './components/forms/ClienteForm'
 import PromocionForm from './components/forms/PromocionForm'
 import TrabajadorForm from './components/forms/TrabajadorForm'
+import ThemeSelector from './components/ThemeSelector'
 
 import { useAuthStore } from './store/authStore'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -25,6 +27,11 @@ function App() {
   const { usuario, logout } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('autolead_theme') || 'aston-martin'
+    document.documentElement.setAttribute('data-theme', savedTheme)
+  }, [])
 
   const isAuthRoute = location.pathname === '/login' || 
                       location.pathname === '/forgot-password' || 
@@ -85,8 +92,9 @@ function App() {
             })}
           </nav>
 
-          {/* User Profile Snippet */}
+          {/* User Profile Snippet & Theme Switcher */}
           <div className="flex items-center gap-3 shrink-0">
+            <ThemeSelector />
             <div className="hidden md:flex flex-col text-right">
               <span className="text-sm font-semibold text-on-surface">
                 {usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Admin'}
