@@ -1,6 +1,7 @@
 from sqlmodel import Session, select, func
 from app.Modules.vehiculos.model import Vehiculo
 from typing import List, Optional, Tuple
+from sqlalchemy.orm import selectinload
 
 class VehiculoRepository:
     def __init__(self, session: Session):
@@ -25,7 +26,7 @@ class VehiculoRepository:
         sort_by: str = "", 
         sort_dir: str = "asc"
     ) -> Tuple[List[Vehiculo], int]:
-        query = select(Vehiculo).where(Vehiculo.activo == True)
+        query = select(Vehiculo).where(Vehiculo.activo == True).options(selectinload(Vehiculo.imagenes))
         
         if search:
             query = query.where(
@@ -104,7 +105,7 @@ class VehiculoRepository:
         return vehiculo if vehiculo and vehiculo.activo else None
 
     def get_disponibles(self) -> List[Vehiculo]:
-        statement = select(Vehiculo).where(Vehiculo.estado == "disponible").where(Vehiculo.activo == True)
+        statement = select(Vehiculo).where(Vehiculo.estado == "disponible").where(Vehiculo.activo == True).options(selectinload(Vehiculo.imagenes))
         return self.session.exec(statement).all()
 
     def create(self, vehiculo: Vehiculo) -> Vehiculo:
