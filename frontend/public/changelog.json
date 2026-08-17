@@ -1,6 +1,14 @@
 {
   "actualizaciones": [
     {
+      "id": "1f8e2270-e692-482a-bc91-236b53a479ff",
+      "fecha": "2026-08-17",
+      "tipo_cambio": "Nueva Función",
+      "titulo": "Gestión de Costo Real y Gastos de Preparación",
+      "resumen": "Nuevo panel financiero para registrar gastos, almacenar comprobantes y calcular el costo real de los vehículos.",
+      "detalles_md": "### Visión General\nSe ha incorporado una nueva herramienta financiera para llevar el control estricto de la preparación de los vehículos, permitiendo conocer con precisión el margen neto de cada unidad.\n\n### Capacidades Añadidas\n| Característica | Descripción |\n|---|---|\n| **Registro de Egresos** | Permite categorizar y registrar gastos tales como fletes, mecánica, repuestos, gestoría y detalles estéticos. |\n| **Gestión de Comprobantes** | Soporte para adjuntar archivos de facturas y recibos en PDF o imagen para consultas directas. |\n| **Cálculo Multimoneda** | El sistema calcula el costo real total sumando el precio de compra y los gastos de forma consolidada, respetando si la compra fue en dólares y los gastos en pesos para evitar conversiones erróneas. |\n| **Crédito Fiscal Automático** | Muestra el desglose de lo facturado bajo Tipo A y calcula el monto exacto del impuesto al valor agregado (IVA) del 21% recuperable. |\n\n### Mejoras de Interfaz\n- Nuevo panel compacto de facturación con mayor legibilidad tipográfica y espaciado optimizado.\n- Botones de acción simplificados y siempre disponibles para ver comprobantes, editar o eliminar registros de gastos de manera directa."
+    },
+    {
       "id": "1",
       "fecha": "2026-08-14",
       "tipo_cambio": "Nueva Función",
