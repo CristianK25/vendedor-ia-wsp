@@ -1,13 +1,16 @@
 # Fase 1: Build
 FROM node:20-alpine AS builder
 
+# Instalar pnpm de forma segura y robusta usando npm global
+RUN npm install -g pnpm@10.34.1
+
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --ignore-scripts
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Fase 2: Servidor Web Nginx
 FROM nginx:alpine

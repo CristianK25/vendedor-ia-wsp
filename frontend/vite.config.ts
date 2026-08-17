@@ -13,6 +13,7 @@ export default defineConfig(() => {
       tailwindcss(),
     ],
     server: {
+      host: true,
       proxy: {
         '/api': {
           target: backendUrl,

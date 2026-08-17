@@ -64,6 +64,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 .pnpm-debug.log*
+.pnpm-store/
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 pids
 *.pid
@@ -103,3 +104,4 @@ docs/ideas/
 info
 .agents/rules/agente.md
 docs/verificacion_bloque4.md
+docs/revisar_vps.txt
