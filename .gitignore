@@ -11,6 +11,7 @@ docker-compose.override.yml
 _tickets/
 archivos_prueba/
 backend/documentos
+backend/gastos
 
 # Python / FastAPI
 __pycache__/
@@ -105,3 +106,9 @@ info
 .agents/rules/agente.md
 docs/verificacion_bloque4.md
 docs/revisar_vps.txt
+comprobantes_pruebas/comprobante_flete.pdf
+comprobantes_pruebas/comprobante_detailing.pdf
+comprobantes_pruebas/comprobante_mecanica.pdf
+comprobantes_pruebas/comprobante_otros.pdf
+comprobantes_pruebas/comprobante_repuestos.pdf
+comprobantes_pruebas/comprobante_tramites.pdf

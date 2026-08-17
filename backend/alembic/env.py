@@ -25,6 +25,7 @@ from app.Modules.clientes.model import Cliente
 from app.Modules.vehiculos.model import Vehiculo
 from app.Modules.documentos.model import DocumentoVehiculo
 from app.Modules.imagenes.model import Imagen
+from app.Modules.gastos.model import GastoVehiculo
 from app.Modules.citas.model import Cita
 from app.Modules.ventas.model import Venta
 from app.Modules.promociones.model import Promocion

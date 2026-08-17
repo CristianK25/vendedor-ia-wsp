@@ -63,3 +63,4 @@ class Vehiculo(SQLModel, table=True):
     
     imagenes: List["Imagen"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
     documentos: List["DocumentoVehiculo"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    gastos: List["GastoVehiculo"] = Relationship(back_populates="vehiculo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})

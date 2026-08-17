@@ -5,11 +5,12 @@ import { clientesApi } from '../api/clientes'
 import { 
   ArrowLeft, Edit2, CheckCircle2, 
   FileText,
-  ImageOff, ChevronLeft, ChevronRight, UserCircle2, ShieldCheck,
+  ImageOff, ChevronLeft, ChevronRight, UserCircle2,
   Lock, AlertTriangle, ExternalLink, FileCheck2, UploadCloud,
   Download, Loader2, Maximize2, RotateCw
 } from 'lucide-react'
 import ImageLightboxModal from '../components/modals/ImageLightboxModal'
+import GastosSection from '../components/vehiculos/GastosSection'
 import { useAuthStore } from '../store/authStore'
 
 const ETAPAS = [
@@ -552,29 +553,11 @@ export default function VehiculoDetailPage() {
             </div>
           </div>
 
-          {/* Placeholder: Historial */}
-          <div className="bg-surface border border-outline-variant rounded-2xl p-6 shadow-sm">
-            <h3 className="font-semibold text-on-surface mb-4 flex items-center gap-2">
-              <ShieldCheck size={18} className="text-primary"/>
-              Historial (Próximamente)
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 opacity-60">
-                <div className="w-2 h-2 mt-1.5 rounded-full bg-outline"></div>
-                <div>
-                  <p className="font-medium text-sm text-on-surface">Service Oficial 60k</p>
-                  <p className="text-xs text-on-surface-variant">Sin registrar</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 opacity-60">
-                <div className="w-2 h-2 mt-1.5 rounded-full bg-outline"></div>
-                <div>
-                  <p className="font-medium text-sm text-on-surface">Verificación Policial</p>
-                  <p className="text-xs text-on-surface-variant">Pendiente</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <GastosSection 
+            vehiculoId={vehiculo.id} 
+            precioCompra={vehiculo.precio_compra} 
+            monedaCompra={vehiculo.moneda_compra} 
+          />
           
         </div>
 

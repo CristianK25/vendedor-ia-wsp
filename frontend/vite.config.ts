@@ -26,6 +26,10 @@ export default defineConfig(() => {
         '/documentos': {
           target: backendUrl,
           changeOrigin: true,
+        },
+        '/gastos': {
+          target: backendUrl,
+          changeOrigin: true,
         }
       }
     }
