@@ -22,8 +22,8 @@ services:
     depends_on:
       - db
       - redis
-    ports:
-      - "5678:5678"
+    # ports:
+    #   - "5678:5678"  # COMENTADO POR SEGURIDAD: Usar NPM con el dominio n8n-lvm.autoleadcrm.tech
     environment:
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-America/Argentina/Mendoza}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
@@ -85,7 +85,7 @@ services:
     ports:
       - '80:80'     # Tráfico HTTP público
       - '443:443'   # Tráfico HTTPS público
-      - '81:81'     # Panel de administración de NPM
+      - '127.0.0.1:81:81' # Panel NPM restringido a localhost (acceder vía túnel SSH)
     volumes:
       - ./npm_data:/data
       - ./npm_letsencrypt:/etc/letsencrypt
