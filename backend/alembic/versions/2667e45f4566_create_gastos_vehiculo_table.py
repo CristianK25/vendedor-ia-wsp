@@ -19,50 +19,29 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Crear el enum solo si no existe en PostgreSQL
-    op.execute(
-        "DO $$ BEGIN "
-        "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'categoriagasto') THEN "
-        "CREATE TYPE categoriagasto AS ENUM ('mecanica', 'detailing_preparacion', 'repuestos', 'flete', 'patentes_tramites', 'otros'); "
-        "END IF; END $$;"
-    )
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'categoriagasto') THEN
+                CREATE TYPE categoriagasto AS ENUM ('mecanica', 'detailing_preparacion', 'repuestos', 'flete', 'patentes_tramites', 'otros');
+            END IF;
+        END $$;
 
-    categoria_enum = sa.Enum(
-        'mecanica',
-        'detailing_preparacion',
-        'repuestos',
-        'flete',
-        'patentes_tramites',
-        'otros',
-        name='categoriagasto',
-        create_type=False
-    )
-
-    op.create_table(
-        'gastos_vehiculo',
-        sa.Column('id', sa.Integer(), nullable=False, autoincrement=True),
-        sa.Column('vehiculo_id', sa.Integer(), nullable=False),
-        sa.Column('fecha', sa.Date(), nullable=False),
-        sa.Column('categoria', categoria_enum, nullable=False),
-        sa.Column('monto', sa.Float(), nullable=False),
-        sa.Column('proveedor', sa.String(), nullable=False),
-        sa.Column('factura_a', sa.Boolean(), nullable=False, server_default=sa.text('false')),
-        sa.Column('comprobante_url', sa.String(length=500), nullable=True),
-        sa.Column('fecha_hora_carga', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['vehiculo_id'], ['vehiculos.id'], ondelete='CASCADE'),
-        sa.PrimaryKeyConstraint('id')
-    )
+        CREATE TABLE IF NOT EXISTS gastos_vehiculo (
+            id SERIAL PRIMARY KEY,
+            vehiculo_id INTEGER NOT NULL REFERENCES vehiculos(id) ON DELETE CASCADE,
+            fecha DATE NOT NULL,
+            categoria categoriagasto NOT NULL,
+            monto DOUBLE PRECISION NOT NULL,
+            proveedor VARCHAR NOT NULL,
+            factura_a BOOLEAN NOT NULL DEFAULT false,
+            comprobante_url VARCHAR(500),
+            fecha_hora_carga TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT (now() at time zone 'utc')
+        );
+    """)
 
 
 def downgrade() -> None:
-    op.drop_table('gastos_vehiculo')
-    categoria_enum = sa.Enum(
-        'mecanica',
-        'detailing_preparacion',
-        'repuestos',
-        'flete',
-        'patentes_tramites',
-        'otros',
-        name='categoriagasto'
-    )
-    categoria_enum.drop(op.get_bind(), checkfirst=True)
+    op.execute("""
+        DROP TABLE IF EXISTS gastos_vehiculo;
+        DROP TYPE IF EXISTS categoriagasto;
+    """)
