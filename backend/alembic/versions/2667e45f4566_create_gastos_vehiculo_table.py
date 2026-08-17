@@ -19,6 +19,14 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Crear el enum solo si no existe en PostgreSQL
+    op.execute(
+        "DO $$ BEGIN "
+        "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'categoriagasto') THEN "
+        "CREATE TYPE categoriagasto AS ENUM ('mecanica', 'detailing_preparacion', 'repuestos', 'flete', 'patentes_tramites', 'otros'); "
+        "END IF; END $$;"
+    )
+
     categoria_enum = sa.Enum(
         'mecanica',
         'detailing_preparacion',
@@ -26,9 +34,9 @@ def upgrade() -> None:
         'flete',
         'patentes_tramites',
         'otros',
-        name='categoriagasto'
+        name='categoriagasto',
+        create_type=False
     )
-    categoria_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         'gastos_vehiculo',
