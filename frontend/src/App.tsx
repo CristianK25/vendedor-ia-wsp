@@ -16,6 +16,7 @@ import ClienteForm from './components/forms/ClienteForm'
 import PromocionForm from './components/forms/PromocionForm'
 import TrabajadorForm from './components/forms/TrabajadorForm'
 import ThemeSelector from './components/ThemeSelector'
+import { ChangelogButton } from './components/ChangelogButton'
 
 import { useAuthStore } from './store/authStore'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -94,6 +95,7 @@ function App() {
 
           {/* User Profile Snippet & Theme Switcher */}
           <div className="flex items-center gap-3 shrink-0">
+            <ChangelogButton />
             <ThemeSelector />
             <div className="hidden md:flex flex-col text-right">
               <span className="text-sm font-semibold text-on-surface">

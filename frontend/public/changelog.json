@@ -1,0 +1,12 @@
+{
+  "actualizaciones": [
+    {
+      "id": "1",
+      "fecha": "2026-08-14",
+      "tipo_cambio": "Nueva Función",
+      "titulo": "Implementación del Sistema de Actualizaciones",
+      "resumen": "Nuevo panel de notificaciones para mantenerse informado sobre las últimas mejoras de la plataforma.",
+      "detalles_md": "### Visión General\nSe ha integrado un nuevo panel de notificaciones para mantener a los usuarios informados sobre los últimos cambios en la plataforma de forma centralizada y no invasiva.\n\n### Capacidades Añadidas\n| Componente | Descripción |\n|---|---|\n| **Panel Lateral** | Nueva interfaz deslizable para consultar el registro de cambios sin interrumpir la navegación. |\n| **Clasificación Inteligente** | Organización automática de las novedades en *Hoy*, *Esta Semana* y *Historial*. |\n| **Indicadores Visuales** | Etiquetas distintivas para identificar de inmediato Nuevas Funciones, Mejoras Visuales y Correcciones. |\n\n### Beneficios Clave\n- Mayor transparencia en las mejoras continuas del sistema.\n- Acceso directo a las notas de lanzamiento desde la barra de navegación superior."
+    }
+  ]
+}
