@@ -1,5 +1,5 @@
 from sqlmodel import Session, select, func
-from sqlalchemy.orm import selectinload
+
 from app.Modules.gastos.model import GastoVehiculo
 from typing import List, Optional
 
@@ -8,7 +8,7 @@ class GastoRepository:
         self.session = session
 
     def get_by_id(self, gasto_id: int) -> Optional[GastoVehiculo]:
-        statement = select(GastoVehiculo).where(GastoVehiculo.id == gasto_id).options(selectinload(GastoVehiculo.usuario))
+        statement = select(GastoVehiculo).where(GastoVehiculo.id == gasto_id)
         return self.session.exec(statement).first()
 
     def get_by_vehiculo_id(self, vehiculo_id: int) -> List[GastoVehiculo]:
@@ -16,7 +16,6 @@ class GastoRepository:
             select(GastoVehiculo)
             .where(GastoVehiculo.vehiculo_id == vehiculo_id)
             .order_by(GastoVehiculo.fecha.desc(), GastoVehiculo.fecha_hora_carga.desc())
-            .options(selectinload(GastoVehiculo.usuario))
         )
         return self.session.exec(statement).all()
 
