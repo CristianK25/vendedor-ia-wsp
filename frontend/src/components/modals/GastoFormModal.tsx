@@ -112,7 +112,7 @@ export default function GastoFormModal({ isOpen, onClose, vehiculoId, gasto, onS
   };
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
       <div 
         className="bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-outline-variant/30 animate-in fade-in zoom-in-95 duration-150"
         style={{ width: '100%', maxWidth: '420px', maxHeight: '90vh' }}
