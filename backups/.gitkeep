@@ -1,0 +1,2 @@
+# Este archivo permite que Git haga seguimiento de la carpeta backups, 
+# aunque los archivos .dump y .log estén ignorados en el .gitignore

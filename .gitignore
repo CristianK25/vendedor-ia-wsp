@@ -112,3 +112,7 @@ comprobantes_pruebas/comprobante_mecanica.pdf
 comprobantes_pruebas/comprobante_otros.pdf
 comprobantes_pruebas/comprobante_repuestos.pdf
 comprobantes_pruebas/comprobante_tramites.pdf
+
+# Backups de Base de Datos
+backups/*.dump
+backups/*.log
