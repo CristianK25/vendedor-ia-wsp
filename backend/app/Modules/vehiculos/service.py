@@ -2,7 +2,7 @@ from sqlmodel import Session
 from fastapi import HTTPException, status, UploadFile
 from typing import List, Optional
 from app.Modules.vehiculos.repository import VehiculoRepository
-from app.Modules.vehiculos.model import Vehiculo
+from app.Modules.vehiculos.model import Vehiculo, TipoAlta
 from app.Modules.vehiculos.schema import VehiculoCreate, VehiculoUpdate
 from app.Modules.imagenes.service import ImagenesService
 
@@ -82,6 +82,18 @@ class VehiculoService:
         update_data = vehiculo_data.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(vehiculo, key, value)
+        
+        # Sanitizar campos según tipo_alta para evitar datos inconsistentes
+        if vehiculo.tipo_alta == TipoAlta.compra_directa:
+            vehiculo.dueno_telefono = None
+            vehiculo.precio_acordado = None
+            vehiculo.comision_tipo = None
+            vehiculo.comision_valor = None
+        elif vehiculo.tipo_alta == TipoAlta.consignacion:
+            vehiculo.precio_compra = None
+            vehiculo.origen_compra = None
+            vehiculo.moneda_compra = None
+
         return self.repository.update(vehiculo)
 
     def delete_vehiculo(self, vehiculo_id: int):

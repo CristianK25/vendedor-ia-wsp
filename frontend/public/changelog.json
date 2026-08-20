@@ -1,6 +1,14 @@
 {
   "actualizaciones": [
     {
+      "id": "cf457c10-d027-4bf7-9da5-3564c7e2b6fe",
+      "fecha": "2026-08-20",
+      "tipo_cambio": "Nueva Función",
+      "titulo": "Flexibilidad en la Modificación de Condiciones de Ingreso",
+      "resumen": "Permite modificar la modalidad de ingreso del vehículo (compra directa o consignación) en cualquier momento desde el formulario de edición.",
+      "detalles_md": "### Visión General\nSe ha dotado al sistema de mayor flexibilidad al permitir actualizar la modalidad de ingreso de los vehículos (Compra Directa o Consignación) de manera directa en el formulario de edición sin tener que eliminar y volver a registrar la unidad.\n\n### Capacidades Añadidas\n| Operación | Comportamiento del Sistema |\n|---|---|\n| **Conversión a Compra Directa** | Limpia automáticamente toda la información asociada al dueño anterior y comisiones de consignación, solicitando únicamente el precio y origen de compra. |\n| **Conversión a Consignación** | Remueve el precio y origen de compra del vehículo, permitiendo reasignar el dueño del vehículo y redefinir la comisión de la agencia. |\n\n### Beneficios Clave\n- Corrección de errores de registro de manera inmediata desde el panel de edición.\n- Consistencia garantizada en las cuentas de egresos y costos del stock al modificarse la procedencia."
+    },
+    {
       "id": "1f8e2270-e692-482a-bc91-236b53a479ff",
       "fecha": "2026-08-17",
       "tipo_cambio": "Nueva Función",

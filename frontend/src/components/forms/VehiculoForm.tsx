@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Car, DollarSign, Gauge, Image as ImageIcon, X, Loader2, UserPlus, Search } from 'lucide-react'
@@ -17,6 +17,7 @@ export default function VehiculoForm() {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEditMode = !!id
+  const isInitialLoadRef = useRef(isEditMode) // true en edición (evita limpiar campos al cargar), false en creación
 
   const [activeTab, setActiveTab] = useState<'datos' | 'documentos'>('datos')
   const [loading, setLoading] = useState(false)
@@ -65,6 +66,26 @@ export default function VehiculoForm() {
     }
   }, [selectedTipo, setValue])
 
+  // Limpiar campos cruzados al alternar tipo de alta
+  useEffect(() => {
+    if (isInitialLoadRef.current) return // No limpiar en carga inicial de edición
+    if (tipoAlta === 'compra_directa') {
+      // Limpiar campos de consignación
+      setValue('precio_acordado', undefined as any)
+      setValue('comision_valor', undefined as any)
+      setDuenoTelefono('')
+      setDuenoNombre('')
+      setComisionTipo('porcentaje')
+      setIsNewDueno(false)
+      setNewDuenoData({ telefono: '', nombre: '' })
+    } else {
+      // Limpiar campos de compra directa
+      setValue('precio_compra', undefined as any)
+      setValue('origen_compra', undefined as any)
+      setValue('moneda_compra', 'PESOS')
+    }
+  }, [tipoAlta])
+
   useEffect(() => {
     if (duenoSearch.length > 2 && !isNewDueno) {
       clientesApi.getAll(1, 10, duenoSearch).then((data: any) => {
@@ -102,6 +123,8 @@ export default function VehiculoForm() {
               }
             }).catch(() => setDuenoNombre(data.dueno_telefono))
           }
+          // Desactivar guard después de que el estado se haya propagado
+          setTimeout(() => { isInitialLoadRef.current = false }, 0)
           setLoading(false)
         })
         .catch(err => {
@@ -290,25 +313,23 @@ export default function VehiculoForm() {
                 <div className="flex gap-4">
                   <button
                     type="button"
-                    disabled={isEditMode}
                     onClick={() => setTipoAlta('compra_directa')}
                     className={`flex-1 py-3 px-4 rounded-xl border-2 font-semibold transition-all flex items-center justify-center gap-2 ${
                       tipoAlta === 'compra_directa'
                         ? 'bg-primary/10 border-primary text-primary shadow-sm'
                         : 'bg-background border-outline-variant text-on-surface-variant hover:border-outline'
-                    } ${isEditMode ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    }`}
                   >
                     Compra Directa
                   </button>
                   <button
                     type="button"
-                    disabled={isEditMode}
                     onClick={() => setTipoAlta('consignacion')}
                     className={`flex-1 py-3 px-4 rounded-xl border-2 font-semibold transition-all flex items-center justify-center gap-2 ${
                       tipoAlta === 'consignacion'
                         ? 'bg-primary/10 border-primary text-primary shadow-sm'
                         : 'bg-background border-outline-variant text-on-surface-variant hover:border-outline'
-                    } ${isEditMode ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    }`}
                   >
                     Consignación
                   </button>
@@ -369,15 +390,13 @@ export default function VehiculoForm() {
                   <div className="col-span-1 md:col-span-2 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-semibold text-on-surface">Datos del Dueño del Vehículo</h3>
-                      {!isEditMode && (
-                        <button 
-                          type="button"
-                          onClick={() => setIsNewDueno(!isNewDueno)}
-                          className="text-primary text-sm font-semibold flex items-center gap-1 hover:underline"
-                        >
-                          {isNewDueno ? 'Buscar Existente' : <><UserPlus size={16} /> Nuevo Cliente</>}
-                        </button>
-                      )}
+                      <button 
+                        type="button"
+                        onClick={() => setIsNewDueno(!isNewDueno)}
+                        className="text-primary text-sm font-semibold flex items-center gap-1 hover:underline"
+                      >
+                        {isNewDueno ? 'Buscar Existente' : <><UserPlus size={16} /> Nuevo Cliente</>}
+                      </button>
                     </div>
 
                     {isNewDueno ? (
@@ -414,15 +433,13 @@ export default function VehiculoForm() {
                                 <p className="text-xs opacity-80">{duenoTelefono}</p>
                               </div>
                             </div>
-                            {!isEditMode && (
-                              <button 
-                                type="button" 
-                                onClick={() => { setDuenoTelefono(''); setDuenoNombre(''); }}
-                                className="text-xs uppercase font-bold text-primary hover:bg-primary/10 px-2 py-1 rounded"
-                              >
-                                Cambiar
-                              </button>
-                            )}
+                            <button 
+                              type="button" 
+                              onClick={() => { setDuenoTelefono(''); setDuenoNombre(''); }}
+                              className="text-xs uppercase font-bold text-primary hover:bg-primary/10 px-2 py-1 rounded"
+                            >
+                              Cambiar
+                            </button>
                           </div>
                         ) : (
                           <div className="relative">
