@@ -49,7 +49,7 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
 
   const modalContent = (
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
       onClick={onClose}
     >      
       <div 
@@ -140,16 +140,16 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
               
               {loading ? (
                 <div className="flex justify-center py-1">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                 </div>
               ) : cliente ? (
                 <>
-                  <div className="flex justify-between items-center text-[12px] pt-2 border-t border-blue-100/50 mt-1">
-                    <span className="text-gray-500">Compras Realizadas:</span>
-                    <span className="font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md">{cliente.cantidad_compras}</span>
+                  <div className="flex justify-between items-center text-[12px] pt-2 border-t border-outline-variant mt-1">
+                    <span className="text-on-surface-variant">Compras Realizadas:</span>
+                    <span className="font-bold text-secondary bg-secondary-container px-2 py-0.5 rounded-md">{cliente.cantidad_compras}</span>
                   </div>
                   {cliente.ultima_interaccion_cliente && (
-                    <div className="flex justify-between items-center text-[11px] text-gray-500">
+                    <div className="flex justify-between items-center text-[11px] text-on-surface-variant">
                       <span>Última Interacción:</span>
                       <span>{new Date(cliente.ultima_interaccion_cliente).toLocaleDateString('es-ES')}</span>
                     </div>
@@ -161,21 +161,21 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
 
           {/* Vehículo Info */}
           <div className="flex flex-col gap-2">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Vehículo de Interés</h3>
-            <div className={`p-3 rounded-lg border text-sm flex flex-col gap-2 ${cita.vehiculo_id ? 'bg-orange-50/50 border-orange-100' : 'bg-gray-50 border-gray-100'}`}>
+            <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Vehículo de Interés</h3>
+            <div className={`p-3 rounded-xl border text-sm flex flex-col gap-2 ${cita.vehiculo_id ? 'bg-primary/10 border-primary/20' : 'bg-surface-container-lowest border-outline-variant'}`}>
               {cita.vehiculo_id ? (
                 <>
                   <div className="flex justify-between items-center">
-                    <span className="text-orange-800 font-medium">Modelo:</span>
-                    <span className="font-bold text-orange-900 truncate">{cita.vehiculo_modelo}</span>
+                    <span className="text-on-surface-variant font-medium">Modelo:</span>
+                    <span className="font-bold text-primary truncate">{cita.vehiculo_modelo}</span>
                   </div>
-                  <div className="flex justify-between items-center text-[12px] pt-2 border-t border-orange-100/50 mt-1">
-                    <span className="text-orange-700">Patente:</span>
-                    <span className="font-semibold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-md">{cita.vehiculo_patente}</span>
+                  <div className="flex justify-between items-center text-[12px] pt-2 border-t border-outline-variant mt-1">
+                    <span className="text-on-surface-variant">Patente:</span>
+                    <span className="font-semibold text-on-surface bg-surface-container-high px-2 py-0.5 rounded-md">{cita.vehiculo_patente}</span>
                   </div>
                 </>
               ) : (
-                <div className="text-center text-gray-500 italic py-1 text-xs">
+                <div className="text-center text-on-surface-variant italic py-1 text-xs">
                   Cita General (Sin vehículo específico)
                 </div>
               )}
@@ -184,7 +184,7 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-4 py-3 flex justify-between items-center gap-2 border-t border-gray-200 mt-auto">
+        <div className="bg-surface-container-lowest px-4 py-3 flex justify-between items-center gap-2 border-t border-outline-variant mt-auto">
           {/* Botones de acción basados en el estado */}
           <div className="flex gap-2">
             {cita.estado === 'pendiente' && (
@@ -192,14 +192,14 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
                 <button
                   onClick={() => handleUpdateEstado('confirmada')}
                   disabled={isUpdating}
-                  className="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50"
+                  className="px-3 py-1.5 text-xs font-bold text-on-primary bg-primary rounded-lg hover:bg-primary-container transition-colors shadow-sm disabled:opacity-50"
                 >
                   Confirmar
                 </button>
                 <button
                   onClick={() => handleUpdateEstado('cancelada')}
                   disabled={isUpdating}
-                  className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 text-xs font-semibold text-error bg-error-container/30 border border-error/30 rounded-lg hover:bg-error-container/50 transition-colors disabled:opacity-50"
                 >
                   Cancelar Cita
                 </button>
@@ -209,13 +209,13 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
               <button
                 onClick={() => handleUpdateEstado('cancelada')}
                 disabled={isUpdating}
-                className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 text-xs font-semibold text-error bg-error-container/30 border border-error/30 rounded-lg hover:bg-error-container/50 transition-colors disabled:opacity-50"
               >
                 Cancelar Cita
               </button>
             )}
             {cita.estado === 'cancelada' && (
-              <span className="text-xs text-red-600 font-semibold bg-red-50 px-2.5 py-1 rounded-md border border-red-100">
+              <span className="text-xs text-error font-semibold bg-error-container/20 px-2.5 py-1 rounded-md border border-error/30">
                 Esta cita está cancelada
               </span>
             )}
@@ -223,7 +223,7 @@ export default function CitaModal({ isOpen, onClose, cita, onUpdate }: CitaModal
 
           <button 
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+            className="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg"
           >
             Cerrar
           </button>
