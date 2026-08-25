@@ -118,9 +118,9 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
   const computedDueno = pFinalNum - computedComision;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div 
-        className="bg-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        className="bg-surface border border-outline-variant rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         style={{ width: '100%', maxWidth: '512px', maxHeight: '90vh' }}
       >
         <div className="flex items-center justify-between p-6 border-b border-outline-variant">
@@ -128,7 +128,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
             <h2 className="text-xl font-bold text-on-surface">Vender Vehículo</h2>
             <p className="text-sm text-on-surface-variant mt-1">{vehiculo.marca ? `${vehiculo.marca} ${vehiculo.modelo}` : vehiculo.modelo}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant">
+          <button onClick={onClose} className="p-2 hover:bg-surface-container-high rounded-full transition-colors text-on-surface-variant hover:text-on-surface">
             <X size={20} />
           </button>
         </div>
@@ -157,7 +157,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
                     required
                     value={newClientData.nombre}
                     onChange={e => setNewClientData({...newClientData, nombre: e.target.value})}
-                    className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface" 
+                    className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface placeholder:text-on-surface-variant/60 transition-colors" 
                   />
                 </div>
                 <div>
@@ -167,7 +167,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
                     required
                     value={newClientData.telefono}
                     onChange={e => setNewClientData({...newClientData, telefono: e.target.value})}
-                    className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface" 
+                    className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface placeholder:text-on-surface-variant/60 transition-colors" 
                   />
                 </div>
               </div>
@@ -178,7 +178,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
                     <div className="flex items-center gap-2">
                       <CheckCircle2 size={18} className="text-secondary" />
                       <div>
-                        <p className="font-bold text-sm">{clienteNombre}</p>
+                        <p className="font-bold text-sm text-on-surface">{clienteNombre}</p>
                         <p className="text-xs text-on-surface-variant">{clienteTelefono}</p>
                       </div>
                     </div>
@@ -198,7 +198,7 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
                       placeholder="Buscar cliente por nombre o teléfono..." 
                       value={search}
                       onChange={e => setSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 h-11 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface placeholder:text-on-surface-variant" 
+                      className="w-full pl-10 pr-4 h-11 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface placeholder:text-on-surface-variant/60 transition-colors" 
                     />
                     
                     {searchResults.length > 0 && (
@@ -243,30 +243,30 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
               <select 
                 value={metodoPago}
                 onChange={e => setMetodoPago(e.target.value)}
-                className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface"
+                className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface cursor-pointer"
               >
-                <option value="Efectivo">Efectivo</option>
-                <option value="Transferencia">Transferencia</option>
-                <option value="Cheque">Cheque</option>
-                <option value="Financiado">Financiado</option>
+                <option value="Efectivo" className="bg-surface text-on-surface">Efectivo</option>
+                <option value="Transferencia" className="bg-surface text-on-surface">Transferencia</option>
+                <option value="Cheque" className="bg-surface text-on-surface">Cheque</option>
+                <option value="Financiado" className="bg-surface text-on-surface">Financiado</option>
               </select>
             </div>
           </div>
 
           {vehiculo.tipo_alta === 'consignacion' && (
-            <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4">
-              <h4 className="text-sm font-bold text-indigo-900 mb-3 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+              <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
                 Desglose Financiero (Consignación)
               </h4>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
-                  <p className="text-xs font-semibold text-indigo-600/70 uppercase tracking-wide mb-1">Comisión Agencia</p>
-                  <p className="text-lg font-bold text-indigo-700">${computedComision.toLocaleString()}</p>
+                <div className="bg-surface-container-lowest rounded-xl p-3 border border-outline-variant shadow-sm">
+                  <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Comisión Agencia</p>
+                  <p className="text-lg font-bold text-primary">${computedComision.toLocaleString()}</p>
                 </div>
-                <div className="bg-white rounded-lg p-3 border border-indigo-100 shadow-sm">
-                  <p className="text-xs font-semibold text-indigo-600/70 uppercase tracking-wide mb-1">A Pagar al Dueño</p>
-                  <p className="text-lg font-bold text-indigo-700">${computedDueno.toLocaleString()}</p>
+                <div className="bg-surface-container-lowest rounded-xl p-3 border border-outline-variant shadow-sm">
+                  <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">A Pagar al Dueño</p>
+                  <p className="text-lg font-bold text-on-surface">${computedDueno.toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -279,12 +279,12 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
               value={notas}
               onChange={e => setNotas(e.target.value)}
               placeholder="Ej: Se entregó con medio tanque, falta firmar formulario X..."
-              className="w-full p-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none" 
+              className="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface placeholder:text-on-surface-variant/60 resize-none transition-colors" 
             />
           </div>
 
           <div 
-            className={`p-4 rounded-xl border-2 transition-colors cursor-pointer flex items-start gap-4 select-none ${esReventa ? 'bg-orange-50 border-orange-500' : 'bg-surface-container-low border-outline-variant hover:border-orange-300'}`} 
+            className={`p-4 rounded-xl border transition-colors cursor-pointer flex items-start gap-4 select-none ${esReventa ? 'bg-amber-500/10 border-amber-500/60' : 'bg-surface-container-low border-outline-variant hover:border-outline'}`} 
             onClick={() => setEsReventa(!esReventa)}
           >
             <div className="pt-0.5">
@@ -292,14 +292,14 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
                 type="checkbox" 
                 checked={esReventa}
                 onChange={() => {}} 
-                className="w-5 h-5 accent-orange-600 cursor-pointer rounded border-outline-variant"
+                className="w-5 h-5 accent-amber-500 cursor-pointer rounded border-outline-variant"
               />
             </div>
             <div>
-              <h4 className={`font-bold ${esReventa ? 'text-orange-900' : 'text-on-surface'}`}>
+              <h4 className={`font-bold ${esReventa ? 'text-amber-500' : 'text-on-surface'}`}>
                 Marcar como Venta de Reventa
               </h4>
-              <p className={`text-sm mt-1 leading-relaxed ${esReventa ? 'text-orange-800' : 'text-on-surface-variant'}`}>
+              <p className="text-sm mt-1 leading-relaxed text-on-surface-variant">
                 Al activar esta opción, el vehículo pasará al estado "Reventa" en lugar del tradicional "Vendido".
               </p>
             </div>
