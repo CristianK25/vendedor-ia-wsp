@@ -46,3 +46,8 @@ def get_cliente(telefono: str, session: Session = Depends(get_session)):
 def update_cliente(telefono: str, cliente: ClienteUpdate, session: Session = Depends(get_session)):
     service = ClienteService(session)
     return service.update_cliente(telefono, cliente)
+
+@router.delete("/{telefono}")
+def delete_cliente(telefono: str, session: Session = Depends(get_session)):
+    service = ClienteService(session)
+    return service.delete_cliente(telefono)

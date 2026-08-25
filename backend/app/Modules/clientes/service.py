@@ -70,7 +70,14 @@ class ClienteService:
 
     def create_cliente(self, cliente_data: ClienteCreate):
         tel_normalizado = sanitizar_telefono(cliente_data.telefono)
-        if self.repository.get_by_telefono(tel_normalizado):
+        existente = self.repository.get_by_telefono(tel_normalizado)
+        if existente:
+            if not existente.activo:
+                # Si estaba inactivo, lo reactivamos con la nueva información
+                existente.activo = True
+                existente.nombre = cliente_data.nombre or existente.nombre
+                existente.etiqueta_id = cliente_data.etiqueta_id
+                return self.repository.update(existente)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Ya existe un cliente registrado con el número {tel_normalizado}")
         
         datos = cliente_data.model_dump()
@@ -79,9 +86,27 @@ class ClienteService:
         return self.repository.create(cliente)
 
     def update_cliente(self, telefono: str, cliente_data: ClienteUpdate):
-        cliente = self.get_cliente(telefono)
+        # Intentamos obtenerlo primero directo por teléfono
+        cliente = self.repository.get_by_telefono(telefono)
+        if not cliente:
+            cliente = self.get_cliente(telefono)
+            
         update_data = cliente_data.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(cliente, key, value)
         return self.repository.update(cliente)
+
+    def delete_cliente(self, telefono: str):
+        cliente = self.repository.get_by_telefono(telefono)
+        if not cliente:
+            try:
+                cliente = self.repository.get_by_telefono(sanitizar_telefono(telefono))
+            except HTTPException:
+                pass
+        if not cliente:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente no encontrado")
+            
+        cliente.activo = False
+        self.repository.update(cliente)
+        return {"status": "success", "message": "Cliente eliminado exitosamente"}
 

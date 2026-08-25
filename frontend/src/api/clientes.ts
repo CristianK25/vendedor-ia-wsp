@@ -17,6 +17,7 @@ export const clientesApi = {
   getByTelefono: (telefono: string) => fetchApi(`/clientes/${telefono}`),
   create: (data: any) => fetchApi('/clientes/', { method: 'POST', body: JSON.stringify(data) }),
   update: (telefono: string, data: any) => fetchApi(`/clientes/${telefono}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (telefono: string) => fetchApi(`/clientes/${telefono}`, { method: 'DELETE' }),
 }
 
 export const etiquetasApi = {

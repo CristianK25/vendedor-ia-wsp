@@ -18,7 +18,7 @@ class ClienteRepository:
         
         query = select(Cliente, has_pending_cita, Etiqueta).join(
             Etiqueta, Cliente.etiqueta_id == Etiqueta.id, isouter=True
-        )
+        ).where(Cliente.activo == True)
         
         if search:
             query = query.where(

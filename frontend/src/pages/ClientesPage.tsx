@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clientesApi, etiquetasApi } from '../api/clientes'
-import { Plus, Search, ListFilter, Download, ChevronDown, ChevronUp, Tag } from 'lucide-react'
+import { Plus, Search, ListFilter, Download, ChevronDown, ChevronUp, Tag, Trash2 } from 'lucide-react'
 import EtiquetasModal, { PALETA_COLORES } from '../components/EtiquetasModal'
 
 const WhatsAppIcon = ({ size = 24, className = "" }) => (
@@ -32,6 +32,7 @@ export default function ClientesView() {
   const [showEtiquetasModal, setShowEtiquetasModal] = useState(false);
   const [openTagDropdownFor, setOpenTagDropdownFor] = useState<string | null>(null);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [clienteToDelete, setClienteToDelete] = useState<any | null>(null);
 
   const size = 50;
 
@@ -108,6 +109,18 @@ export default function ClientesView() {
       console.error(e);
     }
     setOpenTagDropdownFor(null);
+  };
+
+  const handleDeleteCliente = async () => {
+    if (!clienteToDelete) return;
+    try {
+      await clientesApi.delete(clienteToDelete.telefono);
+      setClientes(prev => prev.filter(c => c.telefono !== clienteToDelete.telefono));
+      setClienteToDelete(null);
+    } catch (e) {
+      console.error(e);
+      alert('Error al eliminar el cliente.');
+    }
   };
 
   const renderPagination = () => {
@@ -409,6 +422,13 @@ export default function ClientesView() {
                         >
                           <Tag size={20} />
                         </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setClienteToDelete(c); }}
+                          className="p-2 text-error hover:bg-error-container/20 rounded-full transition-colors cursor-pointer"
+                          title="Eliminar Cliente"
+                        >
+                          <Trash2 size={20} />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -426,6 +446,35 @@ export default function ClientesView() {
         etiquetas={etiquetas}
         refreshEtiquetas={fetchEtiquetas}
       />
+
+      {/* Modal de Confirmación de Soft Delete */}
+      {clienteToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-surface border border-outline-variant rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-error">
+              <Trash2 size={24} />
+              <h3 className="text-xl font-bold text-on-surface">Eliminar Cliente</h3>
+            </div>
+            <p className="text-on-surface-variant text-sm leading-relaxed">
+              ¿Estás seguro de que deseas eliminar al cliente <strong className="text-on-surface">{clienteToDelete.nombre || clienteToDelete.telefono}</strong>? El cliente ya no aparecerá en el listado activo.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setClienteToDelete(null)}
+                className="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteCliente}
+                className="px-5 py-2 text-sm font-bold bg-error text-on-error hover:brightness-110 rounded-xl transition-colors shadow-sm cursor-pointer"
+              >
+                Sí, Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

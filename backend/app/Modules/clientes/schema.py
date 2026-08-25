@@ -16,6 +16,7 @@ class ClienteUpdate(BaseModel):
     estado_conversacion: Optional[EstadoConversacion] = None
     id_mensaje_esperado: Optional[int] = None
     etiqueta_id: Optional[int] = None
+    activo: Optional[bool] = None
 
 from app.Modules.etiquetas.schema import EtiquetaResponse
 
@@ -29,6 +30,7 @@ class ClienteResponse(BaseModel):
     id_mensaje_esperado: Optional[int] = None
     tiene_cita_pendiente: bool = False
     etiqueta: Optional[EtiquetaResponse] = None
+    activo: bool = True
 
 from typing import List
 class PaginatedClientesResponse(BaseModel):

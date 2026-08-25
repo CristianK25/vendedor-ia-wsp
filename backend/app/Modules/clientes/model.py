@@ -18,3 +18,4 @@ class Cliente(SQLModel, table=True):
     estado_conversacion: EstadoConversacion = Field(default=EstadoConversacion.NORMAL)
     id_mensaje_esperado: Optional[int] = None
     etiqueta_id: Optional[int] = Field(default=None, foreign_key="etiquetas.id", nullable=True)
+    activo: bool = Field(default=True)

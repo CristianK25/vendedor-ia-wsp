@@ -119,10 +119,16 @@ def verificar_o_crear_cliente(cliente_data: N8NClienteCheck, session: Session = 
     service = ClienteService(session)
     try:
         cliente = service.get_cliente(cliente_data.telefono)
-        # El cliente existe, actualizamos la última interacción si se envió
+        # El cliente existe, si estaba inactivo lo reactivamos
+        update_dict = {}
+        if not cliente.activo:
+            update_dict["activo"] = True
         if cliente_data.ultima_interaccion_cliente:
-            update_data = ClienteUpdate(ultima_interaccion_cliente=cliente_data.ultima_interaccion_cliente)
-            cliente = service.update_cliente(cliente.telefono, update_data)
+            update_dict["ultima_interaccion_cliente"] = cliente_data.ultima_interaccion_cliente
+            
+        if update_dict:
+            cliente = service.update_cliente(cliente.telefono, ClienteUpdate(**update_dict))
+            
         return {"status": "success", "message": "Cliente existente actualizado", "cliente": cliente}
     except HTTPException as e:
         if e.status_code == 404:
