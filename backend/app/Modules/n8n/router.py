@@ -19,11 +19,19 @@ router = APIRouter(prefix="/n8n", tags=["N8N"], dependencies=[Depends(verify_n8n
 @router.get("/vehiculos/buscar")
 def buscar_vehiculos(
     search: str = "",
-    precio_max: float = None,
+    precio_max: str | float | None = None,
     session: Session = Depends(get_session)
 ):
+    parsed_precio_max: float | None = None
+    if precio_max is not None and str(precio_max).strip() != "" and str(precio_max).strip().lower() not in ["none", "null"]:
+        try:
+            parsed_precio_max = float(precio_max)
+        except ValueError:
+            parsed_precio_max = None
+
     service = VehiculoService(session)
-    return service.get_all_vehiculos(search=search, precio_max=precio_max, estado="disponible")
+    items, total = service.get_all_vehiculos(search=search, precio_max=parsed_precio_max, estado="disponible")
+    return items
 
 @router.get("/citas/buscar")
 def buscar_citas(cliente_telefono: str = None, session: Session = Depends(get_session)):

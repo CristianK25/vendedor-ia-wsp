@@ -29,11 +29,13 @@ class VehiculoRepository:
         query = select(Vehiculo).where(Vehiculo.activo == True).options(selectinload(Vehiculo.imagenes))
         
         if search:
-            query = query.where(
-                (Vehiculo.modelo.ilike(f"%{search}%")) |
-                (Vehiculo.marca.ilike(f"%{search}%")) |
-                (Vehiculo.patente.ilike(f"%{search}%"))
-            )
+            words = [w.strip() for w in search.strip().split() if w.strip()]
+            for word in words:
+                query = query.where(
+                    (Vehiculo.modelo.ilike(f"%{word}%")) |
+                    (Vehiculo.marca.ilike(f"%{word}%")) |
+                    (Vehiculo.patente.ilike(f"%{word}%"))
+                )
             
         if estado:
             query = query.where(Vehiculo.estado == estado)

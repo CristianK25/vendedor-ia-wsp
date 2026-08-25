@@ -116,3 +116,4 @@ comprobantes_pruebas/comprobante_tramites.pdf
 # Backups de Base de Datos
 backups/*.dump
 backups/*.log
+docs/webhook_wsp.json
