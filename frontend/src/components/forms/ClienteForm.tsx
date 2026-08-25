@@ -114,7 +114,6 @@ export default function ClienteForm() {
           />
         </div>
 
-        {/* Campo: Teléfono con PhoneInput */}
         <div>
           <PhoneInput 
             id="telefono"
@@ -127,9 +126,6 @@ export default function ClienteForm() {
             }}
             placeholder="261 472-0339"
           />
-          <p className="text-xs text-on-surface-variant mt-1.5 opacity-80">
-            💡 Ingresa el código de área + número local. Se guardará con el formato canónico internacional (+54 9) para integración automática con WhatsApp y n8n.
-          </p>
         </div>
 
         {/* Campo: Etiqueta Opcional */}

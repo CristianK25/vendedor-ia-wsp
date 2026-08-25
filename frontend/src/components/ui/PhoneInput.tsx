@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Phone, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Phone, CheckCircle2, AlertCircle, Info } from 'lucide-react'
 
 interface PhoneInputProps {
   value: string;
@@ -110,9 +110,24 @@ export default function PhoneInput({
 
       {/* Input con prefijo +54 9 */}
       <div className="relative flex items-center">
-        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-surface-container border border-outline-variant/60 rounded-lg px-2.5 py-1 text-xs font-bold text-on-surface select-none pointer-events-none z-10 shadow-xs">
-          <span className="text-sm leading-none" role="img" aria-label="Argentina">🇦🇷</span>
-          <span className="text-primary font-black tracking-tight">+54 9</span>
+        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-surface-container border border-outline-variant/60 rounded-lg px-2.5 py-1 text-xs font-bold text-on-surface select-none pointer-events-none z-10 shadow-xs">
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 18 12" 
+            className="w-5 h-3.5 rounded-[2px] shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.15)] border border-white/10"
+          >
+            <rect width="18" height="12" fill="#74ACDF" />
+            <rect y="4" width="18" height="4" fill="#FFFFFF" />
+            <circle cx="9" cy="6" r="1.5" fill="#F6B426" />
+            <path 
+              d="M9 3.8v4.4M6.8 6h4.4M7.4 4.4l3.2 3.2M7.4 7.6l3.2-3.2" 
+              stroke="#F6B426" 
+              strokeWidth="0.5" 
+            />
+            <circle cx="9" cy="6" r="0.8" fill="#85511B" />
+            <circle cx="9" cy="6" r="0.6" fill="#F6B426" />
+          </svg>
+          <span className="text-primary font-semibold text-sm sm:text-base tracking-normal">+54 9</span>
         </div>
 
         <input
@@ -161,6 +176,14 @@ export default function PhoneInput({
           )}
         </div>
       )}
+
+      {/* Helper text profesional e integrado */}
+      <p className="text-[11px] text-on-surface-variant/70 leading-relaxed flex items-start gap-1.5 px-1 pt-1.5 select-none">
+        <Info size={13} className="text-primary mt-0.5 shrink-0" />
+        <span>
+          Ingresá el código de área + número local <strong>sin el 0 ni el 15</strong>. El sistema limpiará espacios o guiones y normalizará el formato internacional automáticamente.
+        </span>
+      </p>
     </div>
   )
 }
