@@ -28,7 +28,6 @@ export default function VehiculoForm() {
   const [previewErrors, setPreviewErrors] = useState<Record<number, boolean>>({})
   
   const [archivosPendientes, setArchivosPendientes] = useState<Record<string, { file: File, etapa: string }>>({})
-  const [localEtapaIndex, setLocalEtapaIndex] = useState(0)
 
   // Estados del Módulo de Consignación
   const [tipoAlta, setTipoAlta] = useState<'compra_directa' | 'consignacion'>('compra_directa')
@@ -851,8 +850,6 @@ export default function VehiculoForm() {
               isNewMode={!isEditMode}
               archivosPendientes={archivosPendientes}
               onArchivoPendienteChange={handleArchivoPendienteChange}
-              localEtapaIndex={localEtapaIndex}
-              onAvanzarEtapaLocal={() => setLocalEtapaIndex(prev => prev + 1)}
             />
           </div>
         )}

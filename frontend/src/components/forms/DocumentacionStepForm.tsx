@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { CheckCircle2, UploadCloud, FileText, Loader2, AlertTriangle, Eye, Image, X } from 'lucide-react'
+import { CheckCircle2, UploadCloud, FileText, Loader2, AlertTriangle, Eye, Image, X, FolderCheck } from 'lucide-react'
 import { vehiculosApi } from '../../api/vehiculos'
 import type { Vehiculo, DocumentoVehiculo } from '../../types/models'
 
@@ -9,8 +9,6 @@ interface Props {
   isNewMode?: boolean;
   archivosPendientes?: Record<string, { file: File, etapa: string }>;
   onArchivoPendienteChange?: (tipo: string, file: File | null, etapa?: string) => void;
-  localEtapaIndex?: number;
-  onAvanzarEtapaLocal?: () => void;
 }
 
 const ETAPAS = [
@@ -42,12 +40,18 @@ const DOCS_POR_ETAPA: Record<string, { id: string, label: string, optional?: boo
   ]
 }
 
-export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, archivosPendientes = {}, onArchivoPendienteChange, localEtapaIndex = 0, onAvanzarEtapaLocal }: Props) {
+export default function DocumentacionStepForm({ 
+  vehiculoId, 
+  isNewMode = false, 
+  archivosPendientes = {}, 
+  onArchivoPendienteChange 
+}: Props) {
   const [vehiculo, setVehiculo] = useState<Vehiculo | null>(null)
   const [documentos, setDocumentos] = useState<DocumentoVehiculo[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedEtapaTab, setSelectedEtapaTab] = useState<string>('todas')
 
   // Modal para confirmar reemplazo de documento
   const [pendingReplace, setPendingReplace] = useState<{
@@ -113,10 +117,11 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
 
     if (isNewMode && onArchivoPendienteChange) {
       onArchivoPendienteChange(tipoDocumento, file, etapa)
+      e.target.value = ''
       return
     }
 
-    const existingDoc = documentos.find(d => d.etapa === etapa && d.tipo_documento === tipoDocumento)
+    const existingDoc = documentos.find(d => d.tipo_documento === tipoDocumento)
     if (existingDoc) {
       setPendingReplace({
         file,
@@ -133,21 +138,11 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
     e.target.value = ''
   }
 
-  // Auto-avance en modo local (creación)
-  useEffect(() => {
-    if (isNewMode && onAvanzarEtapaLocal) {
-      const etapaActual = ETAPAS[localEtapaIndex]
-      if (!etapaActual) return
-
-      const docsRequeridos = DOCS_POR_ETAPA[etapaActual.id]?.filter(d => !d.optional) || []
-      const faltantes = docsRequeridos.filter(doc => !archivosPendientes[doc.id])
-      
-      // Si ya no hay faltantes, avanzamos automáticamente de etapa local
-      if (faltantes.length === 0 && docsRequeridos.length > 0) {
-        onAvanzarEtapaLocal()
-      }
+  const handleRemovePending = (tipoDocumento: string) => {
+    if (isNewMode && onArchivoPendienteChange) {
+      onArchivoPendienteChange(tipoDocumento, null)
     }
-  }, [archivosPendientes, isNewMode, localEtapaIndex, onAvanzarEtapaLocal])
+  }
 
   if (loading) {
     return <div className="flex justify-center py-12"><Loader2 className="animate-spin text-primary" size={32} /></div>
@@ -157,7 +152,16 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
     return <div className="text-center py-12 text-on-surface-variant">Vehículo no encontrado.</div>
   }
 
-  const currentEtapaIndex = isNewMode ? localEtapaIndex : ETAPAS.findIndex(e => e.id === vehiculo?.etapa)
+  // Filtrado de etapas a mostrar
+  const etapasAMostrar = selectedEtapaTab === 'todas' 
+    ? ETAPAS 
+    : ETAPAS.filter(e => e.id === selectedEtapaTab)
+
+  // Resumen total de documentos cargados
+  const totalDocsEsperados = Object.values(DOCS_POR_ETAPA).flat().length
+  const totalDocsCargados = isNewMode 
+    ? Object.keys(archivosPendientes).length 
+    : documentos.length
 
   return (
     <div className="space-y-8 pb-12 animate-fade-in">
@@ -168,61 +172,114 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
         </div>
       )}
 
-      {/* Stepper Horizontal */}
-      <div className="flex items-center justify-between relative">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-outline-variant rounded-full z-0"></div>
-        <div 
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-primary rounded-full z-0 transition-all duration-500"
-          style={{ width: `${Math.max(0, (currentEtapaIndex / (ETAPAS.length - 1)) * 100)}%` }}
-        ></div>
-        
-        {ETAPAS.map((etapa, idx) => {
-          const isCompleted = idx < currentEtapaIndex
-          const isCurrent = idx === currentEtapaIndex
-          
+      {/* Header Resumen Informativo */}
+      <div className="bg-surface-container-low p-4 sm:p-5 rounded-2xl border border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <FolderCheck size={20} />
+          </div>
+          <div>
+            <h3 className="font-bold text-on-surface text-base">Checklist de Documentación Libre</h3>
+            <p className="text-xs text-on-surface-variant">
+              Puedes subir, consultar o reemplazar cualquier documento en cualquier etapa sin restricciones.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-xl border border-outline-variant/60 text-xs font-semibold text-on-surface">
+          <span>Progreso:</span>
+          <span className="text-primary font-bold">{totalDocsCargados} / {totalDocsEsperados}</span>
+          <span className="text-on-surface-variant font-normal">archivos</span>
+        </div>
+      </div>
+
+      {/* Selector de Pestañas de Etapas */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-outline-variant">
+        <button
+          type="button"
+          onClick={() => setSelectedEtapaTab('todas')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+            selectedEtapaTab === 'todas'
+              ? 'bg-primary text-on-primary shadow-sm'
+              : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container-high'
+          }`}
+        >
+          Todas las Etapas
+        </button>
+
+        {ETAPAS.map((etapa) => {
+          const docsEtapa = DOCS_POR_ETAPA[etapa.id] || []
+          const cargadosEtapa = isNewMode
+            ? docsEtapa.filter(d => !!archivosPendientes[d.id]).length
+            : docsEtapa.filter(d => documentos.some(doc => doc.tipo_documento === d.id)).length
+
+          const isSelected = selectedEtapaTab === etapa.id
+
           return (
-            <div key={etapa.id} className="relative z-10 flex flex-col items-center gap-2 bg-background px-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors ${
-                isCompleted ? 'bg-primary border-primary text-on-primary' :
-                isCurrent ? 'bg-primary-container border-primary text-on-primary-container ring-4 ring-primary/20' :
-                'bg-surface border-outline-variant text-on-surface-variant'
+            <button
+              key={etapa.id}
+              type="button"
+              onClick={() => setSelectedEtapaTab(etapa.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                isSelected
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container-high'
+              }`}
+            >
+              <span>{etapa.label}</span>
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                isSelected 
+                  ? 'bg-on-primary/20 text-on-primary' 
+                  : cargadosEtapa > 0 ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-on-surface-variant'
               }`}>
-                {isCompleted ? <CheckCircle2 size={20} /> : (idx + 1)}
-              </div>
-              <span className={`text-xs font-semibold ${isCurrent ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
-                {etapa.label}
+                {cargadosEtapa}/{docsEtapa.length}
               </span>
-            </div>
+            </button>
           )
         })}
       </div>
 
-      {/* Documentos de la etapa actual o las anteriores (solo lectura para anteriores) */}
+      {/* Lista de Secciones por Etapa */}
       <div className="space-y-6">
-        {ETAPAS.map((etapa, idx) => {
-          const isLocked = idx > currentEtapaIndex
-          const isCurrent = idx === currentEtapaIndex
-          const isCompleted = idx < currentEtapaIndex
-          
-          if (isLocked) return null // No mostrar etapas futuras
-          
+        {etapasAMostrar.map((etapa) => {
           const docsParaEtapa = DOCS_POR_ETAPA[etapa.id] || []
-          
+          const cargadosEtapa = isNewMode
+            ? docsParaEtapa.filter(d => !!archivosPendientes[d.id]).length
+            : docsParaEtapa.filter(d => documentos.some(doc => doc.tipo_documento === d.id)).length
+          const estaCompleta = cargadosEtapa === docsParaEtapa.length && docsParaEtapa.length > 0
+
           return (
-            <div key={etapa.id} className={`bg-surface border ${isCurrent ? 'border-primary shadow-md ring-1 ring-primary/20' : 'border-outline-variant shadow-sm opacity-80'} rounded-2xl p-6`}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-on-surface flex items-center gap-2">
-                  {isCompleted ? <CheckCircle2 className="text-primary" size={20} /> : <FileText className="text-primary" size={20} />}
+            <div 
+              key={etapa.id} 
+              className="bg-surface border border-outline-variant rounded-2xl p-6 shadow-sm transition-all"
+            >
+              <div className="flex items-center justify-between mb-6 pb-3 border-b border-outline-variant/60">
+                <h3 className="text-lg font-bold text-on-surface flex items-center gap-2.5">
+                  {estaCompleta ? (
+                    <CheckCircle2 className="text-primary shrink-0" size={20} />
+                  ) : (
+                    <FileText className="text-primary shrink-0" size={20} />
+                  )}
                   Etapa: {etapa.label}
                 </h3>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                    estaCompleta 
+                      ? 'bg-secondary-container text-secondary border-primary/20' 
+                      : cargadosEtapa > 0 
+                        ? 'bg-primary/10 text-primary border-primary/20' 
+                        : 'bg-surface-container text-on-surface-variant border-outline-variant'
+                  }`}>
+                    {cargadosEtapa} de {docsParaEtapa.length} cargados
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {docsParaEtapa.map(docType => {
-                  const uploadedDoc = !isNewMode ? documentos.find(d => d.etapa === etapa.id && d.tipo_documento === docType.id) : undefined
+                  const uploadedDoc = !isNewMode ? documentos.find(d => d.tipo_documento === docType.id) : undefined
                   const pendingFile = isNewMode ? archivosPendientes[docType.id] : undefined
-                  const canUpload = isCurrent || isCompleted
-                  const isUploadedOrPending = uploadedDoc || pendingFile;
+                  const isUploadedOrPending = !!(uploadedDoc || pendingFile)
                   const cardBorder = isUploadedOrPending ? 'border-solid border-outline-variant bg-background' : 'border-dashed border-outline-variant/60 bg-surface/50';
 
                   return (
@@ -231,10 +288,8 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                         <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                           {uploadedDoc && <CheckCircle2 size={16} className="text-primary flex-shrink-0" />}
                           <span className="font-bold text-on-surface text-sm leading-tight">{docType.label.replace(' (Opcional)', '')}</span>
-                          {docType.optional ? (
+                          {docType.optional && (
                             <span className="bg-surface-variant text-on-surface-variant text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-1">Opcional</span>
-                          ) : (
-                            <span className="bg-error-container text-on-error-container text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-1">Obligatorio</span>
                           )}
                         </div>
                         {uploadedDoc ? (
@@ -243,7 +298,19 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                             Subido: {new Date(uploadedDoc.fecha_subida).toLocaleDateString()} {uploadedDoc.version ? `(v${uploadedDoc.version})` : ''}
                           </span>
                         ) : pendingFile ? (
-                          <span className="text-xs text-primary font-medium">Seleccionado: {pendingFile.file.name}</span>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs text-primary font-medium truncate">
+                              Seleccionado: {pendingFile.file.name}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePending(docType.id)}
+                              className="text-error hover:text-on-surface text-xs underline p-0.5 cursor-pointer"
+                              title="Quitar archivo"
+                            >
+                              Quitar
+                            </button>
+                          </div>
                         ) : (
                           <span className="text-xs text-outline font-medium">Pendiente</span>
                         )}
@@ -266,40 +333,38 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                           </a>
                         )}
                         
-                        {canUpload && (
-                          <div className="relative flex-1 sm:flex-none">
-                            <input
-                              type="file"
-                              accept=".pdf,application/pdf"
-                              onChange={(e) => handleFileUpload(etapa.id, docType.id, docType.label, e)}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
-                              disabled={uploading !== null && !isNewMode}
-                            />
-                            <button
-                              type="button"
-                              disabled={uploading !== null && !isNewMode}
-                              className={`flex items-center justify-center w-full gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                                uploadedDoc || pendingFile 
-                                  ? 'bg-outline-variant/20 text-on-surface hover:bg-outline-variant/40' 
-                                  : 'bg-primary-container text-on-primary-container hover:bg-primary/20'
-                              } transition-colors`}
-                            >
-                              {uploading === docType.id ? (
-                                <Loader2 className="animate-spin" size={16} />
-                              ) : uploadedDoc || pendingFile ? (
-                                <>
-                                  <UploadCloud size={16} />
-                                  <span>Reemplazar</span>
-                                </>
-                              ) : (
-                                <>
-                                  <UploadCloud size={16} />
-                                  <span>Subir Archivo</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        )}
+                        <div className="relative flex-1 sm:flex-none">
+                          <input
+                            type="file"
+                            accept=".pdf,application/pdf"
+                            onChange={(e) => handleFileUpload(etapa.id, docType.id, docType.label, e)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                            disabled={uploading !== null && !isNewMode}
+                          />
+                          <button
+                            type="button"
+                            disabled={uploading !== null && !isNewMode}
+                            className={`flex items-center justify-center w-full gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                              uploadedDoc || pendingFile 
+                                ? 'bg-outline-variant/20 text-on-surface hover:bg-outline-variant/40' 
+                                : 'bg-primary-container text-on-primary-container hover:bg-primary/20'
+                            } transition-colors cursor-pointer`}
+                          >
+                            {uploading === docType.id ? (
+                              <Loader2 className="animate-spin" size={16} />
+                            ) : uploadedDoc || pendingFile ? (
+                              <>
+                                <UploadCloud size={16} />
+                                <span>Reemplazar</span>
+                              </>
+                            ) : (
+                              <>
+                                <UploadCloud size={16} />
+                                <span>Subir Archivo</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )
@@ -309,6 +374,7 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
           )
         })}
       </div>
+
       {/* Modal de Confirmación para Reemplazo */}
       {pendingReplace && createPortal(
         <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4" onClick={() => setPendingReplace(null)}>
@@ -319,7 +385,7 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
           >
             <button 
               onClick={() => setPendingReplace(null)}
-              className="absolute top-4 right-4 text-outline hover:text-on-surface p-1 rounded-lg transition-colors"
+              className="absolute top-4 right-4 text-outline hover:text-on-surface p-1 rounded-lg transition-colors cursor-pointer"
               disabled={uploading !== null}
             >
               <X size={20} />
@@ -344,20 +410,13 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                 <span className="text-primary font-semibold">Nuevo archivo (v{(pendingReplace.existingDoc.version || 1) + 1}):</span>
                 <span className="font-bold text-primary truncate max-w-[180px]">{pendingReplace.file.name}</span>
               </div>
-              <div className="text-[11px] text-outline text-right font-medium">
-                {(pendingReplace.file.size / (1024 * 1024)).toFixed(2)} MB
-              </div>
             </div>
-
-            <p className="text-xs text-on-surface-variant mb-6 bg-surface-variant/40 p-3 rounded-lg border border-outline-variant/20">
-              💡 <strong>Nota:</strong> Se conservará el archivo anterior en el historial del servidor y la versión aumentará a v{(pendingReplace.existingDoc.version || 1) + 1}.
-            </p>
 
             <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setPendingReplace(null)}
-                className="px-4 py-2 text-xs font-semibold rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors text-on-surface"
+                className="px-4 py-2 text-xs font-semibold rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors text-on-surface cursor-pointer"
                 disabled={uploading !== null}
               >
                 Cancelar
@@ -366,7 +425,7 @@ export default function DocumentacionStepForm({ vehiculoId, isNewMode = false, a
                 type="button"
                 onClick={() => ejecutarSubida(pendingReplace.etapa, pendingReplace.tipoDocumento, pendingReplace.file)}
                 disabled={uploading !== null}
-                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {uploading !== null ? <Loader2 className="animate-spin" size={16} /> : <UploadCloud size={16} />}
                 Confirmar y Reemplazar

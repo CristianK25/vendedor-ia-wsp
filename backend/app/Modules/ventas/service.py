@@ -35,7 +35,7 @@ class VentaService:
 
     def create_venta(self, venta_data: VentaCreate):
         from app.Modules.vehiculos.repository import VehiculoRepository
-        from app.Modules.vehiculos.model import EstadoVehiculo
+        from app.Modules.vehiculos.model import EstadoVehiculo, EtapaVehiculo
         vehiculo_repo = VehiculoRepository(self.session)
         vehiculo = vehiculo_repo.get_by_id(venta_data.vehiculo_id)
         if not vehiculo:
@@ -50,6 +50,7 @@ class VentaService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente no encontrado")
 
         vehiculo.estado = EstadoVehiculo(venta_data.estado_vehiculo)
+        vehiculo.etapa = EtapaVehiculo.vendido
         vehiculo_repo.update(vehiculo)
 
         venta_dict = venta_data.model_dump(exclude={"estado_vehiculo"})

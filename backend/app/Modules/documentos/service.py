@@ -87,28 +87,35 @@ class DocumentosService:
         self.session.commit()
         self.session.refresh(documento_bd)
         
-        # --- Avance de Etapa Automático ---
+        # --- Sincronización Flexible de Etapa ---
         from app.Modules.vehiculos.model import Vehiculo
         vehiculo = self.session.get(Vehiculo, vehiculo_id)
-        if vehiculo:
-            # Iteramos para avanzar etapa si los requisitos se van cumpliendo
-            while True:
-                if self.tiene_requisitos_completos(vehiculo_id, vehiculo.etapa):
-                    siguiente_etapa = None
-                    if vehiculo.etapa == EtapaVehiculo.pre_compra:
-                        siguiente_etapa = EtapaVehiculo.comprado
-                    elif vehiculo.etapa == EtapaVehiculo.comprado:
-                        siguiente_etapa = EtapaVehiculo.en_stock
-                    
-                    if siguiente_etapa:
-                        vehiculo.etapa = siguiente_etapa
-                        self.session.add(vehiculo)
-                        self.session.commit()
-                        self.session.refresh(vehiculo)
-                    else:
-                        break # Ya está en la última etapa
-                else:
-                    break # No cumple los requisitos para avanzar más
+        if vehiculo and vehiculo.etapa != EtapaVehiculo.vendido:
+            orden_valores = {
+                EtapaVehiculo.pre_compra: 0,
+                EtapaVehiculo.comprado: 1,
+                EtapaVehiculo.en_stock: 2,
+                EtapaVehiculo.vendido: 3
+            }
+            # Si el documento subido pertenece a una etapa más avanzada, actualizamos la etapa del vehículo
+            if orden_valores.get(etapa, 0) > orden_valores.get(vehiculo.etapa, 0):
+                vehiculo.etapa = etapa
+                self.session.add(vehiculo)
+                self.session.commit()
+                self.session.refresh(vehiculo)
+            elif self.tiene_requisitos_completos(vehiculo_id, vehiculo.etapa):
+                # O si completó los requisitos de la etapa actual, avanzamos de etapa
+                siguiente_etapa = None
+                if vehiculo.etapa == EtapaVehiculo.pre_compra:
+                    siguiente_etapa = EtapaVehiculo.comprado
+                elif vehiculo.etapa == EtapaVehiculo.comprado:
+                    siguiente_etapa = EtapaVehiculo.en_stock
+                
+                if siguiente_etapa:
+                    vehiculo.etapa = siguiente_etapa
+                    self.session.add(vehiculo)
+                    self.session.commit()
+                    self.session.refresh(vehiculo)
                     
         return documento_bd
 

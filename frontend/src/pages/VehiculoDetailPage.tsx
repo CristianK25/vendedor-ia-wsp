@@ -6,7 +6,7 @@ import {
   ArrowLeft, Edit2, CheckCircle2, 
   FileText,
   ImageOff, ChevronLeft, ChevronRight, UserCircle2,
-  Lock, AlertTriangle, ExternalLink, FileCheck2, UploadCloud,
+  ExternalLink, FileCheck2, UploadCloud,
   Download, Loader2, Maximize2, RotateCw
 } from 'lucide-react'
 import ImageLightboxModal from '../components/modals/ImageLightboxModal'
@@ -451,48 +451,43 @@ export default function VehiculoDetailPage() {
             
             <div className="space-y-6">
               {ETAPAS.map((etapa, idx) => {
-                const currentEtapaIndex = ETAPAS.findIndex(e => e.id === (vehiculo.etapa || 'pre_compra'))
-                const isCurrent = idx === currentEtapaIndex
-                const isCompleted = idx < currentEtapaIndex
-                const isLocked = idx > currentEtapaIndex
-                
                 const docsParaEtapa = DOCS_POR_ETAPA[etapa.id] || []
+                const docsCargadosEtapa = docsParaEtapa.filter(d => documentos.some(doc => doc.tipo_documento === d.id)).length
+                const estaCompleta = docsCargadosEtapa === docsParaEtapa.length && docsParaEtapa.length > 0
                 
                 return (
-                  <div key={etapa.id} className={`p-4 rounded-xl border transition-all ${isCurrent ? 'bg-primary-container/10 border-primary/20' : 'bg-background/50 border-outline-variant/60'}`}>
+                  <div key={etapa.id} className="p-4 rounded-xl border bg-background/50 border-outline-variant/60">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isCompleted ? 'bg-primary text-on-primary' : isCurrent ? 'bg-primary-container text-on-primary-container ring-2 ring-primary/20' : 'bg-outline-variant text-outline'}`}>
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          estaCompleta ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface'
+                        }`}>
                           {idx + 1}
                         </span>
-                        <h4 className={`font-semibold ${isLocked ? 'text-outline' : 'text-on-surface'}`}>{etapa.label}</h4>
+                        <h4 className="font-semibold text-on-surface">{etapa.label}</h4>
                       </div>
                       
-                      {isCurrent && (
-                        <span className="text-[11px] bg-primary-container text-on-primary-container px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
-                          Etapa Actual
-                        </span>
-                      )}
+                      <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                        estaCompleta ? 'bg-primary/10 text-primary' : 'bg-surface-container text-on-surface-variant'
+                      }`}>
+                        {docsCargadosEtapa}/{docsParaEtapa.length} cargados
+                      </span>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                       {docsParaEtapa.map(docType => {
-                        const uploadedDoc = documentos.find(d => d.etapa === etapa.id && d.tipo_documento === docType.id)
+                        const uploadedDoc = documentos.find(d => d.tipo_documento === docType.id)
                         
                         return (
                           <div key={docType.id} className="flex items-center justify-between p-3 rounded-lg bg-surface border border-outline-variant/40">
                             <div className="flex items-center gap-2">
                               {uploadedDoc ? (
                                 <FileCheck2 size={16} className="text-primary shrink-0" />
-                              ) : isLocked ? (
-                                <Lock size={16} className="text-outline shrink-0" />
-                              ) : docType.optional ? (
-                                <FileText size={16} className="text-outline shrink-0" />
                               ) : (
-                                <AlertTriangle size={16} className="text-error shrink-0" />
+                                <FileText size={16} className="text-outline shrink-0" />
                               )}
-                              <span className={`text-xs font-medium ${isLocked ? 'text-outline' : 'text-on-surface'}`}>
-                                {docType.label}
+                              <span className="text-xs font-medium text-on-surface">
+                                {docType.label.replace(' (Opcional)', '')}
                               </span>
                             </div>
                             
@@ -510,12 +505,10 @@ export default function VehiculoDetailPage() {
                                 >
                                   Ver <ExternalLink size={12} className="inline" />
                                 </a>
-                              ) : isLocked ? (
-                                <span className="text-[10px] text-outline">Bloqueado</span>
                               ) : docType.optional ? (
                                 <span className="text-[10px] text-outline font-medium">Opcional</span>
                               ) : (
-                                <span className="text-[10px] text-error font-semibold">Falta cargar</span>
+                                <span className="text-[10px] text-on-surface-variant font-medium">Pendiente</span>
                               )}
                             </div>
                           </div>
