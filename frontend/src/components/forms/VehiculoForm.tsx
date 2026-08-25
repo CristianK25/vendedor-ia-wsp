@@ -12,6 +12,7 @@ interface VehiculoFormData extends VehiculoCreate {
 }
 
 import DocumentacionStepForm from './DocumentacionStepForm'
+import PhoneInput from '../ui/PhoneInput'
 
 export default function VehiculoForm() {
   const navigate = useNavigate()
@@ -401,23 +402,23 @@ export default function VehiculoForm() {
                     {isNewDueno ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-on-surface-variant mb-1">Nombre Completo</label>
+                          <label className="block text-sm font-medium text-on-surface-variant mb-1">Nombre Completo <span className="text-primary">*</span></label>
                           <input 
                             type="text" 
                             required
+                            placeholder="Ej: Juan Pérez"
                             value={newDuenoData.nombre}
                             onChange={e => setNewDuenoData({...newDuenoData, nombre: e.target.value})}
                             className="w-full h-11 px-3 bg-background border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" 
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-on-surface-variant mb-1">Teléfono (ID)</label>
-                          <input 
-                            type="text" 
+                          <PhoneInput 
+                            label="Teléfono (WhatsApp / ID)"
                             required
                             value={newDuenoData.telefono}
-                            onChange={e => setNewDuenoData({...newDuenoData, telefono: e.target.value})}
-                            className="w-full h-11 px-3 bg-background border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none" 
+                            onChange={(fullNumber) => setNewDuenoData({...newDuenoData, telefono: fullNumber})}
+                            placeholder="261 472-0339"
                           />
                         </div>
                       </div>

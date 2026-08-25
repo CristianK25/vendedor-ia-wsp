@@ -4,6 +4,7 @@ import { ClipboardList, ArrowLeft, Search, UserPlus, Car } from 'lucide-react';
 import { vehiculosApi } from '../../api/vehiculos';
 import { clientesApi } from '../../api/clientes';
 import { ventasApi } from '../../api/ventas';
+import PhoneInput from '../ui/PhoneInput';
 
 export default function VentaForm() {
   const navigate = useNavigate();
@@ -199,19 +200,19 @@ export default function VentaForm() {
                 <input 
                   type="text" 
                   required
+                  placeholder="Ej: Juan Pérez"
                   value={newClientData.nombre}
                   onChange={e => setNewClientData({...newClientData, nombre: e.target.value})}
-                  className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface" 
+                  className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface placeholder:text-on-surface-variant/50" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-on-surface-variant mb-1.5">Teléfono (ID) *</label>
-                <input 
-                  type="text" 
+                <PhoneInput 
+                  label="Teléfono (WhatsApp / ID)"
                   required
                   value={newClientData.telefono}
-                  onChange={e => setNewClientData({...newClientData, telefono: e.target.value})}
-                  className="w-full h-12 px-4 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-on-surface" 
+                  onChange={(fullNumber) => setNewClientData({...newClientData, telefono: fullNumber})}
+                  placeholder="261 472-0339"
                 />
               </div>
             </div>

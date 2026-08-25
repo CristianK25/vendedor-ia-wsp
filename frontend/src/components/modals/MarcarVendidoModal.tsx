@@ -4,6 +4,7 @@ import { X, Search, UserPlus, CheckCircle2 } from 'lucide-react';
 import { citasApi } from '../../api/citas';
 import { clientesApi } from '../../api/clientes';
 import { ventasApi } from '../../api/ventas';
+import PhoneInput from '../ui/PhoneInput';
 
 export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any) {
   const [loading, setLoading] = useState(false);
@@ -151,23 +152,23 @@ export default function MarcarVendidoModal({ vehiculo, onClose, onSuccess }: any
             {isNewClient ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-on-surface-variant mb-1">Nombre Completo</label>
+                  <label className="block text-sm font-semibold text-on-surface-variant mb-1">Nombre Completo <span className="text-primary">*</span></label>
                   <input 
                     type="text" 
                     required
                     value={newClientData.nombre}
                     onChange={e => setNewClientData({...newClientData, nombre: e.target.value})}
+                    placeholder="Ej: Juan Pérez"
                     className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface placeholder:text-on-surface-variant/60 transition-colors" 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-on-surface-variant mb-1">Teléfono (ID)</label>
-                  <input 
-                    type="text" 
+                  <PhoneInput 
+                    label="Teléfono (WhatsApp / ID)"
                     required
                     value={newClientData.telefono}
-                    onChange={e => setNewClientData({...newClientData, telefono: e.target.value})}
-                    className="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface placeholder:text-on-surface-variant/60 transition-colors" 
+                    onChange={(fullNumber) => setNewClientData({...newClientData, telefono: fullNumber})}
+                    placeholder="261 472-0339"
                   />
                 </div>
               </div>
