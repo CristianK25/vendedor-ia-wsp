@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { vehiculosApi } from '../api/vehiculos'
-import { Plus, Search, ListFilter, Trash2, ImageOff, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Search, ListFilter, Trash2, ImageOff, LayoutGrid, List, ChevronDown, ChevronUp, DollarSign, Gauge, Calendar, Check } from 'lucide-react'
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import MarcarVendidoModal from '../components/modals/MarcarVendidoModal'
@@ -359,19 +359,21 @@ export default function VehiculosView() {
       {/* Panel de Filtros Avanzados (Acordeón) */}
       <div 
         className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          showAdvancedFilters ? 'max-h-[500px] mt-4 opacity-100' : 'max-h-0 mt-0 opacity-0'
+          showAdvancedFilters ? 'max-h-[800px] mt-4 opacity-100' : 'max-h-0 mt-0 opacity-0'
         }`}
       >
-        <div className="bg-surface-container-low border border-outline-variant rounded-xl p-5 shadow-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-surface-container-low border border-outline-variant rounded-2xl p-6 shadow-lg space-y-6">
+          
+          {/* Fila 1: Rangos (Sliders) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Filtro: Rango de Precio */}
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                <span>Precio Mínimo</span>
-                <span>Máximo</span>
+            <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col justify-between gap-3">
+              <div className="flex justify-between items-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                <span className="flex items-center gap-1.5"><DollarSign size={14} className="text-primary" /> Precio</span>
+                <span className="text-primary font-extrabold">${precioRango[0].toLocaleString()} - ${precioRango[1].toLocaleString()}</span>
               </div>
-              <div className="px-2">
+              <div className="px-1 py-1">
                 {stats && (
                   <Slider
                     range
@@ -379,27 +381,28 @@ export default function VehiculosView() {
                     max={stats.precio_max || 100000}
                     value={precioRango}
                     onChange={(val) => setPrecioRango(val as [number, number])}
-                    trackStyle={[{ backgroundColor: '#4F46E5' }]}
+                    railStyle={{ backgroundColor: 'var(--color-outline-variant)', height: 6 }}
+                    trackStyle={[{ backgroundColor: 'var(--color-primary)', height: 6 }]}
                     handleStyle={[
-                      { borderColor: '#4F46E5' },
-                      { borderColor: '#4F46E5' }
+                      { borderColor: 'var(--color-primary)', backgroundColor: 'var(--color-surface)', opacity: 1, width: 18, height: 18, marginTop: -6 },
+                      { borderColor: 'var(--color-primary)', backgroundColor: 'var(--color-surface)', opacity: 1, width: 18, height: 18, marginTop: -6 }
                     ]}
                   />
                 )}
               </div>
-              <div className="flex justify-between text-sm font-medium text-surface-900 mt-1">
-                <span>${precioRango[0].toLocaleString()}</span>
-                <span>${precioRango[1].toLocaleString()}</span>
+              <div className="flex justify-between text-[11px] text-on-surface-variant font-medium">
+                <span>Min: ${stats?.precio_min?.toLocaleString() || 0}</span>
+                <span>Max: ${stats?.precio_max?.toLocaleString() || '100k+'}</span>
               </div>
             </div>
 
             {/* Filtro: Kilometraje */}
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                <span>Kilometraje Min</span>
-                <span>Max</span>
+            <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col justify-between gap-3">
+              <div className="flex justify-between items-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                <span className="flex items-center gap-1.5"><Gauge size={14} className="text-primary" /> Kilometraje</span>
+                <span className="text-primary font-extrabold">{kmRango[0].toLocaleString()} - {kmRango[1].toLocaleString()} km</span>
               </div>
-              <div className="px-2">
+              <div className="px-1 py-1">
                 {stats && (
                   <Slider
                     range
@@ -407,27 +410,28 @@ export default function VehiculosView() {
                     max={stats.km_max || 200000}
                     value={kmRango}
                     onChange={(val) => setKmRango(val as [number, number])}
-                    trackStyle={[{ backgroundColor: '#4F46E5' }]}
+                    railStyle={{ backgroundColor: 'var(--color-outline-variant)', height: 6 }}
+                    trackStyle={[{ backgroundColor: 'var(--color-primary)', height: 6 }]}
                     handleStyle={[
-                      { borderColor: '#4F46E5' },
-                      { borderColor: '#4F46E5' }
+                      { borderColor: 'var(--color-primary)', backgroundColor: 'var(--color-surface)', opacity: 1, width: 18, height: 18, marginTop: -6 },
+                      { borderColor: 'var(--color-primary)', backgroundColor: 'var(--color-surface)', opacity: 1, width: 18, height: 18, marginTop: -6 }
                     ]}
                   />
                 )}
               </div>
-              <div className="flex justify-between text-sm font-medium text-surface-900 mt-1">
-                <span>{kmRango[0].toLocaleString()} km</span>
-                <span>{kmRango[1].toLocaleString()} km</span>
+              <div className="flex justify-between text-[11px] text-on-surface-variant font-medium">
+                <span>Min: {stats?.km_min?.toLocaleString() || 0} km</span>
+                <span>Max: {stats?.km_max?.toLocaleString() || '200k+'} km</span>
               </div>
             </div>
 
             {/* Filtro: Año */}
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-between text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                <span>Año Desde</span>
-                <span>Hasta</span>
+            <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col justify-between gap-3">
+              <div className="flex justify-between items-center text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                <span className="flex items-center gap-1.5"><Calendar size={14} className="text-primary" /> Año Modelo</span>
+                <span className="text-primary font-extrabold">{anioRango[0]} - {anioRango[1]}</span>
               </div>
-              <div className="px-2">
+              <div className="px-1 py-1">
                 {stats && (
                   <Slider
                     range
@@ -435,79 +439,86 @@ export default function VehiculosView() {
                     max={stats.anio_max || new Date().getFullYear()}
                     value={anioRango}
                     onChange={(val) => setAnioRango(val as [number, number])}
-                    trackStyle={[{ backgroundColor: '#4F46E5' }]}
+                    railStyle={{ backgroundColor: 'var(--color-outline-variant)', height: 6 }}
+                    trackStyle={[{ backgroundColor: 'var(--color-primary)', height: 6 }]}
                     handleStyle={[
-                      { borderColor: '#4F46E5' },
-                      { borderColor: '#4F46E5' }
+                      { borderColor: 'var(--color-primary)', backgroundColor: 'var(--color-surface)', opacity: 1, width: 18, height: 18, marginTop: -6 },
+                      { borderColor: 'var(--color-primary)', backgroundColor: 'var(--color-surface)', opacity: 1, width: 18, height: 18, marginTop: -6 }
                     ]}
                   />
                 )}
               </div>
-              <div className="flex justify-between text-sm font-medium text-surface-900 mt-1">
-                <span>{anioRango[0]}</span>
-                <span>{anioRango[1]}</span>
+              <div className="flex justify-between text-[11px] text-on-surface-variant font-medium">
+                <span>Desde: {stats?.anio_min || 2000}</span>
+                <span>Hasta: {stats?.anio_max || new Date().getFullYear()}</span>
               </div>
             </div>
 
+          </div>
+
+          {/* Fila 2: Selectores Desplegables */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            
             {/* Filtro: Transmisión */}
-            <div className="flex flex-col gap-1.5 justify-end">
-              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Transmisión</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Transmisión</label>
               <select 
                 value={filterTransmision}
                 onChange={(e) => setFilterTransmision(e.target.value)}
-                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+                className="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm text-on-surface cursor-pointer transition-colors"
               >
-                <option value="Todas">Todas</option>
-                <option value="Automática">Automática</option>
-                <option value="Manual">Manual</option>
+                <option value="Todas" className="bg-surface text-on-surface">Todas</option>
+                <option value="Automática" className="bg-surface text-on-surface">Automática</option>
+                <option value="Manual" className="bg-surface text-on-surface">Manual</option>
               </select>
             </div>
 
             {/* Filtro: Tracción */}
-            <div className="flex flex-col gap-1.5 justify-end">
-              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Tracción</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Tracción</label>
               <select 
                 value={filterTraccion}
                 onChange={(e) => setFilterTraccion(e.target.value)}
-                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+                className="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm text-on-surface cursor-pointer transition-colors"
               >
-                <option value="Todas">Todas</option>
-                <option value="4x2">4x2</option>
-                <option value="4x4">4x4</option>
+                <option value="Todas" className="bg-surface text-on-surface">Todas</option>
+                <option value="4x2" className="bg-surface text-on-surface">4x2</option>
+                <option value="4x4" className="bg-surface text-on-surface">4x4</option>
               </select>
             </div>
 
             {/* Filtro: Tipo */}
-            <div className="flex flex-col gap-1.5 justify-end">
-              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Tipo</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Tipo</label>
               <select 
                 value={filterTipo}
                 onChange={(e) => setFilterTipo(e.target.value)}
-                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+                className="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm text-on-surface cursor-pointer transition-colors"
               >
-                <option value="Todos">Todos</option>
-                <option value="Auto">Auto</option>
-                <option value="Camioneta">Camioneta</option>
+                <option value="Todos" className="bg-surface text-on-surface">Todos</option>
+                <option value="Auto" className="bg-surface text-on-surface">Auto</option>
+                <option value="Camioneta" className="bg-surface text-on-surface">Camioneta</option>
               </select>
             </div>
 
             {/* Filtro: Condición */}
-            <div className="flex flex-col gap-1.5 justify-end">
-              <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Condición</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Condición</label>
               <select 
                 value={filterCondicion}
                 onChange={(e) => setFilterCondicion(e.target.value)}
-                className="w-full h-10 px-3 bg-white border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+                className="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm text-on-surface cursor-pointer transition-colors"
               >
-                <option value="Todas">Todas</option>
-                <option value="Usado">Usado</option>
-                <option value="Nuevo">Nuevo</option>
+                <option value="Todas" className="bg-surface text-on-surface">Todas</option>
+                <option value="Usado" className="bg-surface text-on-surface">Usado</option>
+                <option value="Nuevo" className="bg-surface text-on-surface">Nuevo</option>
               </select>
             </div>
 
           </div>
           
-          <div className="flex justify-end items-center gap-3 mt-5 pt-4 border-t border-outline-variant/50">
+          {/* Botones de acción */}
+          <div className="flex justify-end items-center gap-3 pt-4 border-t border-outline-variant">
             <button 
               onClick={() => {
                 if (stats) {
@@ -539,7 +550,7 @@ export default function VehiculosView() {
                 setSearchTerm('');
                 setCurrentPage(1);
               }}
-              className="text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors"
+              className="px-4 py-2.5 text-sm font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer"
             >
               Limpiar Filtros
             </button>
@@ -556,9 +567,10 @@ export default function VehiculosView() {
                   filterCondicion
                 });
               }}
-              className="px-5 py-2 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container rounded-lg text-sm font-bold transition-colors shadow-sm"
+              className="px-6 py-2.5 bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container rounded-xl text-sm font-bold transition-all shadow-sm cursor-pointer flex items-center gap-2"
             >
-              Aplicar
+              <Check size={16} />
+              Aplicar Filtros
             </button>
           </div>
         </div>
