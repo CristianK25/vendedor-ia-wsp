@@ -1,6 +1,14 @@
 {
   "actualizaciones": [
     {
+      "id": "b842a174-8d91-4e26-a94f-124b893f6c51",
+      "fecha": "2026-08-26",
+      "tipo_cambio": "Nueva Función",
+      "titulo": "Estandarización de Clientes y Flexibilización del Legajo Digital",
+      "resumen": "Nuevo módulo para el alta asistida de clientes con prefijo nacional, baja lógica con restauración automática y acceso totalmente libre para la gestión de documentos de vehículos.",
+      "detalles_md": "### Visión General\nSe han optimizado las herramientas de gestión de clientes y legajo digital, permitiendo la creación de fichas comerciales con formato internacional estandarizado, la posibilidad de realizar bajas lógicas sin perder trazabilidad y el acceso libre para adjuntar documentación vehicular sin bloqueos de etapa.\n\n### Capacidades Añadidas\n| Característica | Descripción |\n|---|---|\n| **Estandarización de Números** | Entrada asistida con indicador de país, validación en tiempo real y previsualización del formato internacional (+54 9). |\n| **Alta Directa de Clientes** | Nueva interfaz para el registro manual de clientes con asignación de etiquetas comerciales. |\n| **Gestión de Bajas (Soft Delete)** | Módulo de eliminación con cuadro de confirmación formal que oculta los registros inactivos sin perder la trazabilidad de las ventas previas. |\n| **Reactivación Inteligente** | Si un cliente eliminado vuelve a enviar un mensaje de consulta, el sistema reactiva automáticamente su ficha comercial sin duplicar registros. |\n| **Acceso Libre a Documentación** | Se removieron los bloqueos secuenciales rígidos en las etapas del vehículo, permitiendo subir cualquier documento del legajo en cualquier momento y efectuar la venta sin impedimentos. |\n\n### Mejoras de Experiencia\n- Mayor tolerancia en la actualización de etiquetas y datos de clientes existentes.\n- Diálogos emergentes con mensajes claros sobre el impacto de cada acción en el sistema."
+    },
+    {
       "id": "cf457c10-d027-4bf7-9da5-3564c7e2b6fe",
       "fecha": "2026-08-20",
       "tipo_cambio": "Nueva Función",
