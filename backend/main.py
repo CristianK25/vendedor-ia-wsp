@@ -69,8 +69,13 @@ async def csrf_middleware(request: Request, call_next):
         if request.url.path.startswith("/api"):
             import logging
             logging.warning(f"DEBUG CSRF PATH IS EXACTLY: '{request.url.path}'")
-            # Excluimos login público, endpoints de n8n y rutas públicas (tienen seguridad interna por token)
-            if not request.url.path.endswith("/auth/login") and not request.url.path.startswith("/api/n8n") and not "/api/public/" in request.url.path:
+            # Excluimos login público, endpoints de n8n, rutas públicas y reporte de logs
+            if (
+                not request.url.path.endswith("/auth/login")
+                and not request.url.path.startswith("/api/n8n")
+                and not "/api/public/" in request.url.path
+                and not request.url.path.startswith("/api/logs")
+            ):
                 csrf_header = request.headers.get("x-vendedoria-crm-vehiculos")
                 if csrf_header != "true":
                     logging.warning(f"DEBUG CSRF: Blocked by CSRF!")
@@ -90,6 +95,8 @@ app.mount("/documentos", StaticFiles(directory="documentos"), name="documentos")
 os.makedirs("gastos", exist_ok=True)
 app.mount("/gastos", StaticFiles(directory="gastos"), name="gastos")
 
+os.makedirs("logs", exist_ok=True)
+
 @app.get("/")
 def read_root():
     return {"message": "API Vendedor IA is running"}
@@ -105,8 +112,10 @@ from app.Modules.n8n.router import router as n8n_router
 from app.Modules.peticiones.router import router as peticiones_router
 from app.Modules.peticiones.public_router import router as peticiones_public_router
 from app.Modules.gastos.router import router as gastos_router
+from app.Modules.logs.router import router as logs_router
 
 app.include_router(auth_router, prefix="/api")
+app.include_router(logs_router, prefix="/api")
 app.include_router(vehiculos_router, prefix="/api", dependencies=[Depends(require_role([UserRole.ADMIN, UserRole.STOCK]))])
 app.include_router(clientes_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(trabajadores_router, prefix="/api", dependencies=[Depends(require_admin)])

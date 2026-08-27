@@ -17,6 +17,7 @@ import PromocionForm from './components/forms/PromocionForm'
 import TrabajadorForm from './components/forms/TrabajadorForm'
 import ThemeSelector from './components/ThemeSelector'
 import { ChangelogButton } from './components/ChangelogButton'
+import ErrorBoundary from './components/ui/ErrorBoundary'
 
 import { useAuthStore } from './store/authStore'
 import { ProtectedRoute } from './components/ProtectedRoute'
@@ -138,36 +139,38 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 w-full pb-6 flex flex-col">
         <div className="max-w-[1600px] mx-auto w-full flex-1 flex flex-col">
-          <Routes>
-            <Route element={<ProtectedRoute />}>
-              {!isStock && <Route path="/calendario" element={<CalendarPage />} />}
+          <ErrorBoundary>
+            <Routes>
+              <Route element={<ProtectedRoute />}>
+                {!isStock && <Route path="/calendario" element={<CalendarPage />} />}
 
-              <Route path="/vehiculos" element={<VehiculosPage />} />
-              <Route path="/vehiculos/nuevo" element={<VehiculoForm />} />
-              <Route path="/vehiculos/editar/:id" element={<VehiculoForm />} />
-              <Route path="/vehiculos/:id" element={<VehiculoDetailPage />} />
-              <Route path="/vehiculos/:id/documentacion" element={<VehiculoDocumentacionPage />} />
+                <Route path="/vehiculos" element={<VehiculosPage />} />
+                <Route path="/vehiculos/nuevo" element={<VehiculoForm />} />
+                <Route path="/vehiculos/editar/:id" element={<VehiculoForm />} />
+                <Route path="/vehiculos/:id" element={<VehiculoDetailPage />} />
+                <Route path="/vehiculos/:id/documentacion" element={<VehiculoDocumentacionPage />} />
 
-              {!isStock && (
-                <>
-                  <Route path="/ventas" element={<VentasPage />} />
-                  <Route path="/ventas/nuevo" element={<VentaForm />} />
+                {!isStock && (
+                  <>
+                    <Route path="/ventas" element={<VentasPage />} />
+                    <Route path="/ventas/nuevo" element={<VentaForm />} />
 
-                  <Route path="/clientes" element={<ClientesPage />} />
-                  <Route path="/clientes/nuevo" element={<ClienteForm />} />
+                    <Route path="/clientes" element={<ClientesPage />} />
+                    <Route path="/clientes/nuevo" element={<ClienteForm />} />
 
-                  <Route path="/promociones" element={<PromocionesPage />} />
-                  <Route path="/promociones/nuevo" element={<PromocionForm />} />
+                    <Route path="/promociones" element={<PromocionesPage />} />
+                    <Route path="/promociones/nuevo" element={<PromocionForm />} />
 
-                  <Route path="/trabajadores" element={<TrabajadoresPage />} />
-                  <Route path="/trabajadores/nuevo" element={<TrabajadorForm />} />
-                  <Route path="/trabajadores/editar/:id" element={<TrabajadorForm />} />
-                </>
-              )}
-            </Route>
+                    <Route path="/trabajadores" element={<TrabajadoresPage />} />
+                    <Route path="/trabajadores/nuevo" element={<TrabajadorForm />} />
+                    <Route path="/trabajadores/editar/:id" element={<TrabajadorForm />} />
+                  </>
+                )}
+              </Route>
 
-            <Route path="*" element={<Navigate to={isStock ? "/vehiculos" : "/calendario"} replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to={isStock ? "/vehiculos" : "/calendario"} replace />} />
+            </Routes>
+          </ErrorBoundary>
         </div>
       </main>
     </div>
