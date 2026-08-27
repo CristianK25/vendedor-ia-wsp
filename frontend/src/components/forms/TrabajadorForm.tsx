@@ -4,11 +4,14 @@ import { useForm } from 'react-hook-form'
 import { UserCircle2, User, Phone, Briefcase, Loader2, Mail, Lock, Shield } from 'lucide-react'
 import { trabajadoresApi } from '../../api/trabajadores'
 import type { TrabajadorCreate } from '../../types/models'
+import { useAuthStore } from '../../store/authStore'
 
 export default function TrabajadorForm() {
   const { id } = useParams<{ id: string }>()
   const isEdit = !!id
   const navigate = useNavigate()
+  const { usuario } = useAuthStore()
+  const isSelf = isEdit && usuario?.id === Number(id)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -160,12 +163,18 @@ export default function TrabajadorForm() {
                 <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" size={18} />
                 <select 
                   {...register('rol', { required: 'El rol es requerido' })}
-                  className="w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none"
+                  disabled={isSelf}
+                  className={`w-full pl-10 pr-4 py-3 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none ${
+                    isSelf ? 'opacity-60 cursor-not-allowed bg-surface-container-high' : ''
+                  }`}
                 >
                   <option value="STOCK">Stock / Vendedor</option>
                   <option value="ADMIN">Administrador</option>
                 </select>
               </div>
+              {isSelf && (
+                <p className="text-on-surface-variant text-xs mt-1 font-medium">No puedes modificar tu propio rol de sistema.</p>
+              )}
               {errors.rol && <p className="text-error text-xs mt-1 font-medium">{errors.rol.message}</p>}
             </div>
 

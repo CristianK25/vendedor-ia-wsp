@@ -117,3 +117,5 @@ comprobantes_pruebas/comprobante_tramites.pdf
 backups/*.dump
 backups/*.log
 docs/webhook_wsp.json
+docs/_otros/comandos.md
+docs/_otros/comandos.txt

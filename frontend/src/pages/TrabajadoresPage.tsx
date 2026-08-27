@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { trabajadoresApi } from '../api/trabajadores'
 import { Plus, Search, MoreVertical, Edit2, Trash2 } from 'lucide-react'
+import { useAuthStore } from '../store/authStore'
+
 export default function TrabajadoresView() {
   const navigate = useNavigate()
+  const { usuario } = useAuthStore()
   const [trabajadores, setTrabajadores] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -36,13 +39,17 @@ export default function TrabajadoresView() {
   }, [currentPage, debouncedSearch])
 
   const handleDelete = async (id: number) => {
+    if (usuario?.id === id) {
+      alert('No puedes eliminar tu propia cuenta de usuario.')
+      return
+    }
     if (window.confirm('¿Está seguro de que desea eliminar este trabajador/usuario?')) {
       try {
         await trabajadoresApi.delete(id)
         setTrabajadores(prev => prev.filter(t => t.id !== id))
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error al eliminar trabajador:', err)
-        alert('Error al eliminar trabajador')
+        alert(err.message || 'Error al eliminar trabajador')
       }
     }
   }
@@ -137,6 +144,7 @@ export default function TrabajadoresView() {
           ) : (
             trabajadores.map(t => {
               const initials = t.nombre ? (t.apellido ? `${t.nombre[0]}${t.apellido[0]}`.toUpperCase() : t.nombre.substring(0, 2).toUpperCase()) : 'NN';
+              const isSelf = usuario?.id === t.id;
               return (
                 <div key={t.id} className="premium-card-hover bg-surface border border-outline-variant rounded-2xl p-6 flex flex-col items-center group relative cursor-pointer shadow-xl">
                   <div className="absolute top-4 right-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
@@ -161,7 +169,13 @@ export default function TrabajadoresView() {
                     </button>
                     <button 
                       onClick={() => handleDelete(t.id)}
-                      className="flex-1 bg-error-container border border-error/30 text-error py-2.5 rounded-xl text-sm font-semibold hover:bg-error-container/80 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      disabled={isSelf}
+                      title={isSelf ? "No puedes eliminar tu propio usuario en sesión" : "Eliminar trabajador"}
+                      className={`flex-1 border py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+                        isSelf 
+                          ? 'bg-surface-container-high border-outline-variant text-on-surface-variant opacity-40 cursor-not-allowed' 
+                          : 'bg-error-container border-error/30 text-error hover:bg-error-container/80 cursor-pointer'
+                      }`}
                     >
                       <Trash2 size={16} /> Eliminar
                     </button>
