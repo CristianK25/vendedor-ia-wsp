@@ -27,7 +27,8 @@ def get_trabajadores(
     page: int = 1, 
     size: int = 50, 
     search: str = "",
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_active_user)
 ):
     service = TrabajadorService(session)
     skip = (page - 1) * size
@@ -44,13 +45,21 @@ def get_trabajadores(
     }
 
 @router.post("/", response_model=TrabajadorResponse)
-def create_trabajador(trabajador: UsuarioCreate, session: Session = Depends(get_session)):
+def create_trabajador(
+    trabajador: UsuarioCreate, 
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_active_user)
+):
     service = TrabajadorService(session)
     u = service.create_trabajador(trabajador)
     return _map_to_response(u)
 
 @router.get("/{trabajador_id}", response_model=TrabajadorResponse)
-def get_trabajador(trabajador_id: int, session: Session = Depends(get_session)):
+def get_trabajador(
+    trabajador_id: int, 
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_active_user)
+):
     service = TrabajadorService(session)
     u = service.get_trabajador(trabajador_id)
     return _map_to_response(u)
@@ -63,8 +72,8 @@ def update_trabajador(
     current_user: Usuario = Depends(get_current_active_user)
 ):
     if current_user.id == trabajador_id and trabajador.rol:
-        current_rol = current_user.rol.value if hasattr(current_user.rol, 'value') else current_user.rol
-        if trabajador.rol != current_rol:
+        current_rol = (current_user.rol.value if hasattr(current_user.rol, 'value') else current_user.rol).upper()
+        if trabajador.rol.upper() != current_rol:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No puedes modificar tu propio rol de sistema."
