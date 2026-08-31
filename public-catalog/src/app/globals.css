@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+body {
+  background-color: #0f1117;
+  /* El color de fondo de tu tema oscuro */
+  color: #f3f4f6;
+}
