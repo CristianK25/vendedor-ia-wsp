@@ -16,7 +16,7 @@ Crear una interfaz web pública, moderna y de alto rendimiento que exponga únic
    * Filtros rápidos: Rango de precio (moneda USD/ARS), rango de año, kilometraje, tipo de transmisión (manual/automática), tipo de combustible y carrocería (sedán, suv, pickup, etc.).
    * Ordenamiento por precio (menor/mayor), año y kilometraje.
    * Paginación limpia y optimizada.
-2. **Página de Detalle del Vehículo (`/autos/[id]`)**:
+2. **Página de Detalle del Vehículo (`/vehiculos/[id]`)**:
    * Galería de fotos con visualizador principal y carrusel/lightbox.
    * Ficha técnica detallada (año, kilómetros, motor, tracción, combustible, color, etc.).
    * Descripción comercial y equipamiento destacado.
@@ -100,7 +100,7 @@ vendedor-ia-wsp/
 │       ├── app/
 │       │   ├── layout.tsx      # Layout raíz (Navbar, Footer, Font Inter, Metadata Base)
 │       │   ├── page.tsx        # Catálogo principal (Listado + Filtros)
-│       │   ├── autos/
+│       │   ├── vehiculos/
 │       │   │   └── [id]/
 │       │   │       ├── page.tsx        # Detalle con SSR y generateMetadata()
 │       │   │       └── not-found.tsx   # Manejo de vehículos no encontrados o dados de baja
