@@ -24,6 +24,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import PublicCatalogPage from './pages/PublicCatalogPage'
 
 function App() {
   const { usuario, logout } = useAuthStore()
@@ -34,6 +35,17 @@ function App() {
     const savedTheme = localStorage.getItem('autolead_theme') || 'aston-martin'
     document.documentElement.setAttribute('data-theme', savedTheme)
   }, [])
+
+  const isCatalogRoute = location.pathname.startsWith('/catalogo')
+
+  if (isCatalogRoute) {
+    return (
+      <Routes>
+        <Route path="/catalogo" element={<PublicCatalogPage />} />
+        <Route path="*" element={<Navigate to="/catalogo" replace />} />
+      </Routes>
+    )
+  }
 
   const isAuthRoute = location.pathname === '/login' || 
                       location.pathname === '/forgot-password' || 
