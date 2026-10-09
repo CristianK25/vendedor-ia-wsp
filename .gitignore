@@ -119,3 +119,7 @@ backups/*.log
 docs/webhook_wsp.json
 docs/_otros/comandos.md
 docs/_otros/comandos.txt
+docker-compose.override.yml
+backend/seed_vehiculos.py
+docs/comandos.md
+start-dev.sh
