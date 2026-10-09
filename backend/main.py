@@ -111,11 +111,13 @@ from app.Modules.etiquetas.router import router as etiquetas_router
 from app.Modules.n8n.router import router as n8n_router
 from app.Modules.peticiones.router import router as peticiones_router
 from app.Modules.peticiones.public_router import router as peticiones_public_router
+from app.Modules.vehiculos.public_router import router as public_vehiculos_router
 from app.Modules.gastos.router import router as gastos_router
 from app.Modules.logs.router import router as logs_router
 
 app.include_router(auth_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
+app.include_router(public_vehiculos_router, prefix="/api")
 app.include_router(vehiculos_router, prefix="/api", dependencies=[Depends(require_role([UserRole.ADMIN, UserRole.STOCK]))])
 app.include_router(clientes_router, prefix="/api", dependencies=[Depends(require_admin)])
 app.include_router(trabajadores_router, prefix="/api", dependencies=[Depends(require_admin)])

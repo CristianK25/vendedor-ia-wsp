@@ -87,6 +87,24 @@ class VehiculoResponse(BaseModel):
     comision_tipo: Optional[ComisionTipo] = None
     comision_valor: Optional[float] = None
 
+class PublicVehiculoResponse(BaseModel):
+    id: int
+    marca: str = ""
+    modelo: str
+    precio_venta: float
+    moneda_venta: Optional[Moneda] = None
+    kilometraje: int
+    detalle_interior: Optional[str] = None
+    detalle_exterior: Optional[str] = None
+    informacion_extra: Optional[str] = None
+    anio: int
+    transmision: str
+    estado: EstadoVehiculo
+    imagenes: List[ImagenResponse] = []
+    traccion: Optional[str] = None
+    tipo: Optional[str] = None
+    condicion: Optional[str] = None
+
 class PaginatedVehiculosResponse(BaseModel):
     items: List[VehiculoResponse]
     total: int
