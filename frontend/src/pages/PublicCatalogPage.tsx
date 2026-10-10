@@ -59,7 +59,7 @@ export default function PublicCatalogPage() {
   })
 
   return (
-    <div className="bg-[#1C1C1C] text-[#B0B0B0] min-h-screen flex flex-col font-sans">
+    <div className="bg-[#141414] text-[#B0B0B0] min-h-screen flex flex-col font-sans">
       {/* Cabecera Pública Minimalista */}
       <header className="sticky top-0 z-50 bg-[#1C1C1C] border-b border-[#3D3D3D] w-full overflow-hidden">
         <div className="flex items-center justify-between px-4 md:px-8 h-16 w-full max-w-[1600px] mx-auto">
@@ -78,7 +78,7 @@ export default function PublicCatalogPage() {
               href="https://www.instagram.com/lvmautomotores/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#7D7D7D] hover:text-[#B0B0B0] transition-colors"
+              className="text-[#E0E0E0] hover:text-[#FFFFFF] transition-colors"
               title="Síguenos en Instagram"
             >
               <svg 
@@ -102,7 +102,7 @@ export default function PublicCatalogPage() {
               href={`https://wa.me/${CATALOG_CONFIG.whatsappPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('¡Hola! Me gustaría hacer una consulta sobre los vehículos en catálogo.')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#7D7D7D] hover:text-[#B0B0B0] transition-colors"
+              className="text-[#E0E0E0] hover:text-[#FFFFFF] transition-colors"
               title="Contactanos por Whatsapp"
             >
               <svg 
@@ -123,7 +123,7 @@ export default function PublicCatalogPage() {
       <main className="flex-1 w-full px-4 md:px-10 py-8 max-w-[1600px] mx-auto flex flex-col">
         {/* Sección Hero: Bienvenida, Buscador y Filtros */}
         <div className="mb-14 mt-4 flex flex-col items-center text-center w-full">
-          <h1 className="text-3xl md:text-5xl font-extrabold text-[#B0B0B0] tracking-tight mb-3">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-[#E0E0E0] tracking-tight mb-3">
             Encontrá tu próximo vehículo
           </h1>
           <p className="text-sm md:text-base text-zinc-400 mb-8 w-full max-w-[600px] mx-auto">
@@ -227,7 +227,7 @@ export default function PublicCatalogPage() {
                   {/* Cuerpo de la Tarjeta */}
                   <div className="p-5 flex flex-col flex-1 text-center items-center">
                     <div className="mb-3 w-full">
-                      <h3 className="text-lg font-bold text-[#B0B0B0] leading-tight">
+                      <h3 className="text-lg font-bold text-[#E0E0E0] leading-tight">
                         {titulo}
                       </h3>
                     </div>
@@ -249,14 +249,14 @@ export default function PublicCatalogPage() {
 
                     {/* Precio y Botón de Contacto WhatsApp */}
                     <div className="mt-auto pt-4 border-t border-[#3D3D3D] flex flex-col gap-4 w-full">
-                      <span className="text-[#B0B0B0] font-extrabold text-2xl tracking-tight">
+                      <span className="text-[#E0E0E0] font-extrabold text-2xl tracking-tight">
                         {v.moneda_venta === 'USD' ? 'U$S' : '$'}{v.precio_venta.toLocaleString()} <span className="text-sm font-normal text-[#7D7D7D]">{v.moneda_venta === 'USD' ? 'USD' : 'ARS'}</span>
                       </span>
                       <a
                         href={whatsappLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full text-center border border-[#3D3D3D] hover:border-[#7D7D7D] hover:bg-[#3D3D3D] bg-transparent text-[#7D7D7D] hover:text-[#B0B0B0] px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex justify-center items-center gap-2"
+                        className="w-full text-center border border-[#3D3D3D] hover:border-[#E0E0E0] bg-transparent text-[#E0E0E0] hover:text-[#FFFFFF] px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex justify-center items-center gap-2"
                         title="Contactar por WhatsApp"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
