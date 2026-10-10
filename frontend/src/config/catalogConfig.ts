@@ -13,7 +13,7 @@ export interface CatalogVehicleInfo {
 
 export const CATALOG_CONFIG = {
   // Nombre comercial que se muestra en la cabecera del catálogo
-  concesionariaNombre: (import.meta as any).env?.VITE_CONCESIONARIA_NOMBRE || 'AutoLead Concesionaria',
+  concesionariaNombre: (import.meta as any).env?.VITE_CONCESIONARIA_NOMBRE || 'LVM Automotores',
 
   // Número de WhatsApp al que llegarán las consultas (código de país sin '+' ni espacios, ej: '5491112345678')
   // Se puede sobreescribir con la variable de entorno VITE_WHATSAPP_PHONE o editar directamente aquí
@@ -25,7 +25,9 @@ export const CATALOG_CONFIG = {
     const moneda = vehiculo.moneda_venta === 'USD' ? 'USD' : 'ARS';
     const precio = vehiculo.precio_venta.toLocaleString();
 
-    return `¡Hola! Vengo del catálogo web y me interesa consultar por el vehículo:\n🚗 *${nombreVehiculo}* (${vehiculo.anio})\n💰 *Precio:* $${precio} ${moneda}\n\n¿Sigue disponible? Me gustaría recibir más información.`;
+    const prefijo = vehiculo.moneda_venta === 'USD' ? 'U$S' : '$';
+    
+    return `¡Hola! Vengo del catálogo web y me interesa consultar por el vehículo:\n*${nombreVehiculo}* (${vehiculo.anio})\n*Precio:* ${prefijo}${precio} ${moneda}\n\n¿Sigue disponible? Me gustaría recibir más información.`;
   },
 
   // Generador de enlace completo de WhatsApp
