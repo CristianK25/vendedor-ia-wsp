@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Car, ImageOff, MessageCircle, AlertCircle, Search } from 'lucide-react'
+import { Car, ImageOff, AlertCircle, Search } from 'lucide-react'
 import { publicCatalogApi, type PublicVehiculo } from '../api/publicCatalog'
 import { CATALOG_CONFIG } from '../config/catalogConfig'
 
