@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Car, ImageOff, MessageCircle, AlertCircle } from 'lucide-react'
+import { Car, ImageOff, MessageCircle, AlertCircle, Search } from 'lucide-react'
 import { publicCatalogApi, type PublicVehiculo } from '../api/publicCatalog'
 import { CATALOG_CONFIG } from '../config/catalogConfig'
 
@@ -8,11 +8,12 @@ export default function PublicCatalogPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    // Asegurar que el tema oscuro esté activo en el catálogo
-    const savedTheme = localStorage.getItem('autolead_theme') || 'aston-martin'
-    document.documentElement.setAttribute('data-theme', savedTheme)
+  // Estados para Búsqueda y Filtros
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filtroActivo, setFiltroActivo] = useState('Todos')
 
+  useEffect(() => {
+    // Ya no forzamos el tema del CRM aquí, el catálogo tendrá sus propios estilos fijos (Dark Minimalism)
     setLoading(true)
     publicCatalogApi.getVehiculos()
       .then((data) => {
@@ -27,57 +28,104 @@ export default function PublicCatalogPage() {
   }, [])
 
   return (
-    <div className="bg-background text-on-surface min-h-screen flex flex-col font-sans">
-      {/* Cabecera Pública Aislada (Sin menú ni login del CRM) */}
-      <header className="sticky top-0 z-50 bg-surface/95 backdrop-blur-md border-b border-outline-variant w-full shadow-md">
+    <div className="bg-black text-white min-h-screen flex flex-col font-sans">
+      {/* Cabecera Pública Minimalista */}
+      <header className="sticky top-0 z-50 bg-black border-b border-zinc-900 w-full overflow-hidden">
         <div className="flex items-center justify-between px-4 md:px-8 h-16 w-full max-w-[1600px] mx-auto">
-          {/* Logo y Nombre de la Concesionaria */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center text-primary">
-              <Car size={22} />
-            </div>
-            <div>
-              <span className="text-lg md:text-xl font-extrabold text-primary tracking-tight block leading-tight">
-                {CATALOG_CONFIG.concesionariaNombre}
-              </span>
-              <span className="text-[11px] text-on-surface-variant font-medium tracking-wider uppercase block">
-                Catálogo Oficial de Vehículos
-              </span>
-            </div>
+          {/* Logo de la Concesionaria */}
+          <div className="flex items-center h-full">
+            <img 
+              src="/LVMautomotores.jpg" 
+              alt="LVM Automotores" 
+              className="h-full object-contain mix-blend-screen scale-[2] md:scale-[2.6] origin-left"
+            />
           </div>
 
-          {/* Contacto directo por WhatsApp en la cabecera */}
-          <a
-            href={`https://wa.me/${CATALOG_CONFIG.whatsappPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('¡Hola! Me gustaría hacer una consulta sobre los vehículos en catálogo.')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs md:text-sm font-bold transition-all active:scale-95 shadow-sm"
-          >
-            <MessageCircle size={17} />
-            <span className="hidden sm:inline">Contactar por WhatsApp</span>
-            <span className="sm:hidden">WhatsApp</span>
-          </a>
+          {/* Acciones de la cabecera (Redes y Contacto) */}
+          <div className="flex items-center gap-4 md:gap-6">
+            <a
+              href="https://www.instagram.com/lvmautomotores/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/70 hover:text-white transition-colors"
+              title="Síguenos en Instagram"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="22" 
+                height="22" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+              </svg>
+            </a>
+
+            <a
+              href={`https://wa.me/${CATALOG_CONFIG.whatsappPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('¡Hola! Me gustaría hacer una consulta sobre los vehículos en catálogo.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/70 hover:text-white transition-colors"
+              title="Contactanos por Whatsapp"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="22" 
+                height="22" 
+                viewBox="0 0 24 24" 
+                fill="currentColor"
+              >
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.489-1.761-1.663-2.06-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+              </svg>
+            </a>
+          </div>
         </div>
       </header>
 
       {/* Contenido Principal */}
       <main className="flex-1 w-full px-4 md:px-10 py-8 max-w-[1600px] mx-auto flex flex-col">
-        {/* Título de sección */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight">
-                Vehículos Disponibles
-              </h1>
-              <p className="text-sm md:text-base text-on-surface-variant mt-1">
-                Explora nuestras unidades seleccionadas y consultá directamente por WhatsApp.
-              </p>
-            </div>
-            {!loading && !error && (
-              <span className="text-xs md:text-sm font-semibold px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant w-fit">
-                {vehiculos.length} {vehiculos.length === 1 ? 'unidad disponible' : 'unidades disponibles'}
-              </span>
-            )}
+        {/* Sección Hero: Bienvenida, Buscador y Filtros */}
+        <div className="mb-14 mt-4 flex flex-col items-center text-center w-full">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-3">
+            Encontrá tu próximo vehículo
+          </h1>
+          <p className="text-sm md:text-base text-zinc-400 mb-8 w-full max-w-[600px] mx-auto">
+            Explorá nuestro catálogo de autos y camionetas seleccionadas. Consultá disponibilidad directamente por WhatsApp.
+          </p>
+
+          {/* Buscador */}
+          <div className="w-full max-w-[500px] relative mb-6">
+            <input 
+              type="text" 
+              placeholder="Buscar por marca o modelo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-800 text-white rounded-full py-3.5 px-6 pl-12 focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 transition-all placeholder:text-zinc-500"
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />
+          </div>
+
+          {/* Filtros Rápidos (Píldoras) */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {['Todos', 'Autos', 'Camionetas', 'SUVs'].map((filtro) => (
+              <button
+                key={filtro}
+                onClick={() => setFiltroActivo(filtro)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
+                  filtroActivo === filtro 
+                    ? 'bg-white text-black' 
+                    : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-800 hover:text-white'
+                }`}
+              >
+                {filtro}
+              </button>
+            ))}
           </div>
         </div>
 
