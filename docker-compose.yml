@@ -28,6 +28,7 @@ services:
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-America/Argentina/Mendoza}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
       - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_PROXY_HOPS=1
     volumes:
       - ./n8n_data:/home/node/.n8n
       - ./workflows:/data:ro
