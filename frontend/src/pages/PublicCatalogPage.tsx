@@ -61,42 +61,58 @@ export default function PublicCatalogPage() {
   return (
     <div className="bg-[#141414] text-[#B0B0B0] min-h-screen flex flex-col font-sans">
       {/* Cabecera Pública Minimalista */}
-      <header className="sticky top-0 z-50 bg-[#1C1C1C] border-b border-[#3D3D3D] w-full overflow-hidden">
+      <header className="sticky top-0 z-50 bg-[#1C1C1C] border-b border-[#3D3D3D] w-full">
         <div className="flex items-center justify-between px-4 md:px-8 h-16 w-full max-w-[1600px] mx-auto">
-          {/* Logo de la Concesionaria */}
-          <div className="flex items-center h-full">
-            <img 
-              src="/LVMautomotores.jpg" 
-              alt="LVM Automotores" 
-              className="h-full object-contain mix-blend-screen scale-[2] md:scale-[2.6] origin-left"
-            />
+          {/* Emblema Automotriz Minimalista (Estilo Favicon Dark) */}
+          <div className="flex items-center">
+            <div 
+              className="w-10 h-10 rounded-xl bg-gradient-to-b from-[#262626] to-[#1C1C1C] border border-[#3D3D3D] hover:border-[#5A5A5A] flex items-center justify-center text-[#E0E0E0] hover:text-white shadow-sm transition-all duration-200 cursor-pointer"
+              title="Catálogo de Vehículos"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                className="w-5 h-5" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1.6" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.5V16c0 .6.4 1 1 1h2" />
+                <circle cx="7" cy="17" r="2" />
+                <circle cx="17" cy="17" r="2" />
+              </svg>
+            </div>
           </div>
 
           {/* Acciones de la cabecera (Redes y Contacto) */}
           <div className="flex items-center gap-4 md:gap-6">
-            <a
-              href="https://www.instagram.com/lvmautomotores/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#E0E0E0] hover:text-[#FFFFFF] transition-colors"
-              title="Síguenos en Instagram"
-            >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="22" 
-                height="22" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="1.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
+            {CATALOG_CONFIG.instagramUrl && (
+              <a
+                href={CATALOG_CONFIG.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#E0E0E0] hover:text-[#FFFFFF] transition-colors"
+                title="Síguenos en Instagram"
               >
-                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-              </svg>
-            </a>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="22" 
+                  height="22" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                </svg>
+              </a>
+            )}
 
             <a
               href={`https://wa.me/${CATALOG_CONFIG.whatsappPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('¡Hola! Me gustaría hacer una consulta sobre los vehículos en catálogo.')}`}
@@ -283,28 +299,48 @@ export default function PublicCatalogPage() {
         <div className="max-w-[1600px] mx-auto px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-8">
           
           {/* Información de la Marca */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-            <span className="text-[#B0B0B0] font-black text-xl tracking-tighter uppercase mb-1">
-              LVM Automotores
-            </span>
-            <span className="text-[#7D7D7D] text-sm">
-              Catálogo de unidades seleccionadas.
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#242424] border border-[#3D3D3D] flex items-center justify-center text-[#E0E0E0]">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                className="w-4 h-4" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1.6" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.5V16c0 .6.4 1 1 1h2" />
+                <circle cx="7" cy="17" r="2" />
+                <circle cx="17" cy="17" r="2" />
+              </svg>
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-[#B0B0B0] font-bold text-sm tracking-tight uppercase">
+                {CATALOG_CONFIG.concesionariaNombre || 'Catálogo de Vehículos'}
+              </span>
+              <span className="text-[#7D7D7D] text-xs">
+                Unidades seleccionadas y verificadas.
+              </span>
+            </div>
           </div>
 
           {/* Enlaces Rápidos (Redes y Contacto) */}
           <div className="flex items-center gap-8">
-            <a
-              href="https://www.instagram.com/lvmautomotores/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#7D7D7D] hover:text-[#B0B0B0] transition-colors flex items-center gap-2 text-sm font-semibold"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-              </svg>
-              Instagram
-            </a>
+            {CATALOG_CONFIG.instagramUrl && (
+              <a
+                href={CATALOG_CONFIG.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7D7D7D] hover:text-[#B0B0B0] transition-colors flex items-center gap-2 text-sm font-semibold"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                </svg>
+                Instagram
+              </a>
+            )}
             <a
               href={`https://wa.me/${CATALOG_CONFIG.whatsappPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('¡Hola! Me gustaría consultar por sus vehículos disponibles.')}`}
               target="_blank"

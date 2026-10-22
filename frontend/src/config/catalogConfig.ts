@@ -12,8 +12,11 @@ export interface CatalogVehicleInfo {
 }
 
 export const CATALOG_CONFIG = {
-  // Nombre comercial que se muestra en la cabecera del catálogo
-  concesionariaNombre: (import.meta as any).env?.VITE_CONCESIONARIA_NOMBRE || 'LVM Automotores',
+  // Nombre comercial que se muestra en la cabecera o footer del catálogo (o variable de entorno)
+  concesionariaNombre: (import.meta as any).env?.VITE_CONCESIONARIA_NOMBRE || 'Catálogo Automotor',
+
+  // Enlace a Instagram (opcional, configurable vía .env)
+  instagramUrl: (import.meta as any).env?.VITE_INSTAGRAM_URL || '',
 
   // Número de WhatsApp al que llegarán las consultas (código de país sin '+' ni espacios, ej: '5491112345678')
   // Se puede sobreescribir con la variable de entorno VITE_WHATSAPP_PHONE o editar directamente aquí
