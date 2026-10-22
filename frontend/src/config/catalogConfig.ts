@@ -20,7 +20,7 @@ export const CATALOG_CONFIG = {
 
   // Número de WhatsApp al que llegarán las consultas (código de país sin '+' ni espacios, ej: '5491112345678')
   // Se puede sobreescribir con la variable de entorno VITE_WHATSAPP_PHONE o editar directamente aquí
-  whatsappPhone: (import.meta as any).env?.VITE_WHATSAPP_PHONE || '5492612096205',
+  whatsappPhone: (import.meta as any).env?.VITE_WHATSAPP_PHONE || '5492617752457',
 
   // Mensaje base para iniciar la conversación por WhatsApp
   generarMensajeWhatsApp: (vehiculo: CatalogVehicleInfo): string => {

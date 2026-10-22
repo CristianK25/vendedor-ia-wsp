@@ -123,3 +123,9 @@ docker-compose.override.yml
 backend/seed_vehiculos.py
 docs/comandos.md
 start-dev.sh
+_prompt.txt
+.gitignore
+docs/avatars/opcion2_hibrido.svg
+docs/avatars/opcion1_burbuja.svg
+docs/avatars/opcion3_monograma.svg
+docs/avatars/test.png
