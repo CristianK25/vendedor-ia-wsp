@@ -117,7 +117,17 @@ services:
     container_name: laya-vendedor-ia
     restart: unless-stopped
     volumes:
-      - ./laya_cache:/root/.cache/huggingface
+      - ./laya_cache:/cache
+    # Blindaje estricto de recursos para proteger Postgres, n8n y Backend
+    cpus: "1.0"          # Máximo 1 solo núcleo de CPU (el otro núcleo queda libre para tu DB y n8n)
+    cpu_shares: 512      # Prioridad baja: si la CPU se satura, Postgres y n8n tienen preferencia
+    mem_limit: 1536m     # Tope máximo de 1.5 GB de RAM (la VPS tiene 8 GB)
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     logging:
       driver: "json-file"
       options:
