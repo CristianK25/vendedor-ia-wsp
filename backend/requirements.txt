@@ -14,4 +14,4 @@ alembic
 reportlab
 pypdf
 pillow-heif
-
+redis==5.0.8

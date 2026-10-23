@@ -25,3 +25,18 @@ class N8NClienteCheck(BaseModel):
 class N8NResenaCreate(BaseModel):
     cliente_telefono: str
     comentario: str
+
+class N8NWhatsAppBufferRequest(BaseModel):
+    cliente_telefono: str
+    texto: str
+    nombre: Optional[str] = None
+    wait_seconds: Optional[int] = 4
+
+class N8NWhatsAppBufferResponse(BaseModel):
+    procesar: bool
+    cliente_telefono: str
+    cliente_nombre: Optional[str] = None
+    mensaje_completo: Optional[str] = None
+    total_mensajes: Optional[int] = 0
+    motivo: Optional[str] = None
+

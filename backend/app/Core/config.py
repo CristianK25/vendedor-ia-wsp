@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     N8N_WEBHOOK_BASE_URL: str = "http://n8n:5678/webhook"
     N8N_API_KEY: str = ""
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
     BACKEND_CORS_ORIGINS: str = "*"
     INITIAL_ADMIN_EMAIL: str = "admin@vendedor.com"
     INITIAL_ADMIN_PASSWORD: str = "admin123"
