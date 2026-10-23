@@ -1,4 +1,5 @@
 import redis.asyncio as aioredis
+from typing import AsyncGenerator
 from app.Core.config import settings
 
 redis_pool = aioredis.ConnectionPool(
@@ -8,6 +9,10 @@ redis_pool = aioredis.ConnectionPool(
     decode_responses=True
 )
 
-def get_redis_client() -> aioredis.Redis:
-    """Retorna un cliente asíncrono de Redis conectado al pool."""
-    return aioredis.Redis(connection_pool=redis_pool)
+async def get_redis() -> AsyncGenerator[aioredis.Redis, None]:
+    """Generador asíncrono para inyección de dependencias con Depends en FastAPI."""
+    client = aioredis.Redis(connection_pool=redis_pool)
+    try:
+        yield client
+    finally:
+        await client.aclose()

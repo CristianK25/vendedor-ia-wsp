@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from datetime import datetime
 import asyncio
+import redis.asyncio as aioredis
 
 from app.Core.database import get_session
-from app.Core.redis import get_redis_client
+from app.Core.redis import get_redis
 from app.Core.Security.deps import verify_n8n_internal_request
 from app.Modules.n8n.schema import (
     N8NCitaCreate, N8NCitaCancel, N8NClienteCheck, N8NResenaCreate, PeticionCreateN8N,
@@ -209,62 +210,62 @@ def crear_interaccion(data: InteraccionCreate, session: Session = Depends(get_se
     return {"status": "success", "message": "Interacción registrada exitosamente", "interaccion": nueva_interaccion}
 
 @router.post("/whatsapp/buffer", response_model=N8NWhatsAppBufferResponse)
-async def whatsapp_buffer(data: N8NWhatsAppBufferRequest):
+async def whatsapp_buffer(
+    data: N8NWhatsAppBufferRequest,
+    redis: aioredis.Redis = Depends(get_redis)
+):
     """
     Control de ráfagas (Debounce) atómico con Redis.
     Acumula mensajes que llegan en un intervalo corto (ej: 4s) para un mismo cliente.
     El mensaje líder espera y devuelve el texto unificado; los mensajes subsiguientes
     retornan 'procesar: False' para que n8n no lance ejecuciones duplicadas.
+    FastAPI maneja el ciclo de vida y cierre de conexión de Redis automáticamente con Depends.
     """
-    redis = get_redis_client()
     tel = data.cliente_telefono.strip()
     key_buffer = f"wsp:buffer:{tel}"
     key_lock = f"wsp:lock:{tel}"
     key_name = f"wsp:name:{tel}"
 
-    try:
-        # Guardar el nombre si vino informado
-        if data.nombre and data.nombre.strip():
-            await redis.set(key_name, data.nombre.strip(), ex=120)
+    # Guardar el nombre si vino informado
+    if data.nombre and data.nombre.strip():
+        await redis.set(key_name, data.nombre.strip(), ex=120)
 
-        # Agregar mensaje a la lista en Redis
-        await redis.rpush(key_buffer, data.texto.strip())
-        await redis.expire(key_buffer, 120)
+    # Agregar mensaje a la lista en Redis
+    await redis.rpush(key_buffer, data.texto.strip())
+    await redis.expire(key_buffer, 120)
 
-        # Intentar adquirir el cerrojo de "Líder" de la ráfaga
-        is_leader = await redis.set(key_lock, "1", nx=True, ex=30)
+    # Intentar adquirir el cerrojo de "Líder" de la ráfaga
+    is_leader = await redis.set(key_lock, "1", nx=True, ex=30)
 
-        if not is_leader:
-            # Mensaje acumulado en ráfaga (no es el líder)
-            return N8NWhatsAppBufferResponse(
-                procesar=False,
-                cliente_telefono=tel,
-                motivo="mensaje_acumulado_en_buffer"
-            )
-
-        # Mensaje Líder: espera el período de debounce (por defecto 4s)
-        wait_time = max(1, min(data.wait_seconds or 4, 15))
-        await asyncio.sleep(wait_time)
-
-        # Extraer todos los mensajes acumulados
-        mensajes = await redis.lrange(key_buffer, 0, -1)
-        stored_name = await redis.get(key_name)
-
-        # Limpiar claves de Redis para la próxima interacción
-        await redis.delete(key_buffer)
-        await redis.delete(key_lock)
-        if stored_name:
-            await redis.delete(key_name)
-
-        mensaje_completo = "\n".join(mensajes) if mensajes else data.texto
-
+    if not is_leader:
+        # Mensaje acumulado en ráfaga (no es el líder)
         return N8NWhatsAppBufferResponse(
-            procesar=True,
+            procesar=False,
             cliente_telefono=tel,
-            cliente_nombre=stored_name or data.nombre,
-            mensaje_completo=mensaje_completo,
-            total_mensajes=len(mensajes) if mensajes else 1
+            motivo="mensaje_acumulado_en_buffer"
         )
-    finally:
-        await redis.aclose()
+
+    # Mensaje Líder: espera el período de debounce (por defecto 4s)
+    wait_time = max(1, min(data.wait_seconds or 4, 15))
+    await asyncio.sleep(wait_time)
+
+    # Extraer todos los mensajes acumulados
+    mensajes = await redis.lrange(key_buffer, 0, -1)
+    stored_name = await redis.get(key_name)
+
+    # Limpiar claves de Redis para la próxima interacción
+    await redis.delete(key_buffer)
+    await redis.delete(key_lock)
+    if stored_name:
+        await redis.delete(key_name)
+
+    mensaje_completo = "\n".join(mensajes) if mensajes else data.texto
+
+    return N8NWhatsAppBufferResponse(
+        procesar=True,
+        cliente_telefono=tel,
+        cliente_nombre=stored_name or data.nombre,
+        mensaje_completo=mensaje_completo,
+        total_mensajes=len(mensajes) if mensajes else 1
+    )
 
