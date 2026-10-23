@@ -111,3 +111,16 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  laya:
+    build: ./laya
+    container_name: laya-vendedor-ia
+    restart: unless-stopped
+    volumes:
+      - ./laya_cache:/root/.cache/huggingface
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
