@@ -105,6 +105,7 @@ docs/funcionalidades/
 docs/ideas/
 info
 .agents/rules/agente.md
+.agents/mcp_config.json
 docs/verificacion_bloque4.md
 docs/revisar_vps.txt
 comprobantes_pruebas/comprobante_flete.pdf
@@ -130,3 +131,7 @@ docs/avatars/opcion2_hibrido.svg
 docs/avatars/opcion1_burbuja.svg
 docs/avatars/opcion3_monograma.svg
 docs/avatars/test.png
+docs/errores/error.txt
+docs/arquitectura_agente_pydantic.md
+.gitignore
+docs/flujo_whatsapp_n8n.md
