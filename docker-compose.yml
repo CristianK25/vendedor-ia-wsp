@@ -49,6 +49,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-vendedor_ia}
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+      - DB_ECHO=${DB_ECHO:-false}
       - N8N_API_KEY=${N8N_API_KEY}
       - N8N_WEBHOOK_BASE_URL=http://n8n:5678/webhook
       - SECRET_KEY=${SECRET_KEY}
@@ -57,6 +58,15 @@ services:
       - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD:-admin123}
       - INITIAL_BOT_EMAIL=${INITIAL_BOT_EMAIL:-bot@vendedor.com}
       - INITIAL_BOT_PASSWORD=${INITIAL_BOT_PASSWORD:-bot1234}
+      - LLM_PROVIDER_ORDER=${LLM_PROVIDER_ORDER:-openai,anthropic,groq,gemini}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-3-5-haiku-latest}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
     volumes:
       - ./backend/fotos:/app/fotos
       - ./backend/documentos:/app/documentos

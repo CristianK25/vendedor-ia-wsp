@@ -7,6 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session
 
 from app.Core.database import get_session
+from app.Core.config import settings
 from app.Core.Security.jwt import decode_token
 from app.Modules.usuarios.model import Usuario, UserRole
 from app.Modules.usuarios.repository import UsuarioRepository
@@ -87,20 +88,21 @@ require_admin = require_role([UserRole.ADMIN])
 require_bot_or_admin = require_role([UserRole.ADMIN, UserRole.BOT])
 
 def verify_n8n_internal_request(request: Request):
-    client_ip = request.client.host
+    client_ip = request.client.host if request.client else None
     if not client_ip:
         raise HTTPException(status_code=403, detail="Origen desconocido")
         
     try:
         ip = ipaddress.ip_address(client_ip)
-        # Permitimos ips privadas (Docker red interna) o loopback
+        # Permitimos ips privadas (Docker red interna) o loopback.
+        # Nota: /api/agent/ y /api/n8n/ están bloqueados en el nginx público (404).
         if not ip.is_private and not ip.is_loopback:
             raise HTTPException(status_code=403, detail="Acceso denegado: Solo red interna autorizada")
     except ValueError:
         raise HTTPException(status_code=403, detail="IP inválida")
         
     api_key = request.headers.get("X-N8N-API-KEY")
-    expected_key = os.getenv("N8N_API_KEY")
+    expected_key = settings.N8N_API_KEY or os.getenv("N8N_API_KEY")
     
     if not api_key or not expected_key:
         raise HTTPException(status_code=401, detail="API Key M2M faltante")

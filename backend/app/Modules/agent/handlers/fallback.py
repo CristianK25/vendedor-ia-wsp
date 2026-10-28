@@ -1,25 +1,24 @@
 import logging
 from typing import List, Optional
 from sqlmodel import Session
-from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse
-from app.Modules.agent.model import AgentChatMessage
+
 from app.Modules.agent.handlers.base import BaseHandler
+from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse, Camino, ChatTurn
 
 logger = logging.getLogger("agent.fallback")
+
 
 class FallbackHandler(BaseHandler):
     """Manejador para consultas generales o caminos no implementados aún."""
 
-    async def handle(
+    def handle(
         self,
         payload: AgentChatRequest,
         session: Session,
-        historial: Optional[List[AgentChatMessage]] = None
+        historial: Optional[List[ChatTurn]] = None,
     ) -> AgentChatResponse:
-        nombre = f" {payload.cliente_nombre.lstrip('=').strip()}" if payload.cliente_nombre else ""
-        mensaje_limpio = payload.mensaje.lstrip("=").strip()
+        nombre = f" {payload.cliente_nombre}" if payload.cliente_nombre else ""
 
-        # Respuesta general con voseo argentino
         respuesta = (
             f"¡Hola{nombre}! 👋 Gracias por comunicarte con Maxi Panella. "
             f"¿En qué te puedo ayudar hoy? ¿Te interesa ver los autos que tenemos en stock, "
@@ -28,9 +27,8 @@ class FallbackHandler(BaseHandler):
 
         return AgentChatResponse(
             respuesta_texto=respuesta,
-            camino=payload.camino,
+            camino=Camino.fallback.value,
             accion_ejecutada="fallback_general",
             derivar_a_humano=False,
-            metadata={"session_id": payload.session_id}
+            metadata={"session_id": payload.session_id},
         )
-

@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "vendedor_ia"
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: str = "5433"
+    DB_ECHO: bool = False
+    # TODO(security): Validate in production startup that SECRET_KEY and default passwords are overridden
     SECRET_KEY: str = "supersecretkey_change_me_in_production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
@@ -20,6 +22,24 @@ class Settings(BaseSettings):
     INITIAL_ADMIN_PASSWORD: str = "admin123"
     INITIAL_BOT_EMAIL: str = "bot@vendedor.com"
     INITIAL_BOT_PASSWORD: str = "bot1234"
+
+    # Configuración de Proveedores LLM (Agente IA)
+    LLM_PROVIDER_ORDER: str = "openai,anthropic,groq,gemini"
+    LLM_TIMEOUT_SECONDS: float = 12.0
+    AGENT_SESSION_TTL_MINUTES: int = 30
+
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+
+    ANTHROPIC_API_KEY: str = ""
+    ANTHROPIC_MODEL: str = "claude-3-5-haiku-latest"
+
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+
     model_config = {
         "env_file": "../.env",
         "extra": "ignore"
