@@ -1,6 +1,8 @@
 import logging
+from typing import List, Optional
 from sqlmodel import Session
 from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse
+from app.Modules.agent.model import AgentChatMessage
 from app.Modules.agent.handlers.base import BaseHandler
 
 logger = logging.getLogger("agent.fallback")
@@ -8,7 +10,12 @@ logger = logging.getLogger("agent.fallback")
 class FallbackHandler(BaseHandler):
     """Manejador para consultas generales o caminos no implementados aún."""
 
-    async def handle(self, payload: AgentChatRequest, session: Session) -> AgentChatResponse:
+    async def handle(
+        self,
+        payload: AgentChatRequest,
+        session: Session,
+        historial: Optional[List[AgentChatMessage]] = None
+    ) -> AgentChatResponse:
         nombre = f" {payload.cliente_nombre.lstrip('=').strip()}" if payload.cliente_nombre else ""
         mensaje_limpio = payload.mensaje.lstrip("=").strip()
 

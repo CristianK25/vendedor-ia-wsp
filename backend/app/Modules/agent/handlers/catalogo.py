@@ -1,13 +1,14 @@
 import os
 import json
 import logging
-from typing import Optional
+from typing import Optional, List
 import requests
 from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
 from app.Modules.vehiculos.model import Vehiculo, EstadoVehiculo
 from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse
+from app.Modules.agent.model import AgentChatMessage
 from app.Modules.agent.handlers.base import BaseHandler
 
 logger = logging.getLogger("agent.catalogo")
@@ -93,10 +94,15 @@ class CatalogoHandler(BaseHandler):
         return "\n".join(lineas)
 
     @staticmethod
-    def _llamar_llm_estructurado(system_prompt: str, user_message: str) -> DecisionCatalogo:
+    def _llamar_llm_estructurado(
+        system_prompt: str,
+        user_message: str,
+        historial: Optional[List[AgentChatMessage]] = None
+    ) -> DecisionCatalogo:
         """
         Invoca al LLM configurado (Groq o Gemini) forzando salida estructurada JSON
-        que se valida directamente contra el modelo Pydantic DecisionCatalogo.
+        que se valida directamente contra el modelo Pydantic DecisionCatalogo,
+        incorporando el historial previo para memoria conversacional multi-turno.
         """
         groq_api_key = os.getenv("GROQ_API_KEY")
         gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -121,12 +127,17 @@ class CatalogoHandler(BaseHandler):
                     "Authorization": f"Bearer {groq_api_key}",
                     "Content-Type": "application/json"
                 }
+
+                messages = [{"role": "system", "content": full_system}]
+                if historial:
+                    for h in historial:
+                        role = "assistant" if h.role == "assistant" else "user"
+                        messages.append({"role": role, "content": h.content})
+                messages.append({"role": "user", "content": user_message})
+
                 body = {
                     "model": "llama-3.3-70b-versatile",
-                    "messages": [
-                        {"role": "system", "content": full_system},
-                        {"role": "user", "content": user_message}
-                    ],
+                    "messages": messages,
                     "response_format": {"type": "json_object"},
                     "temperature": 0.2
                 }
@@ -146,9 +157,22 @@ class CatalogoHandler(BaseHandler):
             try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_api_key}"
                 headers = {"Content-Type": "application/json"}
+
+                contents = []
+                if historial:
+                    iniciado = False
+                    for h in historial:
+                        # Gemini requiere que el primer contenido sea de 'user'
+                        if not iniciado and h.role != "user":
+                            continue
+                        iniciado = True
+                        role = "model" if h.role == "assistant" else "user"
+                        contents.append({"role": role, "parts": [{"text": h.content}]})
+                contents.append({"role": "user", "parts": [{"text": user_message}]})
+
                 body = {
                     "system_instruction": {"parts": [{"text": full_system}]},
-                    "contents": [{"parts": [{"text": user_message}]}],
+                    "contents": contents,
                     "generationConfig": {
                         "response_mime_type": "application/json",
                         "temperature": 0.2
@@ -171,13 +195,18 @@ class CatalogoHandler(BaseHandler):
             derivar_a_maxi=False
         )
 
-    async def handle(self, payload: AgentChatRequest, session: Session) -> AgentChatResponse:
-        """Procesa una consulta de catálogo en tiempo real con stock directo de Postgres."""
+    async def handle(
+        self,
+        payload: AgentChatRequest,
+        session: Session,
+        historial: Optional[List[AgentChatMessage]] = None
+    ) -> AgentChatResponse:
+        """Procesa una consulta de catálogo en tiempo real con stock directo de Postgres y memoria multi-turno."""
         stock_texto = self.obtener_stock_resumen(session)
         system_prompt = PROMPT_CATALOGO_TEMPLATE.format(stock_actual=stock_texto)
 
         mensaje_cliente = payload.mensaje.lstrip("=").strip()
-        decision = self._llamar_llm_estructurado(system_prompt, mensaje_cliente)
+        decision = self._llamar_llm_estructurado(system_prompt, mensaje_cliente, historial=historial)
 
         # Lógica de negocio en Python puro:
         accion = "consulta_stock"

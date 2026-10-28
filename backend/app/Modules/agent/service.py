@@ -65,7 +65,10 @@ class AgentService:
         mensaje_limpio = payload.mensaje.lstrip("=").strip()
 
         try:
-            # 1. Guardar en base de datos el mensaje entrante del cliente
+            # 1. Recuperar historial reciente de la conversación (memoria multi-turno previa)
+            historial = self.obtener_historial_reciente(session, payload.session_id, limit=6)
+
+            # 2. Guardar en base de datos el mensaje entrante del cliente
             self.guardar_mensaje(
                 session=session,
                 session_id=payload.session_id,
@@ -74,12 +77,12 @@ class AgentService:
                 camino=camino
             )
 
-            # 2. Despachar al handler especializado
+            # 3. Despachar al handler especializado inyectando el historial contextual
             handler = self.handlers.get(camino, self.fallback_handler)
-            logger.info(f"Despachando consulta para camino: '{camino}' usando {handler.__class__.__name__}")
-            response = await handler.handle(payload, session)
+            logger.info(f"Despachando consulta para camino: '{camino}' usando {handler.__class__.__name__} ({len(historial)} msgs en historial)")
+            response = await handler.handle(payload, session, historial=historial)
 
-            # 3. Guardar en base de datos la respuesta generada para el cliente
+            # 4. Guardar en base de datos la respuesta generada para el cliente
             self.guardar_mensaje(
                 session=session,
                 session_id=payload.session_id,
@@ -88,7 +91,7 @@ class AgentService:
                 camino=camino
             )
 
-            # 4. Confirmar ambos turnos de forma atómica
+            # 5. Confirmar ambos turnos de forma atómica
             session.commit()
             return response
 
