@@ -64,32 +64,51 @@ class AgentService:
         camino = payload.camino.lstrip("=").strip().lower()
         mensaje_limpio = payload.mensaje.lstrip("=").strip()
 
-        # 1. Guardar en base de datos el mensaje entrante del cliente
-        self.guardar_mensaje(
-            session=session,
-            session_id=payload.session_id,
-            role="user",
-            content=mensaje_limpio,
-            camino=camino
-        )
-        session.commit()
+        try:
+            # 1. Guardar en base de datos el mensaje entrante del cliente
+            self.guardar_mensaje(
+                session=session,
+                session_id=payload.session_id,
+                role="user",
+                content=mensaje_limpio,
+                camino=camino
+            )
 
-        # 2. Despachar al handler especializado
-        handler = self.handlers.get(camino, self.fallback_handler)
-        logger.info(f"Despachando consulta para camino: '{camino}' usando {handler.__class__.__name__}")
-        response = await handler.handle(payload, session)
+            # 2. Despachar al handler especializado
+            handler = self.handlers.get(camino, self.fallback_handler)
+            logger.info(f"Despachando consulta para camino: '{camino}' usando {handler.__class__.__name__}")
+            response = await handler.handle(payload, session)
 
-        # 3. Guardar en base de datos la respuesta generada para el cliente
-        self.guardar_mensaje(
-            session=session,
-            session_id=payload.session_id,
-            role="assistant",
-            content=response.respuesta_texto,
-            camino=camino
-        )
-        session.commit()
+            # 3. Guardar en base de datos la respuesta generada para el cliente
+            self.guardar_mensaje(
+                session=session,
+                session_id=payload.session_id,
+                role="assistant",
+                content=response.respuesta_texto,
+                camino=camino
+            )
 
-        return response
+            # 4. Confirmar ambos turnos de forma atómica
+            session.commit()
+            return response
+
+        except Exception as e:
+            # 🛡️ BLINDAJE DE CONTINGENCIA:
+            # Si algo falla (DB, LLM, etc.), revertir la sesión de PostgreSQL
+            session.rollback()
+            logger.exception(f"Error crítico en process_chat para sesión {payload.session_id}: {str(e)}")
+
+            # Respuesta cordial de rescate para que WhatsApp nunca quede colgado
+            return AgentChatResponse(
+                respuesta_texto=(
+                    "¡Hola! Disculpá, justo tuve un problema técnico momentáneo al consultar el sistema. "
+                    "¿Me podrías reiterar tu consulta o preferís que Maxi te escriba en un ratito? 👌"
+                ),
+                camino=camino,
+                accion_ejecutada="error_recuperado",
+                derivar_a_humano=True,
+                metadata={"error_tipo": str(type(e).__name__)}
+            )
 
 # Instancia singleton para uso en el router
 agent_service = AgentService()
