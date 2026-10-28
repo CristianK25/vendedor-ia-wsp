@@ -24,4 +24,5 @@ async def chat_agent(
     Endpoint invocado por n8n ('Ejecutar Agente') con cabecera X-N8N-API-KEY.
     Despacha la consulta al handler modular del camino correspondiente (catálogo, etc.)
     """
+    logger.info(f"📩 Petición n8n recibida - Tel: {payload.cliente_telefono} | Camino: {payload.camino}")
     return await agent_service.process_chat(payload, session)

@@ -1,7 +1,9 @@
 import logging
-from sqlmodel import Session
+from typing import List
+from sqlmodel import Session, select
 
 from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse
+from app.Modules.agent.model import AgentChatMessage
 from app.Modules.agent.handlers.catalogo import CatalogoHandler
 from app.Modules.agent.handlers.humano import HumanoHandler
 from app.Modules.agent.handlers.fallback import FallbackHandler
@@ -9,7 +11,7 @@ from app.Modules.agent.handlers.fallback import FallbackHandler
 logger = logging.getLogger("agent.service")
 
 class AgentService:
-    """Orquestador principal y despachador de caminos del Agente IA."""
+    """Orquestador principal y despachador de caminos del Agente IA con persistencia en DB."""
 
     def __init__(self):
         self.catalogo_handler = CatalogoHandler()
@@ -23,15 +25,71 @@ class AgentService:
             "fallback": self.fallback_handler,
         }
 
-    async def process_chat(self, payload: AgentChatRequest, session: Session) -> AgentChatResponse:
-        # Sanitizar posibles signos '=' de expresiones de n8n
-        camino = payload.camino.lstrip("=").strip().lower()
+    def guardar_mensaje(
+        self,
+        session: Session,
+        session_id: str,
+        role: str,
+        content: str,
+        camino: str | None = None
+    ) -> AgentChatMessage:
+        """Persiste un turno de conversación (user o assistant) en la tabla agent_chat_messages."""
+        msg = AgentChatMessage(
+            session_id=session_id,
+            role=role,
+            content=content,
+            camino=camino
+        )
+        session.add(msg)
+        return msg
 
+    def obtener_historial_reciente(
+        self,
+        session: Session,
+        session_id: str,
+        limit: int = 10
+    ) -> List[AgentChatMessage]:
+        """Obtiene los últimos N mensajes de la conversación ordenados cronológicamente."""
+        statement = (
+            select(AgentChatMessage)
+            .where(AgentChatMessage.session_id == session_id)
+            .order_by(AgentChatMessage.created_at.desc())
+            .limit(limit)
+        )
+        mensajes = session.exec(statement).all()
+        return list(reversed(mensajes))
+
+    async def process_chat(self, payload: AgentChatRequest, session: Session) -> AgentChatResponse:
+        # Sanitizar camino y mensaje
+        camino = payload.camino.lstrip("=").strip().lower()
+        mensaje_limpio = payload.mensaje.lstrip("=").strip()
+
+        # 1. Guardar en base de datos el mensaje entrante del cliente
+        self.guardar_mensaje(
+            session=session,
+            session_id=payload.session_id,
+            role="user",
+            content=mensaje_limpio,
+            camino=camino
+        )
+        session.commit()
+
+        # 2. Despachar al handler especializado
         handler = self.handlers.get(camino, self.fallback_handler)
         logger.info(f"Despachando consulta para camino: '{camino}' usando {handler.__class__.__name__}")
+        response = await handler.handle(payload, session)
 
-        return await handler.handle(payload, session)
+        # 3. Guardar en base de datos la respuesta generada para el cliente
+        self.guardar_mensaje(
+            session=session,
+            session_id=payload.session_id,
+            role="assistant",
+            content=response.respuesta_texto,
+            camino=camino
+        )
+        session.commit()
+
+        return response
 
 # Instancia singleton para uso en el router
 agent_service = AgentService()
-

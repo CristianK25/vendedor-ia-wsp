@@ -1,10 +1,11 @@
 import logging
 from sqlmodel import Session
 from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse
+from app.Modules.agent.handlers.base import BaseHandler
 
 logger = logging.getLogger("agent.humano")
 
-class HumanoHandler:
+class HumanoHandler(BaseHandler):
     """Manejador para cuando el cliente solicita un asesor humano o Laya detecta handoff."""
 
     async def handle(self, payload: AgentChatRequest, session: Session) -> AgentChatResponse:

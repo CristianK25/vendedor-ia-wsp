@@ -12,6 +12,7 @@ from app.Core.config import settings
 from app.Core.Security.deps import require_admin, require_role
 from app.Modules.resenas.model import Resena
 from app.Modules.peticiones.model import Peticion
+from app.Modules.agent.model import AgentChatMessage
 
 app = FastAPI(title="Vendedor IA API", description="API para el sistema de Vendedor IA y CRM de vehículos")
 

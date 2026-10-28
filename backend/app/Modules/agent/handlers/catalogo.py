@@ -8,6 +8,7 @@ from sqlmodel import Session, select
 
 from app.Modules.vehiculos.model import Vehiculo, EstadoVehiculo
 from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse
+from app.Modules.agent.handlers.base import BaseHandler
 
 logger = logging.getLogger("agent.catalogo")
 
@@ -62,7 +63,7 @@ PROMPT_CATALOGO_TEMPLATE = """Sos el asistente de Maxi Panella, vendedor de auto
 {stock_actual}
 """
 
-class CatalogoHandler:
+class CatalogoHandler(BaseHandler):
     """Manejador especializado en el camino de Catálogo y Stock."""
 
     @staticmethod

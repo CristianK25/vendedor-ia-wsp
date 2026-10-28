@@ -1,10 +1,11 @@
 import logging
 from sqlmodel import Session
 from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse
+from app.Modules.agent.handlers.base import BaseHandler
 
 logger = logging.getLogger("agent.fallback")
 
-class FallbackHandler:
+class FallbackHandler(BaseHandler):
     """Manejador para consultas generales o caminos no implementados aún."""
 
     async def handle(self, payload: AgentChatRequest, session: Session) -> AgentChatResponse:

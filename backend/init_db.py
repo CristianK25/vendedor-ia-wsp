@@ -16,6 +16,7 @@ from app.Modules.promociones.model import Promocion
 from app.Modules.resenas.model import Resena
 from app.Modules.etiquetas.model import Etiqueta
 from app.Modules.peticiones.model import Peticion
+from app.Modules.agent.model import AgentChatMessage
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("init_db")
