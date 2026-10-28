@@ -73,6 +73,7 @@ async def csrf_middleware(request: Request, call_next):
             if (
                 not request.url.path.endswith("/auth/login")
                 and not request.url.path.startswith("/api/n8n")
+                and not request.url.path.startswith("/api/agent")
                 and not "/api/public/" in request.url.path
                 and not request.url.path.startswith("/api/logs")
             ):
@@ -109,6 +110,7 @@ from app.Modules.citas.router import router as citas_router
 from app.Modules.promociones.router import router as promociones_router
 from app.Modules.etiquetas.router import router as etiquetas_router
 from app.Modules.n8n.router import router as n8n_router
+from app.Modules.agent.router import router as agent_router
 from app.Modules.peticiones.router import router as peticiones_router
 from app.Modules.peticiones.public_router import router as peticiones_public_router
 from app.Modules.vehiculos.public_router import router as public_vehiculos_router
@@ -128,4 +130,6 @@ app.include_router(etiquetas_router, prefix="/api", dependencies=[Depends(requir
 app.include_router(peticiones_router, prefix="/api")
 app.include_router(peticiones_public_router, prefix="/api")
 app.include_router(n8n_router, prefix="/api")
+app.include_router(agent_router, prefix="/api")
 app.include_router(gastos_router, prefix="/api", dependencies=[Depends(require_role([UserRole.ADMIN, UserRole.STOCK]))])
+
