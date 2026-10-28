@@ -22,9 +22,21 @@ class LLMClient:
     validada contra modelos Pydantic y fallback automático en orden de prioridad.
     """
 
+    # Orden de preferencia de modelos gratuitos en Groq si el modelo configurado no está habilitado en la cuenta
+    GROQ_FALLBACK_MODELS = [
+        "llama-3.3-70b-versatile",
+        "meta-llama/llama-4-scout-17b-16e-instruct",
+        "meta-llama/llama-4-maverick-17b-128e-instruct",
+        "qwen/qwen3-32b",
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
+        "llama-3.1-8b-instant",
+    ]
+
     def __init__(self, cfg: Settings = settings, http_session: Optional[requests.Session] = None):
         self.cfg = cfg
         self.http = http_session or requests.Session()
+        self._resolved_groq_model: Optional[str] = None
 
     @staticmethod
     def _clean_json_text(raw_text: str) -> str:
@@ -108,21 +120,80 @@ class LLMClient:
             historial=historial,
         )
 
+    def _discover_groq_model(self, current_failed_model: str) -> Optional[str]:
+        """Consulta GET /openai/v1/models en Groq para elegir el mejor modelo habilitado en la API Key."""
+        try:
+            resp = self.http.get(
+                "https://api.groq.com/openai/v1/models",
+                headers={"Authorization": f"Bearer {self.cfg.GROQ_API_KEY}"},
+                timeout=self.cfg.LLM_TIMEOUT_SECONDS,
+            )
+            if resp.status_code != 200:
+                return None
+
+            data = resp.json().get("data", [])
+            available_ids = {m.get("id") for m in data if m.get("id")}
+            if not available_ids:
+                logger.error(
+                    "Groq GET /models devolvió 0 modelos habilitados para esta API Key. "
+                    "Revisar permisos del proyecto en https://console.groq.com/settings/limits"
+                )
+                return None
+
+            for candidate in self.GROQ_FALLBACK_MODELS:
+                if candidate in available_ids and candidate != current_failed_model:
+                    logger.info(
+                        "Modelo Groq '%s' no disponible; usando automáticamente '%s' (disponibles: %s)",
+                        current_failed_model,
+                        candidate,
+                        sorted(available_ids),
+                    )
+                    return candidate
+
+            # Si ninguno de la lista preferida coincide, elegir cualquier modelo de chat (no whisper/tts/guard)
+            for mod_id in sorted(available_ids):
+                lower_id = mod_id.lower()
+                if mod_id != current_failed_model and not any(
+                    skip in lower_id for skip in ("whisper", "tts", "guard", "orpheus", "playai")
+                ):
+                    logger.info("Usando modelo alternativo descubierto en Groq: '%s'", mod_id)
+                    return mod_id
+        except requests.RequestException as exc:
+            logger.warning("No se pudo consultar la lista de modelos de Groq: %s", type(exc).__name__)
+        return None
+
     def _call_groq(
         self,
         full_system: str,
         user_message: str,
         historial: Optional[List[ChatTurn]],
     ) -> str:
-        return self._call_openai_compatible(
-            provider_name="groq",
-            url="https://api.groq.com/openai/v1/chat/completions",
-            api_key=self.cfg.GROQ_API_KEY,
-            model=self.cfg.GROQ_MODEL,
-            full_system=full_system,
-            user_message=user_message,
-            historial=historial,
-        )
+        target_model = self._resolved_groq_model or self.cfg.GROQ_MODEL
+        try:
+            return self._call_openai_compatible(
+                provider_name="groq",
+                url="https://api.groq.com/openai/v1/chat/completions",
+                api_key=self.cfg.GROQ_API_KEY,
+                model=target_model,
+                full_system=full_system,
+                user_message=user_message,
+                historial=historial,
+            )
+        except RuntimeError as exc:
+            if "404" in str(exc) or "model_not_found" in str(exc) or "400" in str(exc):
+                fallback_model = self._discover_groq_model(target_model)
+                if fallback_model:
+                    self._resolved_groq_model = fallback_model
+                    return self._call_openai_compatible(
+                        provider_name="groq",
+                        url="https://api.groq.com/openai/v1/chat/completions",
+                        api_key=self.cfg.GROQ_API_KEY,
+                        model=fallback_model,
+                        full_system=full_system,
+                        user_message=user_message,
+                        historial=historial,
+                    )
+            raise
 
     def _call_anthropic(
         self,
@@ -210,6 +281,12 @@ class LLMClient:
         data = resp.json()
         return data["candidates"][0]["content"]["parts"][0]["text"]
 
+    @staticmethod
+    def _is_key_configured(key: str) -> bool:
+        """Verifica que la API Key no esté vacía ni tenga el valor de ejemplo del .env."""
+        cleaned = (key or "").strip()
+        return bool(cleaned) and cleaned.lower() not in {"tu_api_key_aqui", "tu_token_aqui", "changeme"}
+
     def generar_estructurado(
         self,
         schema_cls: Type[T],
@@ -225,10 +302,10 @@ class LLMClient:
         full_system = system_prompt + self._build_schema_instruction(schema_cls)
 
         provider_map = {
-            "openai": (bool(self.cfg.OPENAI_API_KEY), self._call_openai),
-            "anthropic": (bool(self.cfg.ANTHROPIC_API_KEY), self._call_anthropic),
-            "groq": (bool(self.cfg.GROQ_API_KEY), self._call_groq),
-            "gemini": (bool(self.cfg.GEMINI_API_KEY), self._call_gemini),
+            "openai": (self._is_key_configured(self.cfg.OPENAI_API_KEY), self._call_openai),
+            "anthropic": (self._is_key_configured(self.cfg.ANTHROPIC_API_KEY), self._call_anthropic),
+            "groq": (self._is_key_configured(self.cfg.GROQ_API_KEY), self._call_groq),
+            "gemini": (self._is_key_configured(self.cfg.GEMINI_API_KEY), self._call_gemini),
         }
 
         order = [p.strip().lower() for p in self.cfg.LLM_PROVIDER_ORDER.split(",") if p.strip()]

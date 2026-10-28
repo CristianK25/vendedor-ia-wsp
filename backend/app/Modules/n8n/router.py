@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import asyncio
 import redis.asyncio as aioredis
 
+from app.Core.config import settings
 from app.Core.database import get_session
 from app.Core.redis import get_redis
 from app.Core.Security.deps import verify_n8n_internal_request
+from app.Modules.agent.model import AgentChatMessage
 from app.Modules.n8n.schema import (
     N8NCitaCreate, N8NCitaCancel, N8NClienteCheck, N8NResenaCreate, PeticionCreateN8N,
     N8NWhatsAppBufferRequest, N8NWhatsAppBufferResponse
@@ -120,9 +122,52 @@ def cancelar_cita(cita_data: N8NCitaCancel, session: Session = Depends(get_sessi
     cita_update = CitaUpdate(estado="cancelada")
     return service.update_cita(cita_data.cita_id, cita_update)
 
+def _obtener_contexto_reciente_laya(session: Session, telefono: str) -> dict[str, str | None]:
+    """
+    Recupera el último mensaje del asistente (dentro de AGENT_SESSION_TTL_MINUTES)
+    para inyectarlo como contexto previo en el nodo 'Consultar Ruta' (Laya) de n8n.
+    """
+    tel_limpio = telefono.lstrip("=").strip()
+    stmt = (
+        select(AgentChatMessage)
+        .where(
+            AgentChatMessage.session_id == tel_limpio,
+            AgentChatMessage.role == "assistant",
+        )
+        .order_by(AgentChatMessage.created_at.desc(), AgentChatMessage.id.desc())
+        .limit(1)
+    )
+    ultimo_bot = session.exec(stmt).first()
+    if not ultimo_bot or not ultimo_bot.created_at:
+        return {"ultimo_mensaje_bot": None, "ultimo_camino": None, "contexto_laya": ""}
+
+    ultimo_dt = (
+        ultimo_bot.created_at.replace(tzinfo=timezone.utc)
+        if ultimo_bot.created_at.tzinfo is None
+        else ultimo_bot.created_at
+    )
+    ventana = timedelta(minutes=settings.AGENT_SESSION_TTL_MINUTES)
+    if (datetime.now(timezone.utc) - ultimo_dt) > ventana:
+        return {"ultimo_mensaje_bot": None, "ultimo_camino": None, "contexto_laya": ""}
+
+    texto_limpio = (
+        ultimo_bot.content.replace("\r", " ")
+        .replace("\n", " ")
+        .replace('"', "'")
+        .strip()
+    )
+    contexto_laya = f"Contexto previo (el asistente acaba de preguntarle al cliente): '{texto_limpio}' | "
+    return {
+        "ultimo_mensaje_bot": texto_limpio,
+        "ultimo_camino": ultimo_bot.camino,
+        "contexto_laya": contexto_laya,
+    }
+
+
 @router.post("/clientes/verificar_o_crear")
 def verificar_o_crear_cliente(cliente_data: N8NClienteCheck, session: Session = Depends(get_session)):
     service = ClienteService(session)
+    contexto = _obtener_contexto_reciente_laya(session, cliente_data.telefono)
     try:
         cliente = service.get_cliente(cliente_data.telefono)
         # El cliente existe, si estaba inactivo lo reactivamos
@@ -135,7 +180,12 @@ def verificar_o_crear_cliente(cliente_data: N8NClienteCheck, session: Session = 
         if update_dict:
             cliente = service.update_cliente(cliente.telefono, ClienteUpdate(**update_dict))
             
-        return {"status": "success", "message": "Cliente existente actualizado", "cliente": cliente}
+        return {
+            "status": "success",
+            "message": "Cliente existente actualizado",
+            "cliente": cliente,
+            **contexto,
+        }
     except HTTPException as e:
         if e.status_code == 404:
             # No existe, lo creamos
@@ -149,7 +199,12 @@ def verificar_o_crear_cliente(cliente_data: N8NClienteCheck, session: Session = 
                 update_data = ClienteUpdate(ultima_interaccion_cliente=cliente_data.ultima_interaccion_cliente)
                 creado = service.update_cliente(creado.telefono, update_data)
                 
-            return {"status": "success", "message": "Cliente creado exitosamente", "cliente": creado}
+            return {
+                "status": "success",
+                "message": "Cliente creado exitosamente",
+                "cliente": creado,
+                **contexto,
+            }
         raise e
 
 @router.post("/resenas/guardar")

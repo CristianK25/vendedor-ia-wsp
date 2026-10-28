@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 import logging
 from typing import Dict, List
@@ -14,19 +14,25 @@ from app.Modules.agent.handlers.negociacion import NegociacionHandler
 from app.Modules.agent.handlers.peticion import PeticionHandler
 from app.Modules.agent.handlers.tasacion import TasacionHandler
 from app.Modules.agent.llm import LLMUnavailableError
-from app.Modules.agent.model import AgentChatMessage, utcnow_naive
+from app.Modules.agent.model import AgentChatMessage
 from app.Modules.agent.schema import AgentChatRequest, AgentChatResponse, Camino, ChatTurn
 
 logger = logging.getLogger("agent.service")
 
 # Caminos conversacionales que deben mantenerse activos ante respuestas cortas ("Sí", "Dale")
-# que Laya (sin contexto multi-turno) clasifica como "fallback".
+# que Laya (sin contexto multi-turno) clasifica como "fallback" o "general".
 CAMINOS_CON_CONTINUIDAD = {
     Camino.catalogo.value,
     Camino.tasacion.value,
     Camino.financiacion.value,
     Camino.negociacion.value,
     Camino.peticion.value,
+    Camino.agendar_cita.value,
+}
+
+CAMINOS_GENERICOS = {
+    Camino.fallback.value,
+    Camino.general.value,
 }
 
 
@@ -46,10 +52,12 @@ class AgentService:
             Camino.catalogo.value: self.catalogo_handler,
             Camino.humano.value: self.humano_handler,
             Camino.fallback.value: self.fallback_handler,
+            Camino.general.value: self.fallback_handler,
             Camino.tasacion.value: self.tasacion_handler,
             Camino.financiacion.value: self.financiacion_handler,
             Camino.negociacion.value: self.negociacion_handler,
             Camino.peticion.value: self.peticion_handler,
+            Camino.agendar_cita.value: self.peticion_handler,
         }
 
     @staticmethod
@@ -99,17 +107,22 @@ class AgentService:
 
     def _resolver_camino_efectivo(self, camino_entrante: str, historial: List[ChatTurn]) -> str:
         """
-        Si Laya envía 'fallback' o un camino desconocido pero existe una conversación activa
+        Si Laya envía 'fallback'/'general' o un camino desconocido pero existe una conversación activa
         reciente (dentro de AGENT_SESSION_TTL_MINUTES), mantiene el último camino activo.
         """
-        if camino_entrante in self.handlers and camino_entrante != Camino.fallback.value:
+        if camino_entrante in self.handlers and camino_entrante not in CAMINOS_GENERICOS:
             return camino_entrante
 
         if historial:
             ultimo = historial[-1]
             if ultimo.camino in CAMINOS_CON_CONTINUIDAD and ultimo.created_at is not None:
                 ventana = timedelta(minutes=settings.AGENT_SESSION_TTL_MINUTES)
-                if (utcnow_naive() - ultimo.created_at) <= ventana:
+                ultimo_dt = (
+                    ultimo.created_at.replace(tzinfo=timezone.utc)
+                    if ultimo.created_at.tzinfo is None
+                    else ultimo.created_at
+                )
+                if (datetime.now(timezone.utc) - ultimo_dt) <= ventana:
                     logger.info(
                         "Continuidad conversacional aplicada: '%s' -> '%s'",
                         camino_entrante,

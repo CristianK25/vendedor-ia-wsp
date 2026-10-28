@@ -4,9 +4,9 @@ from sqlalchemy import Index
 from sqlmodel import Field, SQLModel
 
 
-def utcnow_naive() -> datetime:
-    """Retorna la fecha/hora actual en UTC sin tzinfo para compatibilidad con TIMESTAMP WITHOUT TIME ZONE."""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+def utcnow() -> datetime:
+    """Retorna la fecha/hora actual en UTC con timezone (requerido por SQLModel reciente)."""
+    return datetime.now(timezone.utc)
 
 
 class AgentChatMessage(SQLModel, table=True):
@@ -20,4 +20,4 @@ class AgentChatMessage(SQLModel, table=True):
     role: str = Field(max_length=16)                    # "user" o "assistant"
     content: str                                        # Texto del mensaje
     camino: Optional[str] = Field(default=None, max_length=32)  # "catalogo", "tasacion", etc.
-    created_at: datetime = Field(default_factory=utcnow_naive)
+    created_at: datetime = Field(default_factory=utcnow)

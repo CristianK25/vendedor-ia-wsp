@@ -10,7 +10,9 @@ class Camino(str, Enum):
     financiacion = "financiacion"
     negociacion = "negociacion"
     peticion = "peticion"
+    agendar_cita = "agendar_cita"
     humano = "humano"
+    general = "general"
     fallback = "fallback"
 
 
