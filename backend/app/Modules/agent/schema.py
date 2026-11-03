@@ -76,6 +76,49 @@ class DecisionPeticion(BaseModel):
     )
 
 
+class DecisionTasacion(BaseModel):
+    """Esquema de salida estructurada para el camino de Tasación / Permuta de usados."""
+    respuesta_whatsapp: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="Mensaje corto en español argentino con voseo (2 a 4 líneas). Si faltan datos del usado, pide marca, modelo, año, km y fotos. Si ya dio modelo/año y km, confirma que anotó los datos y que Maxi le escribirá personalmente.",
+    )
+    vehiculo_modelo_tasacion: Optional[str] = Field(
+        default=None,
+        description="Marca, modelo y año del vehículo usado que el cliente ofrece entregar (ej: 'VW Gol Trend 2017'). Null si aún no lo mencionó.",
+    )
+    kilometraje_tasacion: Optional[str] = Field(
+        default=None,
+        description="Kilometraje aproximado del auto usado del cliente si lo mencionó (ej: '95.000 km'). Null si aún no lo dijo.",
+    )
+    precio_pretendido: Optional[float] = Field(
+        default=None,
+        description="Valor numérico que el cliente pretende por su auto usado, solo si lo mencionó explícitamente. Null si no dijo precio.",
+    )
+    detalles_tasacion: Optional[str] = Field(
+        default=None,
+        description="Resumen de los datos del usado informados por el cliente: kilometraje, versión, estado general y por qué vehículo de nuestro stock le interesa permutar.",
+    )
+    vehiculo_interes_id: Optional[int] = Field(
+        default=None,
+        description="ID numérico del vehículo de nuestro stock por el cual el cliente quiere permutar su usado, si lo mencionó. Null si no especificó ninguno.",
+    )
+    cliente_nombre_detectado: Optional[str] = Field(
+        default=None,
+        description="Nombre del cliente si lo mencionó en el mensaje o historial. Null si no lo dijo.",
+    )
+    datos_usado_completos: bool = Field(
+        default=False,
+        description="True ÚNICAMENTE cuando el cliente ya informó al menos qué auto/modelo/año tiene y su kilometraje aproximado.",
+    )
+    derivar_a_maxi: bool = Field(
+        default=False,
+        description="True cuando datos_usado_completos es True (para que Maxi evalúe la permuta personalmente) o si el cliente pide hablar con Maxi.",
+    )
+
+
+
 class AgentChatRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 

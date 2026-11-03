@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import List, Optional, Type, TypeVar
+from typing import Any, List, Optional, Type, TypeVar
 import requests
 from pydantic import BaseModel, ValidationError
 
@@ -52,22 +52,50 @@ class LLMClient:
         return cleaned
 
     @staticmethod
+    def _flatten_nested_schema_values(data: Any) -> Any:
+        """
+        Algunos LLMs (como Llama 3.1 en Groq) a veces devuelven el esquema JSON repitiendo las claves
+        como un sub-objeto de metadatos, por ejemplo:
+        {"campo": {"type": "string", "description": "valor real"}}
+        o {"campo": {"description": "valor real"}}
+        Esta función extrae recursivamente el valor real para que Pydantic valide sin error.
+        """
+        if isinstance(data, dict):
+            # Si el dict tiene forma {"description": valor} o {"type": ..., "description": valor}
+            # donde description no es la definición del campo sino el contenido devuelto por el modelo
+            reconstruido = {}
+            for k, v in data.items():
+                if isinstance(v, dict) and "description" in v and len(v) <= 3:
+                    # Extraer el valor contenido en description o value
+                    val = v.get("value", v.get("description"))
+                    reconstruido[k] = val
+                else:
+                    reconstruido[k] = LLMClient._flatten_nested_schema_values(v)
+            return reconstruido
+        if isinstance(data, list):
+            # Si el LLM devolvió una lista de pares clave-valor o una lista con un único objeto
+            if len(data) == 1 and isinstance(data[0], dict):
+                return LLMClient._flatten_nested_schema_values(data[0])
+            return [LLMClient._flatten_nested_schema_values(item) for item in data]
+        return data
+
+    @staticmethod
     def _build_schema_instruction(schema_cls: Type[BaseModel]) -> str:
         """Genera la instrucción de esquema JSON a partir del modelo Pydantic."""
         schema_dict = schema_cls.model_json_schema()
         properties = schema_dict.get("properties", {})
-        campos_desc = {
-            k: {
-                "type": v.get("type", v.get("anyOf", "any")),
-                "description": v.get("description", ""),
-            }
-            for k, v in properties.items()
-        }
+        ejemplo_campos = {}
+        for k, v in properties.items():
+            tipo = v.get("type", "valor")
+            desc = v.get("description", "")
+            ejemplo_campos[k] = f"<{tipo}: {desc}>"
+
         return (
-            "\n\nIMPORTANTE: Respondé EXCLUSIVAMENTE con un objeto JSON válido (sin texto adicional ni bloques markdown) "
-            "que respete exactamente los siguientes campos:\n"
-            f"{json.dumps(campos_desc, ensure_ascii=False, indent=2)}"
+            "\n\nIMPORTANTE: Respondé EXCLUSIVAMENTE con un único objeto JSON válido (sin texto adicional ni bloques markdown). "
+            "Cada propiedad debe contener DIRECTAMENTE el valor (NO repitas el tipo ni la descripción). Ejemplo de formato:\n"
+            f"{json.dumps(ejemplo_campos, ensure_ascii=False, indent=2)}"
         )
+
 
     def _call_openai_compatible(
         self,
@@ -322,10 +350,13 @@ class LLMClient:
             try:
                 raw_json = caller(full_system, user_message, historial)
                 cleaned_json = self._clean_json_text(raw_json)
-                return schema_cls.model_validate_json(cleaned_json)
-            except (requests.RequestException, ValidationError, KeyError, IndexError, ValueError, RuntimeError) as exc:
+                parsed_dict = json.loads(cleaned_json)
+                flattened = self._flatten_nested_schema_values(parsed_dict)
+                return schema_cls.model_validate(flattened)
+            except (requests.RequestException, ValidationError, json.JSONDecodeError, KeyError, IndexError, ValueError, RuntimeError) as exc:
                 logger.warning("Proveedor LLM '%s' falló (%s): %s", provider_name, type(exc).__name__, str(exc)[:200])
                 errores.append(f"{provider_name}:{type(exc).__name__}")
+
 
         raise LLMUnavailableError(f"Todos los proveedores LLM activos fallaron ({', '.join(errores)}).")
 
