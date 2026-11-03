@@ -10,6 +10,7 @@ from app.Core.Security.deps import require_admin
 from app.Modules.clientes.model import Cliente
 from app.Modules.peticiones.model import Peticion
 from app.Modules.peticiones.schema import PeticionRead, PeticionPosponer
+from app.Modules.peticiones.service import PeticionService
 
 MENDOZA_TZ = ZoneInfo("America/Argentina/Mendoza")
 
@@ -129,15 +130,27 @@ def aceptar_peticion(peticion_id: int, session: Session = Depends(get_session)):
     )
     session.commit()
 
+    enviado_ok = PeticionService.notificar_n8n(
+        peticion_id=peticion.id,
+        cliente_telefono=peticion.cliente_telefono,
+        cliente_nombre=peticion.cliente_nombre,
+        vehiculo_modelo=vehiculo_txt,
+        fecha_propuesta=fecha_utc.isoformat(),
+        accion="aceptada",
+        fecha_formateada=fecha_mza,
+        mensaje_whatsapp=mensaje_wsp,
+    )
+
     telefono_limpio = "".join(c for c in peticion.cliente_telefono if c.isdigit())
     whatsapp_url = f"https://wa.me/{telefono_limpio}?text={quote(mensaje_wsp)}"
 
     return {
         "status": "success",
-        "message": "Petición aceptada y cita creada",
+        "message": "Petición aceptada y enviada por WhatsApp" if enviado_ok else "Petición aceptada (no se pudo enviar por n8n)",
         "cita": nueva_cita,
         "mensaje_whatsapp": mensaje_wsp,
         "whatsapp_url": whatsapp_url,
+        "enviado_por_bot": enviado_ok,
     }
 
 
@@ -186,15 +199,77 @@ def posponer_peticion(peticion_id: int, datos: PeticionPosponer, session: Sessio
     session.commit()
     session.refresh(nueva_peticion)
 
+    enviado_ok = PeticionService.notificar_n8n(
+        peticion_id=nueva_peticion.id,
+        cliente_telefono=nueva_peticion.cliente_telefono,
+        cliente_nombre=nueva_peticion.cliente_nombre,
+        vehiculo_modelo=vehiculo_txt,
+        fecha_propuesta=nueva_fecha_utc.isoformat(),
+        accion="pospuesta",
+        token_confirmacion=nueva_peticion.token_confirmacion,
+        fecha_formateada=fecha_mza,
+        mensaje_whatsapp=mensaje_wsp,
+    )
+
     telefono_limpio = "".join(c for c in nueva_peticion.cliente_telefono if c.isdigit())
     whatsapp_url = f"https://wa.me/{telefono_limpio}?text={quote(mensaje_wsp)}"
 
     return {
         "status": "success",
-        "message": "Petición pospuesta y lista para enviar por WhatsApp",
+        "message": "Petición pospuesta y enviada por WhatsApp" if enviado_ok else "Petición pospuesta (no se pudo enviar por n8n)",
         "nueva_peticion_id": nueva_peticion.id,
         "mensaje_whatsapp": mensaje_wsp,
         "whatsapp_url": whatsapp_url,
+        "enviado_por_bot": enviado_ok,
+    }
+
+
+@router.post("/{peticion_id}/reenviar_whatsapp")
+def reenviar_whatsapp_peticion(peticion_id: int, session: Session = Depends(get_session)):
+    peticion = session.get(Peticion, peticion_id)
+    if not peticion:
+        raise HTTPException(status_code=404, detail="Petición no encontrada")
+
+    fecha_utc = _ensure_utc(peticion.fecha_propuesta)
+    fecha_mza = fecha_utc.astimezone(MENDOZA_TZ).strftime("%d/%m/%Y a las %H:%M")
+    vehiculo_txt = peticion.vehiculo_modelo or "el vehículo"
+
+    if peticion.estado == "pendiente_cliente":
+        accion = "pospuesta"
+        mensaje_wsp = (
+            f"¡Hola {peticion.cliente_nombre}! 👋 Soy Maxi. Por tu consulta para ver {vehiculo_txt}, "
+            f"en el horario que me pediste se me complica, pero te puedo recibir el día {fecha_mza} hs. "
+            f"¿Te queda cómodo ese horario?"
+        )
+    else:
+        accion = "aceptada"
+        mensaje_wsp = (
+            f"¡Hola {peticion.cliente_nombre}! 👋 Soy Maxi. Te confirmo nuestra cita para ver "
+            f"{vehiculo_txt} el día {fecha_mza} hs. Te paso la ubicación por acá. ¡Te espero!"
+        )
+
+    enviado_ok = PeticionService.notificar_n8n(
+        peticion_id=peticion.id,
+        cliente_telefono=peticion.cliente_telefono,
+        cliente_nombre=peticion.cliente_nombre,
+        vehiculo_modelo=vehiculo_txt,
+        fecha_propuesta=fecha_utc.isoformat(),
+        accion=accion,
+        token_confirmacion=peticion.token_confirmacion,
+        fecha_formateada=fecha_mza,
+        mensaje_whatsapp=mensaje_wsp,
+    )
+    if not enviado_ok:
+        raise HTTPException(
+            status_code=502,
+            detail="No se pudo enviar el mensaje a través del flujo 'Enviar WSP' en n8n. Verificá que el workflow esté activo.",
+        )
+
+    return {
+        "status": "success",
+        "message": "Mensaje enviado por el Bot de WhatsApp",
+        "mensaje_whatsapp": mensaje_wsp,
+        "enviado_por_bot": True,
     }
 
 

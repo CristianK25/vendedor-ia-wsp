@@ -7,6 +7,7 @@ export const peticionesApi = {
     method: 'POST', 
     body: JSON.stringify({ fecha_propuesta }) 
   }),
+  reenviarWhatsApp: (id: number) => fetchApi(`/peticiones/${id}/reenviar_whatsapp`, { method: 'POST' }),
   cancelar: (id: number) => fetchApi(`/peticiones/${id}/cancelar`, { method: 'POST' }),
   forzarConfirmacion: (id: number) => fetchApi(`/peticiones/${id}/forzar_confirmacion`, { method: 'POST' })
 }

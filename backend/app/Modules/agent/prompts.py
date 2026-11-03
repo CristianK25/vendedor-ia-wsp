@@ -70,11 +70,20 @@ PROMPT_PETICION_TEMPLATE = """Sos el asistente de Maxi Panella, vendedor de auto
 {calendario_proximos_dias}
 
 ## REGLAS PARA COMPLETAR EL JSON DE SALIDA
-1. Si el cliente solo dijo que quiere ir a verlo ("sí dale", "quiero verlo", "¿cuándo puedo ir?") o dijo el día pero SIN hora (ej: "mañana", "el viernes"):
+1. Si en "Citas o peticiones activas previas" figura que Maxi le propuso reprogramar la visita para un día y horario concretos:
+   - Si el cliente ACEPTA ese horario propuesto por Maxi (ej: "sí dale", "me queda cómodo", "perfecto, nos vemos ahí"):
+     - Poné en `fecha_hora_iso` exactamente esa fecha y hora propuesta por Maxi en formato `YYYY-MM-DDTHH:MM:00`.
+     - Poné `confirmar_peticion = true` y mantené el `vehiculo_modelo` de la propuesta.
+     - En `respuesta_whatsapp` confirmale que el turno ya quedó agendado para ese día y horario y que Maxi lo espera.
+   - Si el cliente CONTRAPROPONE otra hora o día (ej: "a las 18 me sirve", "mejor a las 17:00", "¿puede ser el viernes a las 11?"):
+     - Calculá la nueva fecha y hora en `fecha_hora_iso` (si solo cambió la hora, usá el mismo día de la propuesta de Maxi con la hora nueva del cliente).
+     - Poné `confirmar_peticion = true` y mantené el `vehiculo_modelo`.
+     - En `respuesta_whatsapp` confirmale que anotaste su contrapropuesta de horario para que Maxi se lo confirme en breve.
+2. Si NO hay propuesta previa de Maxi y el cliente solo dijo que quiere ir a verlo ("sí dale", "quiero verlo", "¿cuándo puedo ir?") o dijo el día pero SIN hora (ej: "mañana", "el viernes"):
    - Preguntale amablemente a qué hora le queda cómodo (recordando que atendemos de lunes a sábado de 9:30 a 19:30 hs).
    - Poné `fecha_hora_iso = null` y `confirmar_peticion = false`.
-2. Si habían varios autos en la charla (ej: dos modelos distintos) y no dejó claro cuál quiere ver, preguntale también cuál de los dos le interesa ver.
-3. Cuando el cliente SÍ indique día y hora concretos (ej: "mañana a las 17hs", "hoy a las 18", "el sábado a las 11"):
+3. Si habían varios autos en la charla (ej: dos modelos distintos) y no dejó claro cuál quiere ver, preguntale también cuál de los dos le interesa ver.
+4. Cuando el cliente SÍ indique día y hora concretos (ej: "mañana a las 17hs", "hoy a las 18", "el sábado a las 11"):
    - Calculá la fecha exacta usando el calendario de arriba y ponela en `fecha_hora_iso` con formato `YYYY-MM-DDTHH:MM:00` (ej: `2026-11-04T17:00:00`).
    - Poné `confirmar_peticion = true`.
    - En `vehiculo_modelo` poné la marca, modelo y año del auto que quiere ver (según el historial o el mensaje actual).

@@ -113,11 +113,8 @@ export default function CalendarView() {
   const handleAceptar = async (id: number) => {
     try {
       setIsActionLoading(true);
-      const res: any = await peticionesApi.aceptar(id);
+      await peticionesApi.aceptar(id);
       await fetchData();
-      if (res?.whatsapp_url) {
-        window.open(res.whatsapp_url, '_blank', 'noopener,noreferrer');
-      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -129,14 +126,11 @@ export default function CalendarView() {
     if (!nuevaFecha) return;
     try {
       setIsActionLoading(true);
-      const res: any = await peticionesApi.posponer(id, nuevaFecha);
+      await peticionesApi.posponer(id, nuevaFecha);
       setPosponerId(null);
       setNuevaFecha('');
       setActiveTab('esperando');
       await fetchData();
-      if (res?.whatsapp_url) {
-        window.open(res.whatsapp_url, '_blank', 'noopener,noreferrer');
-      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -144,15 +138,15 @@ export default function CalendarView() {
     }
   };
 
-  const buildReprogramacionWhatsAppUrl = (p: Peticion) => {
-    const cleanPhone = (p.cliente_telefono || '').replace(/\D/g, '');
-    const fechaStr = new Date(p.fecha_propuesta).toLocaleString('es-AR', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    });
-    const vehiculoTxt = getVehiculoLabel(p.vehiculo_modelo);
-    const msg = `¡Hola ${p.cliente_nombre}! 👋 Soy Maxi. Por tu consulta para ver ${vehiculoTxt}, en el horario que me pediste se me complica, pero te puedo recibir el día ${fechaStr} hs. ¿Te queda cómodo ese horario?`;
-    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+  const handleReenviarWhatsApp = async (id: number) => {
+    try {
+      setIsActionLoading(true);
+      await peticionesApi.reenviarWhatsApp(id);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   const handleForzarConfirmacion = async (id: number) => {
@@ -484,14 +478,13 @@ export default function CalendarView() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <a
-                            href={buildReprogramacionWhatsAppUrl(p)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 bg-[#25D366]/15 text-[#128C7E] dark:text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 text-xs font-bold py-2 rounded-lg transition-colors text-center flex items-center justify-center gap-1.5"
+                          <button
+                            onClick={() => handleReenviarWhatsApp(p.id)}
+                            disabled={isActionLoading}
+                            className="flex-1 bg-[#25D366]/15 text-[#128C7E] dark:text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 text-xs font-bold py-2 rounded-lg transition-colors text-center flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
                           >
-                            Enviar WhatsApp
-                          </a>
+                            Reenviar WhatsApp
+                          </button>
                           <button 
                             onClick={() => handleForzarConfirmacion(p.id)}
                             disabled={isActionLoading}

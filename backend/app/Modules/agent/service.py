@@ -106,13 +106,36 @@ class AgentService:
             for m in reversed(mensajes)
         ]
 
-    def _resolver_camino_efectivo(self, camino_entrante: str, historial: List[ChatTurn]) -> str:
+    def _resolver_camino_efectivo(
+        self,
+        camino_entrante: str,
+        historial: List[ChatTurn],
+        session: Session | None = None,
+        telefono: str | None = None,
+    ) -> str:
         """
         Si Laya envía 'fallback'/'general' o un camino desconocido pero existe una conversación activa
-        reciente (dentro de AGENT_SESSION_TTL_MINUTES), mantiene el último camino activo.
+        reciente (dentro de AGENT_SESSION_TTL_MINUTES) o una propuesta de reprogramación de cita
+        pendiente de respuesta del cliente (pendiente_cliente), mantiene el camino correspondiente.
         """
         if camino_entrante in self.handlers and camino_entrante not in CAMINOS_GENERICOS:
             return camino_entrante
+
+        if session is not None and telefono:
+            from app.Modules.peticiones.model import Peticion
+            peticion_pendiente_cliente = session.exec(
+                select(Peticion).where(
+                    Peticion.cliente_telefono == telefono,
+                    Peticion.estado == "pendiente_cliente",
+                )
+            ).first()
+            if peticion_pendiente_cliente:
+                logger.info(
+                    "Cliente %s tiene petición en 'pendiente_cliente': forzando camino '%s' -> 'agendar_cita'",
+                    telefono,
+                    camino_entrante,
+                )
+                return Camino.agendar_cita.value
 
         if historial:
             ultimo = historial[-1]
@@ -200,7 +223,12 @@ class AgentService:
 
             # 2. Leer historial previo (DTOs) y resolver continuidad de camino
             historial = self.obtener_historial_reciente(session, payload.session_id, limit=6)
-            camino_efectivo = self._resolver_camino_efectivo(payload.camino, historial)
+            camino_efectivo = self._resolver_camino_efectivo(
+                payload.camino,
+                historial,
+                session=session,
+                telefono=payload.cliente_telefono,
+            )
 
             # 3. Guardar y confirmar de inmediato el turno del cliente (transacción corta).
             # Así el mensaje del cliente nunca se pierde aunque luego falle el proveedor LLM.

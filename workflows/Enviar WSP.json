@@ -1,0 +1,139 @@
+{
+  "name": "Enviar WSP",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "notificar-peticion",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "352095d8-9092-4f1e-bf0a-6ac63b286477",
+      "name": "Webhook",
+      "webhookId": "abe06f18-a08f-4ff5-bb0b-0f39b55be19c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf4f7964-1790-4a13-84c6-ff7946953314",
+              "leftValue": "={{ $json.body.accion }}",
+              "rightValue": "aceptada",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "e477a372-77df-4185-92fc-05d1f4448dae",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1181457498395106",
+        "recipientPhoneNumber": "={{ $json.body.cliente_telefono }}",
+        "textBody": "={{ $json.body.mensaje_whatsapp || ('¡Hola ' + ($json.body.cliente_nombre || '') + '! 👋 Soy Maxi. Te confirmo nuestra cita para ver ' + ($json.body.vehiculo_modelo || 'el vehículo') + ' el día ' + ($json.body.fecha_formateada || $json.body.fecha_propuesta) + ' hs. Te paso la ubicación por acá. ¡Te espero!') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        -128
+      ],
+      "id": "1017f06f-cb9f-434b-9e7c-0c7448ea3c74",
+      "name": "Confirmacion",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "9byit9BxxrTxhsS7",
+          "name": "WhatsApp account - Enviar Mensaje"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1181457498395106",
+        "recipientPhoneNumber": "={{ $json.body.cliente_telefono }}",
+        "textBody": "={{ $json.body.mensaje_whatsapp || ('¡Hola ' + ($json.body.cliente_nombre || '') + '! 👋 Soy Maxi. Por tu consulta para ver ' + ($json.body.vehiculo_modelo || 'el vehículo') + ', en el horario que me pediste se me complica, pero te puedo recibir el día ' + ($json.body.fecha_formateada || $json.body.fecha_propuesta) + ' hs. ¿Te queda cómodo ese horario?') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        96
+      ],
+      "id": "c6bfd380-383c-433d-b411-4239ad08f5c2",
+      "name": "Pospuesto",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "9byit9BxxrTxhsS7",
+          "name": "WhatsApp account - Enviar Mensaje"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Confirmacion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pospuesto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "id": "UaBJ2nbMicXowR6l"
+}
+
