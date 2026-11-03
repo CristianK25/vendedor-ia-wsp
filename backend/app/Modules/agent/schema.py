@@ -46,6 +46,36 @@ class DecisionCatalogo(BaseModel):
     )
 
 
+class DecisionPeticion(BaseModel):
+    """Esquema de salida estructurada para el camino de agendar cita / petición de visita."""
+    respuesta_whatsapp: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="Mensaje corto en español argentino con voseo (2 a 4 líneas). Si falta día u hora, pregunta qué día y horario le queda cómodo. Si ya dio día y hora, confirma que se registró la solicitud de visita y que Maxi le confirmará el horario y pasará la ubicación.",
+    )
+    vehiculo_modelo: Optional[str] = Field(
+        default=None,
+        description="Marca, modelo y año del vehículo que el cliente quiere ver (deducido del historial o del mensaje actual, ej: 'Peugeot Partner 2014'). Null si aún no se sabe.",
+    )
+    cliente_nombre_detectado: Optional[str] = Field(
+        default=None,
+        description="Nombre del cliente si lo mencionó en el mensaje o historial. Null si no lo dijo.",
+    )
+    fecha_hora_iso: Optional[str] = Field(
+        default=None,
+        description="Fecha y hora propuesta por el cliente en formato ISO 'YYYY-MM-DDTHH:MM:00' (ej: '2026-11-04T17:00:00') SOLO si el cliente ya indicó día y hora concretos. Si solo dijo 'sí quiero verlo' o dijo el día sin hora, debe ser null.",
+    )
+    confirmar_peticion: bool = Field(
+        default=False,
+        description="True ÚNICAMENTE cuando el cliente ya indicó día y hora concretos (fecha_hora_iso no es null) y corresponde guardar la solicitud de cita en la base de datos.",
+    )
+    derivar_a_maxi: bool = Field(
+        default=False,
+        description="True solo si el cliente exige hablar con Maxi de inmediato o plantea un reclamo.",
+    )
+
+
 class AgentChatRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
 
