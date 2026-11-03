@@ -22,7 +22,7 @@ jobs:
           script: |
             set -e
             echo "Accediendo al directorio del proyecto..."
-            cd ~/crm # Ajusta a la ruta absoluta en tu VPS (ej. /root/crm o /home/usuario/crm) si no está en ~/crm
+            cd ~/crm-autolead
             
             echo "Descargando últimos cambios de Git..."
             git pull origin main
