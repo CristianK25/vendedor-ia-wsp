@@ -92,14 +92,34 @@ class PeticionHandler(BaseHandler):
 
         partes: list[str] = []
         if cita_activa:
+            dt_cita_utc = (
+                cita_activa.fecha.replace(tzinfo=timezone.utc)
+                if cita_activa.fecha.tzinfo is None
+                else cita_activa.fecha
+            )
+            dt_cita_mza = dt_cita_utc.astimezone(MENDOZA_TZ)
             partes.append(
-                f"Tiene una cita confirmada para el {cita_activa.fecha.strftime('%d/%m/%Y a las %H:%M')} hs"
+                f"Tiene una cita confirmada para el {dt_cita_mza.strftime('%d/%m/%Y a las %H:%M')} hs"
             )
         if peticion_pendiente:
-            auto_txt = peticion_pendiente.vehiculo_modelo or "Consulta general"
-            partes.append(
-                f"Tiene una solicitud pendiente de confirmar para el {peticion_pendiente.fecha_propuesta.strftime('%d/%m/%Y a las %H:%M')} hs (Vehículo: {auto_txt})"
+            dt_pet_utc = (
+                peticion_pendiente.fecha_propuesta.replace(tzinfo=timezone.utc)
+                if peticion_pendiente.fecha_propuesta.tzinfo is None
+                else peticion_pendiente.fecha_propuesta
             )
+            dt_pet_mza = dt_pet_utc.astimezone(MENDOZA_TZ)
+            auto_txt = peticion_pendiente.vehiculo_modelo or "Consulta general"
+            if peticion_pendiente.estado == "pendiente_cliente":
+                partes.append(
+                    f"Maxi le propuso reprogramar la visita para el {dt_pet_mza.strftime('%d/%m/%Y a las %H:%M')} hs "
+                    f"(Vehículo: {auto_txt}) y estamos esperando que el cliente confirme si acepta ese horario "
+                    f"o proponga otro."
+                )
+            else:
+                partes.append(
+                    f"Tiene una solicitud enviada por el cliente pendiente de confirmar para el "
+                    f"{dt_pet_mza.strftime('%d/%m/%Y a las %H:%M')} hs (Vehículo: {auto_txt})"
+                )
 
         estado_texto = "; ".join(partes) if partes else "Ninguna cita ni petición activa."
         return nombre_registrado, estado_texto
@@ -156,6 +176,59 @@ class PeticionHandler(BaseHandler):
         vehiculo_limpio = vehiculo_modelo.strip() if vehiculo_modelo else None
         if vehiculo_limpio and vehiculo_limpio.lower() in {"null", "none", "n/a", ""}:
             vehiculo_limpio = None
+
+        stmt_cliente = select(Peticion).where(
+            Peticion.cliente_telefono == telefono,
+            Peticion.estado == "pendiente_cliente",
+        )
+        peticion_propuesta_admin = session.exec(stmt_cliente).first()
+
+        if peticion_propuesta_admin:
+            dt_propuesta_utc = (
+                peticion_propuesta_admin.fecha_propuesta.replace(tzinfo=timezone.utc)
+                if peticion_propuesta_admin.fecha_propuesta.tzinfo is None
+                else peticion_propuesta_admin.fecha_propuesta
+            )
+            diferencia_segundos = abs((fecha_propuesta - dt_propuesta_utc).total_seconds())
+            # Si el cliente acepta el mismo horario que propuso Maxi (tolerancia 15 min),
+            # confirmamos automáticamente la Cita en el calendario.
+            if diferencia_segundos <= 900:
+                from app.Modules.citas.schema import CitaCreate
+                from app.Modules.citas.service import CitaService
+                from app.Modules.peticiones.router import _resolver_vehiculo_id_peticion
+
+                vehiculo_final = vehiculo_limpio or peticion_propuesta_admin.vehiculo_modelo
+                vehiculo_id_resuelto = _resolver_vehiculo_id_peticion(
+                    session=session,
+                    telefono=telefono,
+                    vehiculo_modelo=vehiculo_final,
+                )
+                cita_service = CitaService(session)
+                cita_service.create_cita(
+                    CitaCreate(
+                        cliente_telefono=telefono,
+                        vehiculo_id=vehiculo_id_resuelto,
+                        fecha=dt_propuesta_utc,
+                        estado="confirmada",
+                    )
+                )
+                peticion_propuesta_admin.fecha_propuesta = dt_propuesta_utc
+                peticion_propuesta_admin.estado = "completada"
+                session.add(peticion_propuesta_admin)
+                session.flush()
+                return peticion_propuesta_admin
+
+            # Si el cliente contrapropone un horario distinto al que le ofreció Maxi,
+            # pasa de vuelta a 'pendiente_admin' ('Recibidas IA') con la nueva fecha.
+            peticion_propuesta_admin.cliente_nombre = nombre_cliente
+            if vehiculo_limpio:
+                peticion_propuesta_admin.vehiculo_modelo = vehiculo_limpio
+            peticion_propuesta_admin.fecha_propuesta = fecha_propuesta
+            peticion_propuesta_admin.origen = "cliente"
+            peticion_propuesta_admin.estado = "pendiente_admin"
+            session.add(peticion_propuesta_admin)
+            session.flush()
+            return peticion_propuesta_admin
 
         stmt = select(Peticion).where(
             Peticion.cliente_telefono == telefono,
@@ -237,10 +310,11 @@ class PeticionHandler(BaseHandler):
                 fecha_propuesta=fecha_dt,
             )
             peticion_id = peticion.id
-            accion = "peticion_creada"
+            accion = "cita_confirmada_por_cliente" if peticion.estado == "completada" else "peticion_creada"
             logger.info(
-                "Petición de cita registrada en DB (ID: %s | Auto: %s | Fecha: %s)",
+                "Petición de cita procesada en DB (ID: %s | Estado: %s | Auto: %s | Fecha: %s)",
                 peticion_id,
+                peticion.estado,
                 peticion.vehiculo_modelo,
                 fecha_dt.isoformat(),
             )

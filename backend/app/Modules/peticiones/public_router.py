@@ -47,7 +47,9 @@ def ver_peticion(peticion_id: int, token: str, session: Session = Depends(get_se
         return HTMLResponse(content=get_html_template("Petición procesada", content, False))
 
     mendoza_tz = ZoneInfo("America/Argentina/Mendoza")
-    dt_local = peticion.fecha_propuesta.astimezone(mendoza_tz) if peticion.fecha_propuesta.tzinfo else peticion.fecha_propuesta
+    from datetime import timezone
+    dt_utc = peticion.fecha_propuesta.replace(tzinfo=timezone.utc) if peticion.fecha_propuesta.tzinfo is None else peticion.fecha_propuesta
+    dt_local = dt_utc.astimezone(mendoza_tz)
     fecha_str = dt_local.strftime("%d/%m/%Y a las %H:%M")
     vehiculo = peticion.vehiculo_modelo or "Consulta General"
     
@@ -89,18 +91,27 @@ def confirmar_peticion_publica(peticion_id: int, token: str, session: Session = 
     if peticion.estado != "pendiente_cliente":
         return HTMLResponse(content=get_html_template("Error", "<h1 class='text-xl font-bold text-red-600'>La petición ya fue procesada.</h1>", False))
 
+    from datetime import timezone
     from app.Modules.citas.service import CitaService
     from app.Modules.citas.schema import CitaCreate
+    from app.Modules.peticiones.router import _resolver_vehiculo_id_peticion
     
+    fecha_utc = peticion.fecha_propuesta.replace(tzinfo=timezone.utc) if peticion.fecha_propuesta.tzinfo is None else peticion.fecha_propuesta
+    vehiculo_id_resuelto = _resolver_vehiculo_id_peticion(
+        session=session,
+        telefono=peticion.cliente_telefono,
+        vehiculo_modelo=peticion.vehiculo_modelo,
+    )
     service = CitaService(session)
     cita_create = CitaCreate(
         cliente_telefono=peticion.cliente_telefono,
-        fecha=peticion.fecha_propuesta,
+        vehiculo_id=vehiculo_id_resuelto,
+        fecha=fecha_utc,
         estado="confirmada",
-        notas=f"Auto: {peticion.vehiculo_modelo or 'Consulta general'} (Confirmada vía web)"
     )
     service.create_cita(cita_create)
     
+    peticion.fecha_propuesta = fecha_utc
     peticion.estado = "completada"
     peticion.token_confirmacion = None # Destruimos el token
     session.add(peticion)
@@ -127,6 +138,8 @@ def rechazar_peticion_publica(peticion_id: int, token: str, session: Session = D
     if peticion.estado != "pendiente_cliente":
         return HTMLResponse(content=get_html_template("Error", "<h1 class='text-xl font-bold text-red-600'>La petición ya fue procesada.</h1>", False))
 
+    from datetime import timezone
+    peticion.fecha_propuesta = peticion.fecha_propuesta.replace(tzinfo=timezone.utc) if peticion.fecha_propuesta.tzinfo is None else peticion.fecha_propuesta
     peticion.estado = "cancelada"
     peticion.token_confirmacion = None # Destruimos el token
     session.add(peticion)

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
+from urllib.parse import quote
 from zoneinfo import ZoneInfo
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
 
@@ -9,7 +10,6 @@ from app.Core.Security.deps import require_admin
 from app.Modules.clientes.model import Cliente
 from app.Modules.peticiones.model import Peticion
 from app.Modules.peticiones.schema import PeticionRead, PeticionPosponer
-from app.Modules.peticiones.service import PeticionService
 
 MENDOZA_TZ = ZoneInfo("America/Argentina/Mendoza")
 
@@ -80,7 +80,7 @@ def listar_peticiones(session: Session = Depends(get_session)):
 
 
 @router.post("/{peticion_id}/aceptar")
-def aceptar_peticion(peticion_id: int, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
+def aceptar_peticion(peticion_id: int, session: Session = Depends(get_session)):
     peticion = session.get(Peticion, peticion_id)
     if not peticion:
         raise HTTPException(status_code=404, detail="Petición no encontrada")
@@ -110,24 +110,39 @@ def aceptar_peticion(peticion_id: int, background_tasks: BackgroundTasks, sessio
     peticion.fecha_propuesta = fecha_utc
     peticion.estado = "completada"
     session.add(peticion)
-    session.commit()
-    
-    # Notificar a N8N en segundo plano
-    background_tasks.add_task(
-        PeticionService.notificar_n8n,
-        peticion_id=peticion.id,
-        cliente_telefono=peticion.cliente_telefono,
-        cliente_nombre=peticion.cliente_nombre,
-        vehiculo_modelo=peticion.vehiculo_modelo or "Consulta general",
-        fecha_propuesta=fecha_utc.isoformat(),
-        accion="aceptada"
+
+    # Registrar en el historial de conversación que la cita fue confirmada
+    from app.Modules.agent.model import AgentChatMessage
+    fecha_mza = fecha_utc.astimezone(MENDOZA_TZ).strftime("%d/%m/%Y a las %H:%M")
+    vehiculo_txt = peticion.vehiculo_modelo or "el vehículo consultado"
+    mensaje_wsp = (
+        f"¡Hola {peticion.cliente_nombre}! 👋 Soy Maxi. Te confirmo nuestra cita para ver "
+        f"{vehiculo_txt} el día {fecha_mza} hs. Te paso la ubicación por acá. ¡Te espero!"
     )
-    
-    return {"status": "success", "message": "Petición aceptada, cita creada y cliente notificado vía n8n", "cita": nueva_cita}
+    session.add(
+        AgentChatMessage(
+            session_id=peticion.cliente_telefono,
+            role="assistant",
+            content=mensaje_wsp,
+            camino="agendar_cita",
+        )
+    )
+    session.commit()
+
+    telefono_limpio = "".join(c for c in peticion.cliente_telefono if c.isdigit())
+    whatsapp_url = f"https://wa.me/{telefono_limpio}?text={quote(mensaje_wsp)}"
+
+    return {
+        "status": "success",
+        "message": "Petición aceptada y cita creada",
+        "cita": nueva_cita,
+        "mensaje_whatsapp": mensaje_wsp,
+        "whatsapp_url": whatsapp_url,
+    }
 
 
 @router.post("/{peticion_id}/posponer")
-def posponer_peticion(peticion_id: int, datos: PeticionPosponer, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
+def posponer_peticion(peticion_id: int, datos: PeticionPosponer, session: Session = Depends(get_session)):
     peticion_original = session.get(Peticion, peticion_id)
     if not peticion_original:
         raise HTTPException(status_code=404, detail="Petición no encontrada")
@@ -150,22 +165,37 @@ def posponer_peticion(peticion_id: int, datos: PeticionPosponer, background_task
         peticion_padre_id=peticion_original.id
     )
     session.add(nueva_peticion)
+
+    # Registrar en el historial de conversación la contrapropuesta de horario de Maxi
+    from app.Modules.agent.model import AgentChatMessage
+    fecha_mza = nueva_fecha_utc.astimezone(MENDOZA_TZ).strftime("%d/%m/%Y a las %H:%M")
+    vehiculo_txt = nueva_peticion.vehiculo_modelo or "el vehículo"
+    mensaje_wsp = (
+        f"¡Hola {nueva_peticion.cliente_nombre}! 👋 Soy Maxi. Por tu consulta para ver {vehiculo_txt}, "
+        f"en el horario que me pediste se me complica, pero te puedo recibir el día {fecha_mza} hs. "
+        f"¿Te queda cómodo ese horario?"
+    )
+    session.add(
+        AgentChatMessage(
+            session_id=nueva_peticion.cliente_telefono,
+            role="assistant",
+            content=mensaje_wsp,
+            camino="agendar_cita",
+        )
+    )
     session.commit()
     session.refresh(nueva_peticion)
-    
-    # Notificar a N8N en segundo plano
-    background_tasks.add_task(
-        PeticionService.notificar_n8n,
-        peticion_id=nueva_peticion.id,
-        cliente_telefono=nueva_peticion.cliente_telefono,
-        cliente_nombre=nueva_peticion.cliente_nombre,
-        vehiculo_modelo=nueva_peticion.vehiculo_modelo or "Consulta general",
-        fecha_propuesta=nueva_fecha_utc.isoformat(),
-        accion="pospuesta",
-        token_confirmacion=nueva_peticion.token_confirmacion
-    )
-    
-    return {"status": "success", "message": "Petición pospuesta y cliente notificado", "nueva_peticion_id": nueva_peticion.id}
+
+    telefono_limpio = "".join(c for c in nueva_peticion.cliente_telefono if c.isdigit())
+    whatsapp_url = f"https://wa.me/{telefono_limpio}?text={quote(mensaje_wsp)}"
+
+    return {
+        "status": "success",
+        "message": "Petición pospuesta y lista para enviar por WhatsApp",
+        "nueva_peticion_id": nueva_peticion.id,
+        "mensaje_whatsapp": mensaje_wsp,
+        "whatsapp_url": whatsapp_url,
+    }
 
 
 @router.post("/{peticion_id}/cancelar")
@@ -215,6 +245,18 @@ def forzar_confirmacion(peticion_id: int, session: Session = Depends(get_session
     peticion.fecha_propuesta = fecha_utc
     peticion.estado = "completada"
     session.add(peticion)
+
+    from app.Modules.agent.model import AgentChatMessage
+    fecha_mza = fecha_utc.astimezone(MENDOZA_TZ).strftime("%d/%m/%Y a las %H:%M")
+    vehiculo_txt = peticion.vehiculo_modelo or "el vehículo consultado"
+    session.add(
+        AgentChatMessage(
+            session_id=peticion.cliente_telefono,
+            role="assistant",
+            content=f"✅ Turno reprogramado y confirmado para ver {vehiculo_txt} el día {fecha_mza} hs.",
+            camino="agendar_cita",
+        )
+    )
     session.commit()
     
     return {"status": "success", "message": "Cita confirmada manualmente por el administrador", "cita": nueva_cita}

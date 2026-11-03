@@ -113,8 +113,11 @@ export default function CalendarView() {
   const handleAceptar = async (id: number) => {
     try {
       setIsActionLoading(true);
-      await peticionesApi.aceptar(id);
+      const res: any = await peticionesApi.aceptar(id);
       await fetchData();
+      if (res?.whatsapp_url) {
+        window.open(res.whatsapp_url, '_blank', 'noopener,noreferrer');
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -126,15 +129,30 @@ export default function CalendarView() {
     if (!nuevaFecha) return;
     try {
       setIsActionLoading(true);
-      await peticionesApi.posponer(id, nuevaFecha);
+      const res: any = await peticionesApi.posponer(id, nuevaFecha);
       setPosponerId(null);
       setNuevaFecha('');
+      setActiveTab('esperando');
       await fetchData();
+      if (res?.whatsapp_url) {
+        window.open(res.whatsapp_url, '_blank', 'noopener,noreferrer');
+      }
     } catch (error) {
       console.error(error);
     } finally {
       setIsActionLoading(false);
     }
+  };
+
+  const buildReprogramacionWhatsAppUrl = (p: Peticion) => {
+    const cleanPhone = (p.cliente_telefono || '').replace(/\D/g, '');
+    const fechaStr = new Date(p.fecha_propuesta).toLocaleString('es-AR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    });
+    const vehiculoTxt = getVehiculoLabel(p.vehiculo_modelo);
+    const msg = `¡Hola ${p.cliente_nombre}! 👋 Soy Maxi. Por tu consulta para ver ${vehiculoTxt}, en el horario que me pediste se me complica, pero te puedo recibir el día ${fechaStr} hs. ¿Te queda cómodo ese horario?`;
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
   };
 
   const handleForzarConfirmacion = async (id: number) => {
@@ -466,10 +484,18 @@ export default function CalendarView() {
                           </div>
                         </div>
                         <div className="flex gap-2">
+                          <a
+                            href={buildReprogramacionWhatsAppUrl(p)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 bg-[#25D366]/15 text-[#128C7E] dark:text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 text-xs font-bold py-2 rounded-lg transition-colors text-center flex items-center justify-center gap-1.5"
+                          >
+                            Enviar WhatsApp
+                          </a>
                           <button 
                             onClick={() => handleForzarConfirmacion(p.id)}
                             disabled={isActionLoading}
-                            className="flex-1 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
+                            className="flex-1 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                           >
                             Forzar Confirmación
                           </button>
