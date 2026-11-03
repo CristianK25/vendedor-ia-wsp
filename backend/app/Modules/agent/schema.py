@@ -118,6 +118,59 @@ class DecisionTasacion(BaseModel):
     )
 
 
+class DecisionFinanciacion(BaseModel):
+    """Esquema de salida estructurada para el camino de Financiación y formas de pago."""
+    respuesta_whatsapp: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="Mensaje corto en español argentino con voseo (2 a 4 líneas). Da información general de medios de pago/financiación sin prometer cuotas exactas. Si pide financiación concreta, avisa que Maxi le escribirá personalmente.",
+    )
+    vehiculo_interes_id: Optional[int] = Field(
+        default=None,
+        description="ID numérico del vehículo de nuestro stock sobre el que consulta financiación, si lo mencionó. Null si es consulta general.",
+    )
+    monto_entrega_ofrecido: Optional[float] = Field(
+        default=None,
+        description="Monto numérico de anticipo/entrega que el cliente mencionó tener disponible, si lo dijo. Null si no mencionó monto.",
+    )
+    cliente_nombre_detectado: Optional[str] = Field(
+        default=None,
+        description="Nombre del cliente si lo mencionó en el mensaje o historial. Null si no lo dijo.",
+    )
+    derivar_a_maxi: bool = Field(
+        default=False,
+        description="True si el cliente pide financiación concreta sobre un auto, cálculo de cuotas o propone un anticipo para armar plan. False solo si fue una pregunta general ('¿aceptan dólares?', '¿tienen financiación?').",
+    )
+
+
+class DecisionNegociacion(BaseModel):
+    """Esquema de salida estructurada para el camino de Negociación / Ofertas de contado."""
+    respuesta_whatsapp: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="Mensaje corto en español argentino con voseo (2 a 4 líneas). Indica amablemente que el precio final se charla en persona viendo el auto ('El precio final lo charlamos cuando lo veas') y que Maxi se comunicará personalmente.",
+    )
+    vehiculo_interes_id: Optional[int] = Field(
+        default=None,
+        description="ID numérico del vehículo de nuestro stock por el cual el cliente está ofertando o pidiendo descuento. Null si no se sabe.",
+    )
+    oferta_cliente: Optional[float] = Field(
+        default=None,
+        description="Monto numérico ofertado por el cliente, si hizo una oferta concreta en números. Null si solo pidió descuento sin dar cifra.",
+    )
+    cliente_nombre_detectado: Optional[str] = Field(
+        default=None,
+        description="Nombre del cliente si lo mencionó en el mensaje o historial. Null si no lo dijo.",
+    )
+    derivar_a_maxi: bool = Field(
+        default=True,
+        description="True siempre que el cliente pide descuento, hace una oferta o quiere cerrar precio.",
+    )
+
+
+
 
 class AgentChatRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore")
