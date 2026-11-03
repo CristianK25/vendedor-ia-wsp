@@ -1,3 +1,4 @@
+import html
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from sqlmodel import Session
@@ -53,16 +54,20 @@ def ver_peticion(peticion_id: int, token: str, session: Session = Depends(get_se
     fecha_str = dt_local.strftime("%d/%m/%Y a las %H:%M")
     vehiculo = peticion.vehiculo_modelo or "Consulta General"
     
+    # Sanitizar textos contra Stored XSS en el HTML público
+    nombre_seguro = html.escape(peticion.cliente_nombre or "Cliente")
+    vehiculo_seguro = html.escape(vehiculo)
+    
     content = f"""
     <div class="mb-6">
         <svg class="w-16 h-16 text-blue-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
         <h1 class="text-2xl font-bold text-gray-800 mb-2">Propuesta de Cita</h1>
-        <p class="text-gray-600">Hola <b>{peticion.cliente_nombre}</b>, el concesionario te propone el siguiente horario para tu visita:</p>
+        <p class="text-gray-600">Hola <b>{nombre_seguro}</b>, el concesionario te propone el siguiente horario para tu visita:</p>
     </div>
     
     <div class="bg-gray-50 rounded-xl p-4 mb-8 text-left border border-gray-100">
         <div class="mb-2"><span class="text-gray-500 text-sm">Día y Hora:</span><br><span class="font-bold text-lg text-blue-700">{fecha_str}hs</span></div>
-        <div><span class="text-gray-500 text-sm">Vehículo de interés:</span><br><span class="font-semibold text-gray-700">{vehiculo}</span></div>
+        <div><span class="text-gray-500 text-sm">Vehículo de interés:</span><br><span class="font-semibold text-gray-700">{vehiculo_seguro}</span></div>
     </div>
     
     <div class="flex flex-col gap-3">
