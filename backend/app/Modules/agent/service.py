@@ -130,7 +130,7 @@ class AgentService:
                     )
                     return ultimo.camino
 
-        return Camino.fallback.value
+        return camino_entrante if camino_entrante in self.handlers else Camino.fallback.value
 
     def process_chat(self, payload: AgentChatRequest, session: Session) -> AgentChatResponse:
         camino_efectivo = payload.camino

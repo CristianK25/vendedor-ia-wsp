@@ -170,6 +170,25 @@ class DecisionNegociacion(BaseModel):
     )
 
 
+class DecisionGeneral(BaseModel):
+    """Esquema de salida estructurada para el camino General / Saludo inicial."""
+    respuesta_whatsapp: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="Mensaje corto en español argentino con voseo (2 a 4 líneas). Si es un saludo, da la bienvenida y pregunta qué auto o presupuesto busca. Si pregunta horarios/zona/transferencia, responde con los DATOS DE VENTA y pregunta qué auto le interesa.",
+    )
+    cliente_nombre_detectado: Optional[str] = Field(
+        default=None,
+        description="Nombre del cliente si lo mencionó en el mensaje o historial. Null si no lo dijo.",
+    )
+    derivar_a_maxi: bool = Field(
+        default=False,
+        description="True solo si el cliente tiene un reclamo o pregunta algo que no figura en los DATOS DE VENTA ni en el STOCK ACTUAL.",
+    )
+
+
+
 
 
 class AgentChatRequest(BaseModel):
