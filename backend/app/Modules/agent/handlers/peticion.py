@@ -196,6 +196,7 @@ class PeticionHandler(BaseHandler):
                 from app.Modules.citas.schema import CitaCreate
                 from app.Modules.citas.service import CitaService
                 from app.Modules.peticiones.router import _resolver_vehiculo_id_peticion
+                from fastapi import HTTPException
 
                 vehiculo_final = vehiculo_limpio or peticion_propuesta_admin.vehiculo_modelo
                 vehiculo_id_resuelto = _resolver_vehiculo_id_peticion(
@@ -204,19 +205,36 @@ class PeticionHandler(BaseHandler):
                     vehiculo_modelo=vehiculo_final,
                 )
                 cita_service = CitaService(session)
-                cita_service.create_cita(
-                    CitaCreate(
-                        cliente_telefono=telefono,
-                        vehiculo_id=vehiculo_id_resuelto,
-                        fecha=dt_propuesta_utc,
-                        estado="confirmada",
+                try:
+                    cita_service.create_cita(
+                        CitaCreate(
+                            cliente_telefono=telefono,
+                            vehiculo_id=vehiculo_id_resuelto,
+                            fecha=dt_propuesta_utc,
+                            estado="confirmada",
+                        )
                     )
-                )
-                peticion_propuesta_admin.fecha_propuesta = dt_propuesta_utc
-                peticion_propuesta_admin.estado = "completada"
-                session.add(peticion_propuesta_admin)
-                session.flush()
-                return peticion_propuesta_admin
+                    peticion_propuesta_admin.fecha_propuesta = dt_propuesta_utc
+                    peticion_propuesta_admin.estado = "completada"
+                    session.add(peticion_propuesta_admin)
+                    session.flush()
+                    return peticion_propuesta_admin
+                except HTTPException as e:
+                    # Si hubo conflicto de horario (ej: solapamiento con otra cita agendada en ese ínterin),
+                    # no dejamos caer la transacción general: mantenemos la petición en 'pendiente_admin'
+                    # para que Maxi la revise y resuelva manualmente en el calendario.
+                    logger.warning(
+                        "Conflicto al confirmar automáticamente cita para %s (%s). Se deja como pendiente_admin: %s",
+                        telefono,
+                        dt_propuesta_utc.isoformat(),
+                        e.detail,
+                    )
+                    peticion_propuesta_admin.fecha_propuesta = dt_propuesta_utc
+                    peticion_propuesta_admin.estado = "pendiente_admin"
+                    peticion_propuesta_admin.origen = "cliente"
+                    session.add(peticion_propuesta_admin)
+                    session.flush()
+                    return peticion_propuesta_admin
 
             # Si el cliente contrapropone un horario distinto al que le ofreció Maxi,
             # pasa de vuelta a 'pendiente_admin' ('Recibidas IA') con la nueva fecha.

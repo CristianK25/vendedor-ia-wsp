@@ -247,12 +247,19 @@ class AgentService:
         except LLMUnavailableError as exc:
             session.rollback()
             logger.error("Proveedores LLM no disponibles en sesión: %s", str(exc))
-            self._marcar_requiere_humano_seguro(session, payload.cliente_telefono)
+            msg_disculpa = (
+                "¡Hola! Disculpá, justo tuve un problema técnico momentáneo al consultar el sistema. "
+                "En un ratito Maxi te escribe directamente por acá para ayudarte 👌"
+            )
+            self._guardar_error_y_pausar_seguro(
+                session=session,
+                session_id=payload.session_id,
+                telefono=payload.cliente_telefono,
+                respuesta_texto=msg_disculpa,
+                camino=camino_efectivo,
+            )
             return AgentChatResponse(
-                respuesta_texto=(
-                    "¡Hola! Disculpá, justo tuve un problema técnico momentáneo al consultar el sistema. "
-                    "En un ratito Maxi te escribe directamente por acá para ayudarte 👌"
-                ),
+                respuesta_texto=msg_disculpa,
                 camino=camino_efectivo,
                 accion_ejecutada="error_llm",
                 derivar_a_humano=True,
@@ -264,12 +271,19 @@ class AgentService:
         except Exception:
             session.rollback()
             logger.exception("Error inesperado en process_chat")
-            self._marcar_requiere_humano_seguro(session, payload.cliente_telefono)
+            msg_disculpa = (
+                "¡Hola! Disculpá, justo tuve un problema técnico momentáneo al consultar el sistema. "
+                "¿Me podrías reiterar tu consulta o preferís que Maxi te escriba en un ratito? 👌"
+            )
+            self._guardar_error_y_pausar_seguro(
+                session=session,
+                session_id=payload.session_id,
+                telefono=payload.cliente_telefono,
+                respuesta_texto=msg_disculpa,
+                camino=camino_efectivo,
+            )
             return AgentChatResponse(
-                respuesta_texto=(
-                    "¡Hola! Disculpá, justo tuve un problema técnico momentáneo al consultar el sistema. "
-                    "¿Me podrías reiterar tu consulta o preferís que Maxi te escriba en un ratito? 👌"
-                ),
+                respuesta_texto=msg_disculpa,
                 camino=camino_efectivo,
                 accion_ejecutada="error_llm",
                 derivar_a_humano=True,
@@ -280,15 +294,36 @@ class AgentService:
             )
 
     @staticmethod
-    def _marcar_requiere_humano_seguro(session: Session, telefono: str) -> None:
+    def _guardar_error_y_pausar_seguro(
+        session: Session,
+        session_id: str,
+        telefono: str,
+        respuesta_texto: str,
+        camino: str,
+    ) -> None:
+        """
+        En caso de fallo técnico, asegura que:
+        1. El cliente pase a REQUIERE_HUMANO.
+        2. El mensaje de disculpa quede guardado en agent_chat_messages (visible para Maxi en el CRM).
+        """
         try:
             cliente = session.get(Cliente, telefono)
             if cliente:
                 cliente.estado_conversacion = EstadoConversacion.REQUIERE_HUMANO
+                cliente.ultimo_mensaje_bot = datetime.now(timezone.utc)
                 session.add(cliente)
-                session.commit()
+
+            msg_error = AgentChatMessage(
+                session_id=session_id,
+                role="assistant",
+                content=respuesta_texto,
+                camino=camino,
+            )
+            session.add(msg_error)
+            session.commit()
         except Exception:
             session.rollback()
+            logger.exception("Fallo al registrar estado de error y mensaje en DB")
 
 
 @lru_cache
