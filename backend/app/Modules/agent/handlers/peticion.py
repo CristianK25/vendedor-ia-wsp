@@ -107,8 +107,10 @@ class PeticionHandler(BaseHandler):
     @staticmethod
     def _parsear_fecha_propuesta(fecha_iso: Optional[str]) -> Optional[datetime]:
         """
-        Convierte el string ISO devuelto por el LLM en un datetime con timezone.utc
-        preservando la hora local de Mendoza para compatibilidad con CalendarPage y public_router.
+        Convierte el string ISO devuelto por el LLM (calculado en hora local de Mendoza)
+        a un datetime en UTC para que al serializarse en JSON y formatearse en el frontend
+        (o en cualquier cliente con zona horaria de Argentina) coincida exactamente con
+        la hora acordada con el cliente.
         """
         if not fecha_iso:
             return None
@@ -116,13 +118,14 @@ class PeticionHandler(BaseHandler):
         if not limpio or limpio.lower() in {"null", "none"}:
             return None
         try:
-            # Si viene con sufijo Z, lo quitamos antes de parsear para preservar la hora nominal
+            # Si viene con sufijo Z u offset, lo removemos para interpretar la hora nominal como local de Mendoza
             if limpio.endswith("Z"):
                 limpio = limpio[:-1]
             dt = datetime.fromisoformat(limpio)
-            # Preservamos la hora nominal en UTC para que PostgreSQL TIMESTAMP WITHOUT TIME ZONE
-            # guarde exactamente la hora local acordada con el cliente en Mendoza.
-            return dt.replace(tzinfo=timezone.utc)
+            # La hora nominal representa la hora acordada en Mendoza (America/Argentina/Mendoza, UTC-3)
+            dt_mendoza = dt.replace(tzinfo=MENDOZA_TZ)
+            # Guardamos en UTC (+00:00) para compatibilidad con ISO 8601 y Date() en frontend
+            return dt_mendoza.astimezone(timezone.utc)
         except ValueError:
             logger.warning("No se pudo parsear fecha_hora_iso devuelta por el LLM: '%s'", fecha_iso)
             return None

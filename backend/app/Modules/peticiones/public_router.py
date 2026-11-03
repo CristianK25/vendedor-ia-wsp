@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from sqlmodel import Session
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from app.Core.database import get_session
 from app.Modules.peticiones.model import Peticion
@@ -45,7 +46,9 @@ def ver_peticion(peticion_id: int, token: str, session: Session = Depends(get_se
         """
         return HTMLResponse(content=get_html_template("Petición procesada", content, False))
 
-    fecha_str = peticion.fecha_propuesta.strftime("%d/%m/%Y a las %H:%M")
+    mendoza_tz = ZoneInfo("America/Argentina/Mendoza")
+    dt_local = peticion.fecha_propuesta.astimezone(mendoza_tz) if peticion.fecha_propuesta.tzinfo else peticion.fecha_propuesta
+    fecha_str = dt_local.strftime("%d/%m/%Y a las %H:%M")
     vehiculo = peticion.vehiculo_modelo or "Consulta General"
     
     content = f"""
