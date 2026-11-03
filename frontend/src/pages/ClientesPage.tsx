@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clientesApi, etiquetasApi } from '../api/clientes'
-import { Plus, Search, ListFilter, Download, ChevronDown, ChevronUp, Tag, Trash2 } from 'lucide-react'
+import { Plus, Search, ChevronDown, ChevronUp, Tag, Trash2, MessageSquare, AlertTriangle, CheckCircle2, Edit3 } from 'lucide-react'
 import EtiquetasModal, { PALETA_COLORES } from '../components/EtiquetasModal'
 import DeleteClienteModal from '../components/modals/DeleteClienteModal'
+import { ClienteChatDrawer } from '../components/modals/ClienteChatDrawer'
 
 const WhatsAppIcon = ({ size = 24, className = "" }) => (
   <svg 
@@ -25,9 +26,11 @@ export default function ClientesView() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [requiereHumanoCount, setRequiereHumanoCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterEtiqueta, setFilterEtiqueta] = useState<number | null>(null);
+  const [filterEstado, setFilterEstado] = useState<string | null>(null);
   
   const [etiquetas, setEtiquetas] = useState<any[]>([]);
   const [showEtiquetasModal, setShowEtiquetasModal] = useState(false);
@@ -35,6 +38,7 @@ export default function ClientesView() {
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [clienteToDelete, setClienteToDelete] = useState<any | null>(null);
   const [isDeletingCliente, setIsDeletingCliente] = useState(false);
+  const [selectedChatCliente, setSelectedChatCliente] = useState<any | null>(null);
 
   const size = 50;
 
@@ -72,10 +76,19 @@ export default function ClientesView() {
     const fetchClientes = (isSilent = false) => {
       if (!isSilent) setLoading(true);
       
-      clientesApi.getAll(currentPage, size, debouncedSearch, sortConfig.key || '', sortConfig.direction, filterEtiqueta)
+      clientesApi.getAll(
+        currentPage,
+        size,
+        debouncedSearch,
+        sortConfig.key || '',
+        sortConfig.direction,
+        filterEtiqueta,
+        filterEstado
+      )
         .then((data: any) => {
           setClientes(data.items)
           setTotalPages(data.total_pages)
+          setRequiereHumanoCount(data.requiere_humano_count || 0)
           if (!isSilent) setLoading(false)
         })
         .catch(err => {
@@ -93,7 +106,7 @@ export default function ClientesView() {
     }, 10000);
 
     return () => clearInterval(intervalId);
-  }, [currentPage, debouncedSearch, sortConfig, filterEtiqueta])
+  }, [currentPage, debouncedSearch, sortConfig, filterEtiqueta, filterEstado])
 
   const fetchEtiquetas = () => {
     etiquetasApi.getAll().then((data: any) => setEtiquetas(data)).catch(console.error);
@@ -111,6 +124,29 @@ export default function ClientesView() {
       console.error(e);
     }
     setOpenTagDropdownFor(null);
+  };
+
+  const handleClienteUpdatedFromDrawer = (clienteActualizado: any) => {
+    setClientes(prev => {
+      const updatedList = prev.map(c => c.telefono === clienteActualizado.telefono ? { ...c, ...clienteActualizado } : c);
+      if (filterEstado === 'REQUIERE_HUMANO' && clienteActualizado.estado_conversacion !== 'REQUIERE_HUMANO') {
+        return updatedList.filter(c => c.telefono !== clienteActualizado.telefono);
+      }
+      return updatedList;
+    });
+    setRequiereHumanoCount(prev => Math.max(0, prev - 1));
+    setSelectedChatCliente(clienteActualizado);
+  };
+
+  const handleQuickMarcarAtendido = async (e: React.MouseEvent, cliente: any) => {
+    e.stopPropagation();
+    try {
+      const updated: any = await clientesApi.marcarAtendido(cliente.telefono);
+      handleClienteUpdatedFromDrawer({ ...cliente, ...updated, estado_conversacion: 'NORMAL' });
+    } catch (err) {
+      console.error(err);
+      alert('No se pudo marcar como atendido.');
+    }
   };
 
   const handleDeleteCliente = async () => {
@@ -196,15 +232,17 @@ export default function ClientesView() {
   return (
     <section className="px-4 md:px-10 py-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl md:text-3xl font-semibold text-on-surface">Clientes y Ventas</h2>
-          <p className="text-base text-on-surface-variant mt-1">Gestione sus relaciones y transacciones comerciales.</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-on-surface">Clientes y Atención IA</h2>
+          <p className="text-base text-on-surface-variant mt-1">
+            Hacé clic en cualquier cliente para ver su conversación con el asistente y responderle por WhatsApp.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button 
             onClick={() => navigate('/clientes/nuevo')}
-            className="bg-primary text-on-primary rounded-xl px-6 py-3 text-sm font-semibold flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all"
+            className="bg-primary text-on-primary rounded-xl px-6 py-3 text-sm font-semibold flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all cursor-pointer"
           >
             <Plus size={20} />
             Nuevo Cliente
@@ -212,6 +250,44 @@ export default function ClientesView() {
         </div>
       </div>
 
+      {/* Pestañas rápidas: Todos vs Requieren Atención */}
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        <button
+          onClick={() => { setFilterEstado(null); setCurrentPage(1); }}
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer border ${
+            filterEstado === null
+              ? 'bg-primary text-on-primary border-primary shadow-sm'
+              : 'bg-surface text-on-surface-variant border-outline-variant hover:bg-surface-container-low'
+          }`}
+        >
+          Todos los Clientes
+        </button>
+
+        <button
+          onClick={() => { setFilterEstado('REQUIERE_HUMANO'); setCurrentPage(1); }}
+          className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer border flex items-center gap-2 ${
+            filterEstado === 'REQUIERE_HUMANO'
+              ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-sm'
+              : requiereHumanoCount > 0
+              ? 'bg-amber-500/15 text-amber-400 border-amber-500/40 hover:bg-amber-500/25'
+              : 'bg-surface text-on-surface-variant border-outline-variant hover:bg-surface-container-low'
+          }`}
+        >
+          <AlertTriangle size={16} className={requiereHumanoCount > 0 && filterEstado !== 'REQUIERE_HUMANO' ? 'animate-bounce' : ''} />
+          Requieren Atención de Maxi
+          <span
+            className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${
+              filterEstado === 'REQUIERE_HUMANO'
+                ? 'bg-slate-950/20 text-slate-950'
+                : requiereHumanoCount > 0
+                ? 'bg-amber-500 text-slate-950'
+                : 'bg-surface-container text-on-surface-variant'
+            }`}
+          >
+            {requiereHumanoCount}
+          </span>
+        </button>
+      </div>
 
       {/* Main Data View */}
       <div className="bg-surface border border-outline-variant rounded-2xl overflow-visible shadow-xl">
@@ -291,17 +367,9 @@ export default function ClientesView() {
             </div>
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-            <button onClick={() => setShowEtiquetasModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors text-on-surface">
+            <button onClick={() => setShowEtiquetasModal(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors text-on-surface cursor-pointer">
               <Tag size={18} />
-              Etiquetas
-            </button>
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors text-on-surface">
-              <ListFilter size={18} />
-              Filtros
-            </button>
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-outline-variant rounded-xl text-sm font-semibold hover:bg-surface-container-low transition-colors text-on-surface">
-              <Download size={18} />
-              Exportar
+              Gestionar Etiquetas
             </button>
           </div>
         </div>
@@ -317,32 +385,52 @@ export default function ClientesView() {
                 Cliente {renderSortIcon('nombre')}
               </div>
               <div className="col-span-2">Etiqueta</div>
-              <div className="col-span-2">Estado</div>
+              <div className="col-span-3">Estado Conversación</div>
               <div className="col-span-2 flex items-center gap-1 cursor-pointer hover:text-on-surface w-max select-none" onClick={() => handleSort('ultima_interaccion_cliente')}>
-                Última Interacción {renderSortIcon('ultima_interaccion_cliente')}
+                Última Actividad {renderSortIcon('ultima_interaccion_cliente')}
               </div>
-              <div className="col-span-2 flex items-center gap-1 cursor-pointer hover:text-on-surface w-max select-none" onClick={() => handleSort('cantidad_compras')}>
-                Historial {renderSortIcon('cantidad_compras')}
-              </div>
-              <div className="col-span-1 text-right">Acción</div>
+              <div className="col-span-2 text-right">Acciones</div>
             </div>
 
             {clientes.length === 0 ? (
-              <div className="p-8 text-center text-on-surface-variant">No hay clientes registrados.</div>
+              <div className="p-8 text-center text-on-surface-variant">
+                {filterEstado === 'REQUIERE_HUMANO'
+                  ? '¡Excelente! No hay clientes pendientes de atención humana en este momento.'
+                  : 'No hay clientes registrados.'}
+              </div>
             ) : (
               clientes.map(c => {
                 const initials = c.nombre ? c.nombre.substring(0, 2).toUpperCase() : 'NN';
+                const requiereHumano = c.estado_conversacion === 'REQUIERE_HUMANO';
+
                 return (
-                  <div key={c.telefono} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 hover:bg-surface-container-low transition-colors group">
-                    <div className="col-span-1 md:col-span-3 flex items-center gap-4 cursor-pointer" onClick={() => navigate(`/clientes/${c.telefono}`)}>
-                      <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg shrink-0">
+                  <div
+                    key={c.telefono}
+                    onClick={() => setSelectedChatCliente(c)}
+                    className={`grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 transition-colors group cursor-pointer ${
+                      requiereHumano
+                        ? 'bg-amber-500/5 hover:bg-amber-500/10 border-l-4 border-l-amber-500'
+                        : 'hover:bg-surface-container-low'
+                    }`}
+                  >
+                    <div className="col-span-1 md:col-span-3 flex items-center gap-4">
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0 ${
+                          requiereHumano
+                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                            : 'bg-primary-container text-on-primary-container'
+                        }`}
+                      >
                         {initials}
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-base font-semibold text-on-surface truncate">{c.nombre || 'Sin Nombre'}</span>
+                        <span className="text-base font-semibold text-on-surface truncate">
+                          {c.nombre || 'Sin Nombre'}
+                        </span>
                         <span className="text-sm text-on-surface-variant truncate">Tel: {c.telefono}</span>
                       </div>
                     </div>
+
                     <div className="col-span-1 md:col-span-2 flex items-center">
                       <div className="relative">
                         <button
@@ -380,59 +468,83 @@ export default function ClientesView() {
                       </div>
                     </div>
                     
-                    <div className="col-span-1 md:col-span-2 flex items-center">
-                      {c.tiene_cita_pendiente ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200 shadow-sm">
+                    <div className="col-span-1 md:col-span-3 flex items-center gap-2 flex-wrap">
+                      {requiereHumano ? (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-sm">
+                            <AlertTriangle size={13} />
+                            REQUIERE ATENCIÓN
+                          </span>
+                          <button
+                            onClick={(e) => handleQuickMarcarAtendido(e, c)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors cursor-pointer"
+                            title="Marcar como atendido y reactivar el bot"
+                          >
+                            <CheckCircle2 size={12} />
+                            Atendido
+                          </button>
+                        </div>
+                      ) : c.tiene_cita_pendiente ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-orange-500/15 text-orange-400 border border-orange-500/30 shadow-sm">
                           CON CITA PENDIENTE
                         </span>
                       ) : c.estado_conversacion === 'ESPERANDO_RESEÑA' ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
                           ESPERANDO RESEÑA
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant border border-outline-variant">
-                          NORMAL
+                          BOT ACTIVO
                         </span>
                       )}
                     </div>
+
                     <div className="col-span-1 md:col-span-2 flex items-center">
-                      <span className="text-base font-medium text-on-surface-variant">
+                      <span className="text-sm font-medium text-on-surface-variant">
                         {getRelativeTime(c.ultima_interaccion_cliente)}
                       </span>
                     </div>
-                    <div className="col-span-1 md:col-span-2 flex items-center">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${
-                        c.cantidad_compras > 0 
-                          ? 'bg-green-100 text-green-700 border-green-200' 
-                          : 'bg-surface-container text-on-surface-variant border-outline-variant'
-                      }`}>
-                        Compras: {c.cantidad_compras}
-                      </span>
-                    </div>
-                    <div className="col-span-1 md:col-span-1 flex items-center justify-end">
-                      <div className="flex items-center gap-2">
+
+                    <div className="col-span-1 md:col-span-2 flex items-center justify-end">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedChatCliente(c); }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                            requiereHumano
+                              ? 'bg-amber-500 text-slate-950 hover:bg-amber-400'
+                              : 'bg-primary/15 text-primary hover:bg-primary/25'
+                          }`}
+                          title="Ver conversación con la IA"
+                        >
+                          <MessageSquare size={15} />
+                          Chat
+                        </button>
+
                         <a 
                           href={`https://wa.me/${c.telefono.replace('+', '')}`} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors"
-                          title="WhatsApp"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-2 text-emerald-500 hover:bg-emerald-500/15 rounded-full transition-colors"
+                          title="Abrir WhatsApp directo"
                         >
-                          <WhatsAppIcon size={20} />
+                          <WhatsAppIcon size={19} />
                         </a>
+
                         <button 
-                          onClick={(e) => { e.stopPropagation(); navigate('/ventas/nuevo', { state: { telefono: c.telefono }}); }}
-                          className="p-2 text-primary hover:bg-primary-container rounded-full transition-colors"
-                          title="Nueva Venta"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/clientes/${c.telefono}`); }}
+                          className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-full transition-colors cursor-pointer"
+                          title="Editar Cliente"
                         >
-                          <Tag size={20} />
+                          <Edit3 size={18} />
                         </button>
+
                         <button 
                           onClick={(e) => { e.stopPropagation(); setClienteToDelete(c); }}
                           className="p-2 text-error hover:bg-error-container/20 rounded-full transition-colors cursor-pointer"
                           title="Eliminar Cliente"
                         >
-                          <Trash2 size={20} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
@@ -444,6 +556,17 @@ export default function ClientesView() {
         )}
         {renderPagination()}
       </div>
+
+      <ClienteChatDrawer
+        cliente={selectedChatCliente}
+        isOpen={!!selectedChatCliente}
+        onClose={() => setSelectedChatCliente(null)}
+        onClienteUpdated={handleClienteUpdatedFromDrawer}
+        onEditCliente={(telefono) => {
+          setSelectedChatCliente(null);
+          navigate(`/clientes/${telefono}`);
+        }}
+      />
 
       <EtiquetasModal 
         isOpen={showEtiquetasModal}

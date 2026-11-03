@@ -1,7 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
 from app.Modules.clientes.model import EstadoConversacion
+from app.Modules.etiquetas.schema import EtiquetaResponse
 
 class ClienteCreate(BaseModel):
     telefono: str
@@ -18,8 +19,6 @@ class ClienteUpdate(BaseModel):
     etiqueta_id: Optional[int] = None
     activo: Optional[bool] = None
 
-from app.Modules.etiquetas.schema import EtiquetaResponse
-
 class ClienteResponse(BaseModel):
     telefono: str
     nombre: Optional[str] = None
@@ -32,10 +31,33 @@ class ClienteResponse(BaseModel):
     etiqueta: Optional[EtiquetaResponse] = None
     activo: bool = True
 
-from typing import List
 class PaginatedClientesResponse(BaseModel):
     items: List[ClienteResponse]
     total: int
     page: int
     size: int
     total_pages: int
+    requiere_humano_count: int = 0
+
+class ClienteChatMessageResponse(BaseModel):
+    id: int
+    session_id: str
+    role: str
+    content: str
+    camino: Optional[str] = None
+    created_at: datetime
+
+class ClienteInteraccionResumenResponse(BaseModel):
+    id: int
+    tipo: str
+    vehiculo_id: Optional[int] = None
+    vehiculo_nombre: Optional[str] = None
+    vehiculo_modelo_tasacion: Optional[str] = None
+    precio_pretendido: Optional[float] = None
+    detalles_tasacion: Optional[str] = None
+    fecha: datetime
+
+class ClienteHistorialChatResponse(BaseModel):
+    cliente: ClienteResponse
+    mensajes: List[ClienteChatMessageResponse]
+    interacciones: List[ClienteInteraccionResumenResponse] = []

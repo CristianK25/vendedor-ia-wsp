@@ -1,7 +1,15 @@
 import { fetchApi } from './client'
 
 export const clientesApi = {
-  getAll: (page = 1, size = 50, search = '', sortBy = '', sortDir = 'asc', etiquetaId: number | null = null) => {
+  getAll: (
+    page = 1,
+    size = 50,
+    search = '',
+    sortBy = '',
+    sortDir = 'asc',
+    etiquetaId: number | null = null,
+    estadoConversacion: string | null = null
+  ) => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -12,9 +20,14 @@ export const clientesApi = {
     if (etiquetaId !== null) {
       params.append('etiqueta_id', etiquetaId.toString());
     }
+    if (estadoConversacion) {
+      params.append('estado_conversacion', estadoConversacion);
+    }
     return fetchApi(`/clientes/?${params.toString()}`);
   },
   getByTelefono: (telefono: string) => fetchApi(`/clientes/${telefono}`),
+  getMensajes: (telefono: string) => fetchApi(`/clientes/${telefono}/mensajes`),
+  marcarAtendido: (telefono: string) => fetchApi(`/clientes/${telefono}/atendido`, { method: 'POST' }),
   create: (data: any) => fetchApi('/clientes/', { method: 'POST', body: JSON.stringify(data) }),
   update: (telefono: string, data: any) => fetchApi(`/clientes/${telefono}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (telefono: string) => fetchApi(`/clientes/${telefono}`, { method: 'DELETE' }),

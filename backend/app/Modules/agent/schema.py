@@ -223,4 +223,5 @@ class AgentChatResponse(BaseModel):
     camino: str
     accion_ejecutada: Optional[str] = None
     derivar_a_humano: bool = False
+    enviar_mensaje_whatsapp: bool = True
     metadata: Optional[dict[str, Any]] = None

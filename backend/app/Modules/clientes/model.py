@@ -7,6 +7,7 @@ class EstadoConversacion(str, enum.Enum):
     NORMAL = "NORMAL"
     ESPERANDO_RESEÑA = "ESPERANDO_RESEÑA"
     ESPERANDO_PAGO = "ESPERANDO_PAGO"
+    REQUIERE_HUMANO = "REQUIERE_HUMANO"
 
 class Cliente(SQLModel, table=True):
     __tablename__ = "clientes"

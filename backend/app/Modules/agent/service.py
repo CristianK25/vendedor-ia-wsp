@@ -5,6 +5,7 @@ from typing import Dict, List
 from sqlmodel import Session, select
 
 from app.Core.config import settings
+from app.Modules.clientes.model import Cliente, EstadoConversacion
 from app.Modules.agent.handlers.base import BaseHandler
 from app.Modules.agent.handlers.catalogo import CatalogoHandler
 from app.Modules.agent.handlers.fallback import FallbackHandler
@@ -132,15 +133,76 @@ class AgentService:
 
         return camino_entrante if camino_entrante in self.handlers else Camino.fallback.value
 
+    @staticmethod
+    def _asegurar_y_obtener_cliente(
+        session: Session,
+        telefono: str,
+        nombre_payload: str | None,
+    ) -> Cliente:
+        ahora_utc = datetime.now(timezone.utc)
+        cliente = session.get(Cliente, telefono)
+        if not cliente:
+            cliente = Cliente(
+                telefono=telefono,
+                nombre=nombre_payload or "Cliente WhatsApp",
+                ultima_interaccion_cliente=ahora_utc,
+                estado_conversacion=EstadoConversacion.NORMAL,
+                activo=True,
+            )
+            session.add(cliente)
+            session.flush()
+            return cliente
+
+        cliente.activo = True
+        cliente.ultima_interaccion_cliente = ahora_utc
+        if nombre_payload and (not cliente.nombre or cliente.nombre == "Cliente WhatsApp"):
+            cliente.nombre = nombre_payload
+        session.add(cliente)
+        session.flush()
+        return cliente
+
     def process_chat(self, payload: AgentChatRequest, session: Session) -> AgentChatResponse:
         camino_efectivo = payload.camino
 
         try:
-            # 1. Leer historial previo (DTOs) y resolver continuidad de camino
+            # 1. Asegurar cliente y verificar si está en pausa esperando atención humana (REQUIERE_HUMANO)
+            cliente = self._asegurar_y_obtener_cliente(
+                session=session,
+                telefono=payload.cliente_telefono,
+                nombre_payload=payload.cliente_nombre,
+            )
+
+            if cliente.estado_conversacion == EstadoConversacion.REQUIERE_HUMANO:
+                logger.info(
+                    "Cliente %s en estado REQUIERE_HUMANO: se guarda mensaje en historial sin respuesta del bot.",
+                    payload.cliente_telefono,
+                )
+                self.guardar_mensaje(
+                    session=session,
+                    session_id=payload.session_id,
+                    role="user",
+                    content=payload.mensaje,
+                    camino="en_espera_humano",
+                )
+                session.commit()
+                return AgentChatResponse(
+                    respuesta_texto="",
+                    camino=camino_efectivo,
+                    accion_ejecutada="silencio_esperando_humano",
+                    derivar_a_humano=True,
+                    enviar_mensaje_whatsapp=False,
+                    metadata={
+                        "session_id": payload.session_id,
+                        "telefono": payload.cliente_telefono,
+                        "bot_pausado": True,
+                    },
+                )
+
+            # 2. Leer historial previo (DTOs) y resolver continuidad de camino
             historial = self.obtener_historial_reciente(session, payload.session_id, limit=6)
             camino_efectivo = self._resolver_camino_efectivo(payload.camino, historial)
 
-            # 2. Guardar y confirmar de inmediato el turno del cliente (transacción corta).
+            # 3. Guardar y confirmar de inmediato el turno del cliente (transacción corta).
             # Así el mensaje del cliente nunca se pierde aunque luego falle el proveedor LLM.
             self.guardar_mensaje(
                 session=session,
@@ -151,7 +213,7 @@ class AgentService:
             )
             session.commit()
 
-            # 3. Despachar al handler correspondiente
+            # 4. Despachar al handler correspondiente
             handler = self.handlers.get(camino_efectivo, self.fallback_handler)
             logger.info(
                 "Despachando camino '%s' con %s (%d msgs previos)",
@@ -161,7 +223,7 @@ class AgentService:
             )
             response = handler.handle(payload, session, historial=historial)
 
-            # 4. Guardar y confirmar la respuesta generada por el asistente (transacción corta)
+            # 5. Guardar respuesta del asistente y actualizar estado del cliente si requiere humano
             self.guardar_mensaje(
                 session=session,
                 session_id=payload.session_id,
@@ -169,12 +231,23 @@ class AgentService:
                 content=response.respuesta_texto,
                 camino=response.camino,
             )
+
+            cliente_post = session.get(Cliente, payload.cliente_telefono)
+            if cliente_post:
+                ahora_utc = datetime.now(timezone.utc)
+                cliente_post.ultimo_mensaje_bot = ahora_utc
+                cliente_post.ultima_interaccion_cliente = ahora_utc
+                if response.derivar_a_humano:
+                    cliente_post.estado_conversacion = EstadoConversacion.REQUIERE_HUMANO
+                session.add(cliente_post)
+
             session.commit()
             return response
 
         except LLMUnavailableError as exc:
             session.rollback()
             logger.error("Proveedores LLM no disponibles en sesión: %s", str(exc))
+            self._marcar_requiere_humano_seguro(session, payload.cliente_telefono)
             return AgentChatResponse(
                 respuesta_texto=(
                     "¡Hola! Disculpá, justo tuve un problema técnico momentáneo al consultar el sistema. "
@@ -191,6 +264,7 @@ class AgentService:
         except Exception:
             session.rollback()
             logger.exception("Error inesperado en process_chat")
+            self._marcar_requiere_humano_seguro(session, payload.cliente_telefono)
             return AgentChatResponse(
                 respuesta_texto=(
                     "¡Hola! Disculpá, justo tuve un problema técnico momentáneo al consultar el sistema. "
@@ -204,6 +278,17 @@ class AgentService:
                     "error": True,
                 },
             )
+
+    @staticmethod
+    def _marcar_requiere_humano_seguro(session: Session, telefono: str) -> None:
+        try:
+            cliente = session.get(Cliente, telefono)
+            if cliente:
+                cliente.estado_conversacion = EstadoConversacion.REQUIERE_HUMANO
+                session.add(cliente)
+                session.commit()
+        except Exception:
+            session.rollback()
 
 
 @lru_cache
