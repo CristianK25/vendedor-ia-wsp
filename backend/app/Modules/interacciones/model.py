@@ -1,6 +1,6 @@
 import enum
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import Field, SQLModel
 
 class TipoIntencion(str, enum.Enum):
@@ -21,6 +21,6 @@ class Interaccion(SQLModel, table=True):
     precio_pretendido: Optional[float] = Field(default=None)
     detalles_tasacion: Optional[str] = Field(default=None)
     
-    fecha: datetime = Field(default_factory=datetime.utcnow)
+    fecha: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     respondido: bool = Field(default=False)
     seguimiento_completado: bool = Field(default=False)

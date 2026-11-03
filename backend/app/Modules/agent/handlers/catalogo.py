@@ -2,10 +2,12 @@ import logging
 from typing import List, Optional, Set, Tuple
 from sqlmodel import Session, select
 
+from app.Modules.clientes.model import Cliente
+from app.Modules.interacciones.model import Interaccion, TipoIntencion
 from app.Modules.vehiculos.model import EstadoVehiculo, Vehiculo
 from app.Modules.agent.handlers.base import BaseHandler
 from app.Modules.agent.llm import LLMClient, llm_client
-from app.Modules.agent.prompts import PROMPT_CATALOGO_TEMPLATE
+from app.Modules.agent.prompts import DATOS_VENTA_MAXI, PROMPT_CATALOGO_TEMPLATE
 from app.Modules.agent.schema import (
     AgentChatRequest,
     AgentChatResponse,
@@ -26,21 +28,21 @@ class CatalogoHandler(BaseHandler):
     @staticmethod
     def obtener_stock_resumen(session: Session) -> Tuple[str, Set[int]]:
         """
-        Consulta el stock disponible y activo en PostgreSQL de forma determinística
-        y retorna tanto el texto para el prompt como el conjunto de IDs válidos en stock.
+        Consulta el stock activo en PostgreSQL (tanto 'disponible' como 'reservado'/señado)
+        de forma determinística y retorna el texto para el prompt junto con los IDs válidos.
         """
         statement = (
             select(Vehiculo)
             .where(
-                Vehiculo.estado == EstadoVehiculo.disponible,
+                Vehiculo.estado.in_([EstadoVehiculo.disponible, EstadoVehiculo.reservado]),
                 Vehiculo.activo.is_(True),
             )
-            .order_by(Vehiculo.marca.asc(), Vehiculo.modelo.asc(), Vehiculo.anio.desc())
+            .order_by(Vehiculo.estado.asc(), Vehiculo.marca.asc(), Vehiculo.modelo.asc(), Vehiculo.anio.desc())
         )
         vehiculos = session.exec(statement).all()
 
         if not vehiculos:
-            return "Actualmente no hay vehículos disponibles en stock.", set()
+            return "Actualmente no hay vehículos cargados en stock.", set()
 
         lineas: list[str] = []
         ids_validos: set[int] = set()
@@ -49,6 +51,7 @@ class CatalogoHandler(BaseHandler):
             if v.id is not None:
                 ids_validos.add(v.id)
 
+            estado_tag = "[DISPONIBLE]" if v.estado == EstadoVehiculo.disponible else "[SEÑADO]"
             moneda = v.moneda_venta.value if v.moneda_venta else "PESOS"
             if moneda == "USD":
                 precio_str = f"USD {v.precio_venta:,.0f}"
@@ -57,10 +60,51 @@ class CatalogoHandler(BaseHandler):
 
             tipo_desc = f" ({v.tipo})" if v.tipo else ""
             lineas.append(
-                f"- [ID: {v.id}] {v.marca} {v.modelo} {v.anio} | {v.kilometraje:,} km | {precio_str} | Transmisión: {v.transmision}{tipo_desc}"
+                f"- [ID: {v.id}] {estado_tag} {v.marca} {v.modelo} {v.anio} | {v.kilometraje:,} km | {precio_str} | Transmisión: {v.transmision}{tipo_desc}"
             )
 
         return "\n".join(lineas), ids_validos
+
+    @staticmethod
+    def _registrar_interes_vehiculo(
+        session: Session,
+        cliente_telefono: str,
+        cliente_nombre: Optional[str],
+        vehiculo_id: int,
+    ) -> None:
+        """
+        Registra en la tabla `interacciones` que el cliente consultó por `vehiculo_id`
+        (si aún no tiene una interacción de compra registrada para ese mismo auto).
+        """
+        # Asegurar que el cliente exista en la tabla `clientes` por la FK de `interacciones`
+        cliente = session.get(Cliente, cliente_telefono)
+        if not cliente:
+            cliente = Cliente(
+                telefono=cliente_telefono,
+                nombre=cliente_nombre or "Cliente WhatsApp",
+                activo=True,
+            )
+            session.add(cliente)
+            session.flush()
+
+        stmt_existente = (
+            select(Interaccion)
+            .where(
+                Interaccion.cliente_telefono == cliente_telefono,
+                Interaccion.vehiculo_id == vehiculo_id,
+                Interaccion.tipo == TipoIntencion.compra,
+            )
+            .limit(1)
+        )
+        interaccion_previa = session.exec(stmt_existente).first()
+        if not interaccion_previa:
+            nueva = Interaccion(
+                cliente_telefono=cliente_telefono,
+                vehiculo_id=vehiculo_id,
+                tipo=TipoIntencion.compra,
+                respondido=True,
+            )
+            session.add(nueva)
 
     def handle(
         self,
@@ -70,11 +114,14 @@ class CatalogoHandler(BaseHandler):
     ) -> AgentChatResponse:
         """Procesa una consulta de catálogo en tiempo real con stock directo de Postgres y memoria multi-turno."""
         stock_texto, ids_validos = self.obtener_stock_resumen(session)
-        # Cerramos la transacción de solo lectura antes de la llamada de red al LLM
-        # para no retener la conexión en estado 'idle in transaction'.
+        # Liberar la transacción de lectura antes de la llamada HTTP al LLM
         session.commit()
 
-        system_prompt = PROMPT_CATALOGO_TEMPLATE.format(stock_actual=stock_texto)
+        system_prompt = PROMPT_CATALOGO_TEMPLATE.format(
+            datos_venta=DATOS_VENTA_MAXI,
+            cliente_nombre=payload.cliente_nombre or "No informado aún",
+            stock_actual=stock_texto,
+        )
 
         decision = self.llm.generar_estructurado(
             schema_cls=DecisionCatalogo,
@@ -87,21 +134,34 @@ class CatalogoHandler(BaseHandler):
         vehiculo_id = decision.vehiculo_interes_id
         if vehiculo_id is not None and vehiculo_id not in ids_validos:
             logger.warning(
-                "El LLM devolvió un vehiculo_interes_id (%s) fuera del stock disponible; se descarta.",
+                "El LLM devolvió un vehiculo_interes_id (%s) fuera del stock activo; se descarta.",
                 vehiculo_id,
             )
             vehiculo_id = None
 
+        # Si el cliente mostró interés en un vehículo válido, dejarlo asentado en `interacciones`
+        if vehiculo_id is not None:
+            self._registrar_interes_vehiculo(
+                session=session,
+                cliente_telefono=payload.cliente_telefono,
+                cliente_nombre=payload.cliente_nombre,
+                vehiculo_id=vehiculo_id,
+            )
+
         # Reglas de negocio determinísticas en Python:
         accion = "consulta_stock"
-        if decision.quiere_coordinar_visita:
-            accion = "intencion_visita"
-        elif decision.derivar_a_maxi:
+        camino_salida = Camino.catalogo.value
+
+        if decision.derivar_a_maxi:
             accion = "derivado_humano"
+        elif decision.quiere_coordinar_visita:
+            accion = "intencion_visita"
+            # Si el cliente ya expresó intención de verlo, dejamos la sesión lista en 'agendar_cita'
+            camino_salida = Camino.agendar_cita.value
 
         return AgentChatResponse(
             respuesta_texto=decision.respuesta_whatsapp,
-            camino=Camino.catalogo.value,
+            camino=camino_salida,
             accion_ejecutada=accion,
             derivar_a_humano=decision.derivar_a_maxi,
             metadata={

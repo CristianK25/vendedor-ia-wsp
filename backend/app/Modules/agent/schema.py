@@ -30,19 +30,19 @@ class DecisionCatalogo(BaseModel):
         ...,
         min_length=1,
         max_length=1000,
-        description="Mensaje en español argentino con voseo (2 a 4 líneas), cercano y cordial, que responde con datos del stock y termina con una pregunta o propuesta para ver el auto.",
+        description="Mensaje en español argentino con voseo (2 a 4 líneas), cercano y cordial, que responde con datos del stock y termina con una pregunta o propuesta concreta.",
     )
     vehiculo_interes_id: Optional[int] = Field(
         default=None,
-        description="ID numérico del vehículo del stock por el cual el cliente consultó o mostró interés (si aplica).",
+        description="ID numérico del vehículo del stock por el cual el cliente consultó o mostró interés puntual (null si fue una consulta general o el auto no existe en el listado).",
     )
     quiere_coordinar_visita: bool = Field(
         default=False,
-        description="True si el cliente expresó interés en ver el auto, coordinar una cita o visitarnos.",
+        description="True ÚNICAMENTE si el CLIENTE en su mensaje pidió ir a ver el auto, coordinar cita o aceptó explícitamente visitarnos ('sí quiero verlo', 'mañana puedo'). Debe ser False si el cliente solo preguntó precio/stock aunque vos en tu respuesta le ofrezcas coordinar visita.",
     )
     derivar_a_maxi: bool = Field(
         default=False,
-        description="True si el cliente pide descuento agresivo, quiere señar ya mismo, tiene un reclamo o pide hablar con Maxi.",
+        description="True si el cliente quiere cerrar/señar, negocia precio, pide financiación concreta, entrega un usado, tiene un reclamo o pregunta un dato técnico que no figura en la ficha del stock.",
     )
 
 
