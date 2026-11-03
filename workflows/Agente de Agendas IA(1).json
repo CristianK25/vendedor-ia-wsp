@@ -162,7 +162,7 @@
             },
             {
               "name": "texto",
-              "value": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].text.body }}"
+              "value": "={{\n  (() => {\n    const msg = $('Webhook').item.json.body.entry[0].changes[0].value.messages[0];\n    if (msg.type === 'text' && msg.text && msg.text.body) return msg.text.body;\n    if (msg.type === 'image') return '[📷 Foto enviada por el cliente' + (msg.image && msg.image.caption ? ': ' + msg.image.caption : '') + ']';\n    if (msg.type === 'audio') return '[🎤 Audio enviado por el cliente]';\n    if (msg.type === 'document') return '[📄 Documento enviado por el cliente: ' + (msg.document && msg.document.filename ? msg.document.filename : '') + ']';\n    return '[Mensaje multimedia: ' + msg.type + ']';\n  })()\n}}"
             },
             {
               "name": "nombre",
@@ -174,16 +174,7 @@
             }
           ]
         },
-        "options": {},
-        "parameters": {
-          "bodyParameters": {
-            "parameters": {
-              "1": {
-                "value": "={{\n  (() => {\n    const msg = $('Webhook').item.json.body.entry[0].changes[0].value.messages[0];\n    if (msg.type === 'text' && msg.text && msg.text.body) return msg.text.body;\n    if (msg.type === 'image') return '[📷 Foto enviada por el cliente' + (msg.image && msg.image.caption ? ': ' + msg.image.caption : '') + ']';\n    if (msg.type === 'audio') return '[🎤 Audio enviado por el cliente]';\n    if (msg.type === 'document') return '[📄 Documento enviado por el cliente: ' + (msg.document && msg.document.filename ? msg.document.filename : '') + ']';\n    return '[Mensaje multimedia: ' + msg.type + ']';\n  })()\n}}"
-              }
-            }
-          }
-        }
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -209,11 +200,8 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"state\": \"{{ $('Guardar Cliente').item.json.contexto_laya || '' }}El cliente dice ahora: {{ $('Buffer Mensajes').item.json.mensaje_completo.replace(/\\n/g, ' ').replace(/\\\"/g, ' ') }}\",\n  \"questions\": {\n    \"camino\": {\n      \"type\": \"choice\",\n      \"instructions\": \"¿Cuál es la intención principal del cliente en SU ÚLTIMO MENSAJE ('El cliente dice ahora'), teniendo en cuenta la pregunta previa del asistente?\",\n      \"criteria\": {\n        \"catalogo\": \"Pregunta por autos en venta, stock disponible, precio, kilometraje, fotos o un modelo puntual\",\n        \"tasacion\": \"Pregunta si toman permuta, entrega de auto usado en parte de pago o cotización de su auto\",\n        \"financiacion\": \"Pregunta por cuotas, formas de pago, dólares, planes de financiación o créditos\",\n        \"agendar_cita\": \"Quiere ir a ver el auto, responde que sí a coordinar una visita ('sí dale', 'mañana a las 17'), pregunta dónde están ubicados o propone día y horario\",\n        \"negociacion\": \"Pide descuento, hace una oferta de contado o pregunta el último precio\",\n        \"humano\": \"Pide hablar con un vendedor o con Maxi, quiere señar o cerrar la compra, o tiene un reclamo\",\n        \"general\": \"Saludo inicial sin consulta específica (hola, buenas), horarios de atención o preguntas generales\"\n      }\n    }\n  }\n}",
-        "options": {},
-        "parameters": {
-          "jsonBody": "={{\n  JSON.stringify({\n    state: (($('Guardar Cliente').item.json.contexto_laya || '') + 'El cliente dice ahora: ' + ($('Buffer Mensajes').item.json.mensaje_completo || '')).replace(/\\s+/g, ' ').trim(),\n    questions: {\n      camino: {\n        type: \"choice\",\n        instructions: \"¿Cuál es la intención principal del cliente en SU ÚLTIMO MENSAJE ('El cliente dice ahora'), teniendo en cuenta la pregunta previa del asistente?\",\n        criteria: {\n          catalogo: \"Pregunta por autos en venta, stock disponible, precio, kilometraje, fotos o un modelo puntual\",\n          tasacion: \"Pregunta si toman permuta, entrega de auto usado en parte de pago o cotización de su auto\",\n          financiacion: \"Pregunta por cuotas, formas de pago, dólares, planes de financiación o créditos\",\n          agendar_cita: \"Quiere ir a ver el auto, responde que sí a coordinar una visita ('sí dale', 'mañana a las 17'), pregunta dónde están ubicados o propone día y horario\",\n          negociacion: \"Pide descuento, hace una oferta de contado o pregunta el último precio\",\n          humano: \"Pide hablar con un vendedor o con Maxi, quiere señar o cerrar la compra, o tiene un reclamo\",\n          general: \"Saludo inicial sin consulta específica (hola, buenas), horarios de atención o preguntas generales\"\n        }\n      }\n    }\n  })\n}}"
-        }
+        "jsonBody": "={{\n  JSON.stringify({\n    state: (($('Guardar Cliente').item.json.contexto_laya || '') + 'El cliente dice ahora: ' + ($('Buffer Mensajes').item.json.mensaje_completo || '')).replace(/\\s+/g, ' ').trim(),\n    questions: {\n      camino: {\n        type: \"choice\",\n        instructions: \"¿Cuál es la intención principal del cliente en SU ÚLTIMO MENSAJE ('El cliente dice ahora'), teniendo en cuenta la pregunta previa del asistente?\",\n        criteria: {\n          catalogo: \"Pregunta por autos en venta, stock disponible, precio, kilometraje, fotos o un modelo puntual\",\n          tasacion: \"Pregunta si toman permuta, entrega de auto usado en parte de pago o cotización de su auto\",\n          financiacion: \"Pregunta por cuotas, formas de pago, dólares, planes de financiación o créditos\",\n          agendar_cita: \"Quiere ir a ver el auto, responde que sí a coordinar una visita ('sí dale', 'mañana a las 17'), pregunta dónde están ubicados o propone día y horario\",\n          negociacion: \"Pide descuento, hace una oferta de contado o pregunta el último precio\",\n          humano: \"Pide hablar con un vendedor o con Maxi, quiere señar o cerrar la compra, o tiene un reclamo\",\n          general: \"Saludo inicial sin consulta específica (hola, buenas), horarios de atención o preguntas generales\"\n        }\n      }\n    }\n  })\n}}",
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -408,11 +396,8 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"session_id\": \"{{ $('Guardar Cliente').item.json.cliente.telefono }}\",\n  \"cliente_telefono\": \"{{ $('Guardar Cliente').item.json.cliente.telefono }}\",\n  \"cliente_nombre\": \"{{ $('Guardar Cliente').item.json.cliente.nombre }}\",\n  \"camino\": \"{{ $json.answers.camino.choice }}\",\n  \"mensaje\": \"{{ $('Buffer Mensajes').item.json.mensaje_completo }}\"\n}\n",
-        "options": {},
-        "parameters": {
-          "jsonBody": "={{\n  JSON.stringify({\n    session_id: $('Guardar Cliente').item.json.cliente.telefono,\n    cliente_telefono: $('Guardar Cliente').item.json.cliente.telefono,\n    cliente_nombre: $('Guardar Cliente').item.json.cliente.nombre,\n    camino: ($json.answers && $json.answers.camino && $json.answers.camino.choice) ? $json.answers.camino.choice : 'fallback',\n    mensaje: $('Buffer Mensajes').item.json.mensaje_completo || ''\n  })\n}}"
-        }
+        "jsonBody": "={{\n  JSON.stringify({\n    session_id: $('Guardar Cliente').item.json.cliente.telefono,\n    cliente_telefono: $('Guardar Cliente').item.json.cliente.telefono,\n    cliente_nombre: $('Guardar Cliente').item.json.cliente.nombre,\n    camino: ($json.answers && $json.answers.camino && $json.answers.camino.choice) ? $json.answers.camino.choice : 'fallback',\n    mensaje: $('Buffer Mensajes').item.json.mensaje_completo || ''\n  })\n}}",
+        "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
