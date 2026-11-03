@@ -562,10 +562,6 @@ export default function ClientesView() {
         isOpen={!!selectedChatCliente}
         onClose={() => setSelectedChatCliente(null)}
         onClienteUpdated={handleClienteUpdatedFromDrawer}
-        onEditCliente={(telefono) => {
-          setSelectedChatCliente(null);
-          navigate(`/clientes/${telefono}`);
-        }}
       />
 
       <EtiquetasModal 

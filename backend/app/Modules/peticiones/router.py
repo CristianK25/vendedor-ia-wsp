@@ -1,23 +1,57 @@
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlmodel import Session, select
 from typing import List
 
 from app.Core.database import get_session
 from app.Core.Security.deps import require_admin
+from app.Modules.clientes.model import Cliente
 from app.Modules.peticiones.model import Peticion
 from app.Modules.peticiones.schema import PeticionRead, PeticionPosponer
 from app.Modules.peticiones.service import PeticionService
 
+MENDOZA_TZ = ZoneInfo("America/Argentina/Mendoza")
+
 # Este router es exclusivamente para el panel de administración
 router = APIRouter(prefix="/peticiones", tags=["Peticiones Admin"], dependencies=[Depends(require_admin)])
 
+
+def _ensure_utc(dt: datetime) -> datetime:
+    """Garantiza que un datetime leído de PostgreSQL (naive UTC) tenga tzinfo=timezone.utc."""
+    if dt is None:
+        return dt
+    return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt.astimezone(timezone.utc)
+
+
+def _normalizar_fecha_admin(dt: datetime) -> datetime:
+    """
+    Convierte la fecha/hora seleccionada por el admin en <input type="datetime-local" />
+    (hora local nominal de Mendoza) a UTC con timezone para SQLModel y serialización ISO.
+    """
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=MENDOZA_TZ).astimezone(timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
 @router.get("/", response_model=List[PeticionRead])
 def listar_peticiones(session: Session = Depends(get_session)):
-    # Solo devolvemos las peticiones que están "vivas" en la negociación
-    peticiones = session.exec(
-        select(Peticion).where(Peticion.estado.in_(["pendiente_admin", "pendiente_cliente"]))
-    ).all()
+    # Solo devolvemos las peticiones que están "vivas" y cuyo cliente no fue eliminado
+    stmt = (
+        select(Peticion)
+        .join(Cliente, Peticion.cliente_telefono == Cliente.telefono, isouter=True)
+        .where(
+            Peticion.estado.in_(["pendiente_admin", "pendiente_cliente"]),
+            (Cliente.activo == True) | (Cliente.telefono == None),
+        )
+        .order_by(Peticion.fecha_propuesta.asc())
+    )
+    peticiones = session.exec(stmt).all()
+    for p in peticiones:
+        if p.fecha_propuesta and p.fecha_propuesta.tzinfo is None:
+            p.fecha_propuesta = p.fecha_propuesta.replace(tzinfo=timezone.utc)
     return peticiones
+
 
 @router.post("/{peticion_id}/aceptar")
 def aceptar_peticion(peticion_id: int, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
@@ -32,14 +66,17 @@ def aceptar_peticion(peticion_id: int, background_tasks: BackgroundTasks, sessio
     from app.Modules.citas.service import CitaService
     from app.Modules.citas.schema import CitaCreate
     
+    fecha_utc = _ensure_utc(peticion.fecha_propuesta)
     service = CitaService(session)
     cita_create = CitaCreate(
         cliente_telefono=peticion.cliente_telefono,
-        fecha=peticion.fecha_propuesta,
-        estado="confirmada"
+        fecha=fecha_utc,
+        estado="confirmada",
+        notas=f"Auto: {peticion.vehiculo_modelo or 'Consulta general'}",
     )
     nueva_cita = service.create_cita(cita_create)
 
+    peticion.fecha_propuesta = fecha_utc
     peticion.estado = "completada"
     session.add(peticion)
     session.commit()
@@ -51,11 +88,12 @@ def aceptar_peticion(peticion_id: int, background_tasks: BackgroundTasks, sessio
         cliente_telefono=peticion.cliente_telefono,
         cliente_nombre=peticion.cliente_nombre,
         vehiculo_modelo=peticion.vehiculo_modelo or "Consulta general",
-        fecha_propuesta=peticion.fecha_propuesta.isoformat(),
+        fecha_propuesta=fecha_utc.isoformat(),
         accion="aceptada"
     )
     
     return {"status": "success", "message": "Petición aceptada, cita creada y cliente notificado vía n8n", "cita": nueva_cita}
+
 
 @router.post("/{peticion_id}/posponer")
 def posponer_peticion(peticion_id: int, datos: PeticionPosponer, background_tasks: BackgroundTasks, session: Session = Depends(get_session)):
@@ -63,16 +101,19 @@ def posponer_peticion(peticion_id: int, datos: PeticionPosponer, background_task
     if not peticion_original:
         raise HTTPException(status_code=404, detail="Petición no encontrada")
         
-    # Cancelar la original
+    # Cancelar la original (asegurando timezone en fecha_propuesta para validación de SQLModel)
+    peticion_original.fecha_propuesta = _ensure_utc(peticion_original.fecha_propuesta)
     peticion_original.estado = "cancelada"
     session.add(peticion_original)
     
+    nueva_fecha_utc = _normalizar_fecha_admin(datos.fecha_propuesta)
+
     # Crear nueva propuesta
     nueva_peticion = Peticion(
         cliente_nombre=peticion_original.cliente_nombre,
         cliente_telefono=peticion_original.cliente_telefono,
         vehiculo_modelo=peticion_original.vehiculo_modelo,
-        fecha_propuesta=datos.fecha_propuesta,
+        fecha_propuesta=nueva_fecha_utc,
         origen="admin",
         estado="pendiente_cliente",
         peticion_padre_id=peticion_original.id
@@ -88,12 +129,13 @@ def posponer_peticion(peticion_id: int, datos: PeticionPosponer, background_task
         cliente_telefono=nueva_peticion.cliente_telefono,
         cliente_nombre=nueva_peticion.cliente_nombre,
         vehiculo_modelo=nueva_peticion.vehiculo_modelo or "Consulta general",
-        fecha_propuesta=nueva_peticion.fecha_propuesta.isoformat(),
+        fecha_propuesta=nueva_fecha_utc.isoformat(),
         accion="pospuesta",
         token_confirmacion=nueva_peticion.token_confirmacion
     )
     
     return {"status": "success", "message": "Petición pospuesta y cliente notificado", "nueva_peticion_id": nueva_peticion.id}
+
 
 @router.post("/{peticion_id}/cancelar")
 def cancelar_peticion(peticion_id: int, session: Session = Depends(get_session)):
@@ -101,11 +143,13 @@ def cancelar_peticion(peticion_id: int, session: Session = Depends(get_session))
     if not peticion:
         raise HTTPException(status_code=404, detail="Petición no encontrada")
         
+    peticion.fecha_propuesta = _ensure_utc(peticion.fecha_propuesta)
     peticion.estado = "cancelada"
     session.add(peticion)
     session.commit()
     
     return {"status": "success", "message": "Petición cancelada internamente (sin notificar al cliente)"}
+
 
 @router.post("/{peticion_id}/forzar_confirmacion")
 def forzar_confirmacion(peticion_id: int, session: Session = Depends(get_session)):
@@ -120,17 +164,19 @@ def forzar_confirmacion(peticion_id: int, session: Session = Depends(get_session
     from app.Modules.citas.service import CitaService
     from app.Modules.citas.schema import CitaCreate
     
+    fecha_utc = _ensure_utc(peticion.fecha_propuesta)
     # Transformar a cita
     service = CitaService(session)
     cita_create = CitaCreate(
         cliente_telefono=peticion.cliente_telefono,
-        fecha=peticion.fecha_propuesta,
+        fecha=fecha_utc,
         estado="confirmada",
         notas=f"Auto: {peticion.vehiculo_modelo or 'Consulta general'}"
     )
     nueva_cita = service.create_cita(cita_create)
     
     # Marcar petición como completada
+    peticion.fecha_propuesta = fecha_utc
     peticion.estado = "completada"
     session.add(peticion)
     session.commit()

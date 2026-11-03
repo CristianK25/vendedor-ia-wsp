@@ -1,12 +1,29 @@
+from datetime import date, datetime, time, timedelta, timezone
 from sqlmodel import Session, select, func
 from app.Modules.citas.model import Cita
 from app.Modules.clientes.model import Cliente
 from app.Modules.vehiculos.model import Vehiculo
-from typing import List, Optional
+from typing import Optional
 
 class CitaRepository:
     def __init__(self, session: Session):
         self.session = session
+
+    @staticmethod
+    def _format_cita_dict(cita: Cita, nombre: Optional[str], marca: Optional[str], modelo: Optional[str], patente: Optional[str]) -> dict:
+        cita_dict = cita.model_dump()
+        if cita.fecha:
+            cita_dict['fecha'] = (
+                cita.fecha.replace(tzinfo=timezone.utc)
+                if cita.fecha.tzinfo is None
+                else cita.fecha.astimezone(timezone.utc)
+            )
+        cita_dict['cliente_nombre'] = nombre or cita.cliente_telefono
+        if modelo:
+            cita_dict['vehiculo_modelo'] = f"{marca} {modelo}".strip() if marca else modelo
+        if patente:
+            cita_dict['vehiculo_patente'] = patente
+        return cita_dict
 
     def get_all(self):
         statement = select(Cita, Cliente.nombre, Vehiculo.marca, Vehiculo.modelo, Vehiculo.patente).join(
@@ -15,24 +32,15 @@ class CitaRepository:
             Vehiculo, Cita.vehiculo_id == Vehiculo.id, isouter=True
         )
         results = self.session.exec(statement).all()
-        
-        citas_with_name = []
-        for cita, nombre, marca, modelo, patente in results:
-            cita_dict = cita.model_dump()
-            cita_dict['cliente_nombre'] = nombre or cita.cliente_telefono
-            if modelo:
-                cita_dict['vehiculo_modelo'] = f"{marca} {modelo}".strip() if marca else modelo
-            if patente:
-                cita_dict['vehiculo_patente'] = patente
-            citas_with_name.append(cita_dict)
-        return citas_with_name
+        return [
+            self._format_cita_dict(cita, nombre, marca, modelo, patente)
+            for cita, nombre, marca, modelo, patente in results
+        ]
 
     def get_by_id(self):
-        # get_by_id is not changed because it's only used for internal operations in service
         pass
 
     def get_hoy_by_vehiculo(self, vehiculo_id: int):
-        from datetime import date
         statement = select(Cita, Cliente.nombre, Vehiculo.marca, Vehiculo.modelo, Vehiculo.patente).join(
             Cliente, Cita.cliente_telefono == Cliente.telefono, isouter=True
         ).join(
@@ -45,13 +53,7 @@ class CitaRepository:
         if not result:
             return None
         cita, nombre, marca, modelo, patente = result
-        cita_dict = cita.model_dump()
-        cita_dict['cliente_nombre'] = nombre or cita.cliente_telefono
-        if modelo:
-            cita_dict['vehiculo_modelo'] = f"{marca} {modelo}".strip() if marca else modelo
-        if patente:
-            cita_dict['vehiculo_patente'] = patente
-        return cita_dict
+        return self._format_cita_dict(cita, nombre, marca, modelo, patente)
 
     def get_by_id_with_name(self, cita_id: int):
         statement = select(Cita, Cliente.nombre, Vehiculo.marca, Vehiculo.modelo, Vehiculo.patente).join(
@@ -63,21 +65,15 @@ class CitaRepository:
         if not result:
             return None
         cita, nombre, marca, modelo, patente = result
-        cita_dict = cita.model_dump()
-        cita_dict['cliente_nombre'] = nombre or cita.cliente_telefono
-        if modelo:
-            cita_dict['vehiculo_modelo'] = f"{marca} {modelo}".strip() if marca else modelo
-        if patente:
-            cita_dict['vehiculo_patente'] = patente
-        return cita_dict
+        return self._format_cita_dict(cita, nombre, marca, modelo, patente)
 
     def get_by_id_model(self, cita_id: int) -> Optional[Cita]:
         return self.session.get(Cita, cita_id)
 
-    def check_client_has_cita_on_date(self, telefono: str, target_date):
-        from datetime import datetime, time
-        start_of_day = datetime.combine(target_date.date(), time.min)
-        end_of_day = datetime.combine(target_date.date(), time.max)
+    def check_client_has_cita_on_date(self, telefono: str, target_date: datetime):
+        target_naive = target_date.astimezone(timezone.utc).replace(tzinfo=None) if target_date.tzinfo else target_date
+        start_of_day = datetime.combine(target_naive.date(), time.min)
+        end_of_day = datetime.combine(target_naive.date(), time.max)
         
         statement = select(Cita).where(
             Cita.cliente_telefono == telefono,
@@ -87,10 +83,10 @@ class CitaRepository:
         )
         return self.session.exec(statement).first() is not None
 
-    def check_overlap_exists(self, target_date, margin_hours: int = 1):
-        from datetime import timedelta
-        start_range = target_date - timedelta(hours=margin_hours)
-        end_range = target_date + timedelta(hours=margin_hours)
+    def check_overlap_exists(self, target_date: datetime, margin_hours: int = 1):
+        target_naive = target_date.astimezone(timezone.utc).replace(tzinfo=None) if target_date.tzinfo else target_date
+        start_range = target_naive - timedelta(hours=margin_hours)
+        end_range = target_naive + timedelta(hours=margin_hours)
         
         statement = select(Cita).where(
             Cita.fecha > start_range,
@@ -100,12 +96,16 @@ class CitaRepository:
         return self.session.exec(statement).first() is not None
 
     def create(self, cita: Cita):
+        if cita.fecha and cita.fecha.tzinfo is None:
+            cita.fecha = cita.fecha.replace(tzinfo=timezone.utc)
         self.session.add(cita)
         self.session.commit()
         self.session.refresh(cita)
         return self.get_by_id_with_name(cita.id)
 
     def update(self, cita: Cita):
+        if cita.fecha and cita.fecha.tzinfo is None:
+            cita.fecha = cita.fecha.replace(tzinfo=timezone.utc)
         self.session.add(cita)
         self.session.commit()
         self.session.refresh(cita)

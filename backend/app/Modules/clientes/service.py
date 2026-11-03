@@ -198,9 +198,25 @@ class ClienteService:
         )
 
     def delete_cliente(self, telefono: str):
+        from app.Modules.peticiones.model import Peticion
+
         cliente = self.repository.get_by_telefono(telefono)
         if not cliente:
             cliente = self.get_cliente(telefono)
+
+        # Cancelar peticiones pendientes asociadas a este cliente
+        peticiones_vivas = self.session.exec(
+            select(Peticion).where(
+                Peticion.cliente_telefono == cliente.telefono,
+                Peticion.estado.in_(["pendiente_admin", "pendiente_cliente"]),
+            )
+        ).all()
+        for p in peticiones_vivas:
+            if p.fecha_propuesta and p.fecha_propuesta.tzinfo is None:
+                p.fecha_propuesta = p.fecha_propuesta.replace(tzinfo=timezone.utc)
+            p.estado = "cancelada"
+            self.session.add(p)
+
         # Borrado lógico (soft-delete) para no perder historial de citas/ventas
         cliente.activo = False
         self.repository.update(cliente)
