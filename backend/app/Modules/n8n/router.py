@@ -264,6 +264,23 @@ def crear_interaccion(data: InteraccionCreate, session: Session = Depends(get_se
     nueva_interaccion = service.create(data)
     return {"status": "success", "message": "Interacción registrada exitosamente", "interaccion": nueva_interaccion}
 
+# Script Lua para vaciado y liberación atómica del buffer de WhatsApp en Redis.
+# KEYS[1] = key_buffer (ej: wsp:buffer:549261...)
+# KEYS[2] = key_lock   (ej: wsp:lock:549261...)
+# KEYS[3] = key_name   (ej: wsp:name:549261...)
+# Retorna: { [1] = lista_de_mensajes, [2] = stored_name_o_false }
+LUA_FLUSH_BUFFER_SCRIPT = """
+local msgs = redis.call('LRANGE', KEYS[1], 0, -1)
+redis.call('DEL', KEYS[1])
+redis.call('DEL', KEYS[2])
+local name = redis.call('GET', KEYS[3])
+if name then
+    redis.call('DEL', KEYS[3])
+end
+return { msgs, name }
+"""
+
+
 @router.post("/whatsapp/buffer", response_model=N8NWhatsAppBufferResponse)
 async def whatsapp_buffer(
     data: N8NWhatsAppBufferRequest,
@@ -274,7 +291,8 @@ async def whatsapp_buffer(
     Acumula mensajes que llegan en un intervalo corto (ej: 4s) para un mismo cliente.
     El mensaje líder espera y devuelve el texto unificado; los mensajes subsiguientes
     retornan 'procesar: False' para que n8n no lance ejecuciones duplicadas.
-    FastAPI maneja el ciclo de vida y cierre de conexión de Redis automáticamente con Depends.
+    La extracción y limpieza del buffer se realiza de forma atómica mediante un script Lua,
+    eliminando cualquier condición de carrera donde un mensaje nuevo pudiera perderse.
     """
     tel = data.cliente_telefono.strip()
     key_buffer = f"wsp:buffer:{tel}"
@@ -304,17 +322,23 @@ async def whatsapp_buffer(
     wait_time = max(1, min(data.wait_seconds or 4, 15))
     await asyncio.sleep(wait_time)
 
-    # Extraer todos los mensajes acumulados
-    mensajes = await redis.lrange(key_buffer, 0, -1)
-    stored_name = await redis.get(key_name)
+    # Extracción y liberación 100% atómica mediante Lua script
+    res = await redis.eval(
+        LUA_FLUSH_BUFFER_SCRIPT,
+        3,
+        key_buffer,
+        key_lock,
+        key_name,
+    )
+    mensajes = res[0] if (res and len(res) > 0) else []
+    stored_name = res[1] if (res and len(res) > 1 and res[1]) else None
 
-    # Limpiar claves de Redis para la próxima interacción
-    await redis.delete(key_buffer)
-    await redis.delete(key_lock)
-    if stored_name:
-        await redis.delete(key_name)
-
+    # Unir mensajes acumulados
     mensaje_completo = "\n".join(mensajes) if mensajes else data.texto
+
+    # Protección de cota máxima para AgentChatRequest (máx 2000 chars)
+    if len(mensaje_completo) > 2000:
+        mensaje_completo = mensaje_completo[:1997] + "..."
 
     return N8NWhatsAppBufferResponse(
         procesar=True,
