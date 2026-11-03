@@ -66,18 +66,12 @@
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1.1,
       "position": [
-        2704,
+        2840,
         -16
       ],
       "id": "a599166d-12c9-4c47-9424-975ebf2ac72c",
       "name": "Send message",
-      "webhookId": "2abf814f-ff0d-434f-b323-33c51213d44c",
-      "credentials": {
-        "whatsAppApi": {
-          "id": "9byit9BxxrTxhsS7",
-          "name": "WhatsApp account - Enviar Mensaje"
-        }
-      }
+      "webhookId": "2abf814f-ff0d-434f-b323-33c51213d44c"
     },
     {
       "parameters": {
@@ -180,7 +174,16 @@
             }
           ]
         },
-        "options": {}
+        "options": {},
+        "parameters": {
+          "bodyParameters": {
+            "parameters": {
+              "1": {
+                "value": "={{\n  (() => {\n    const msg = $('Webhook').item.json.body.entry[0].changes[0].value.messages[0];\n    if (msg.type === 'text' && msg.text && msg.text.body) return msg.text.body;\n    if (msg.type === 'image') return '[📷 Foto enviada por el cliente' + (msg.image && msg.image.caption ? ': ' + msg.image.caption : '') + ']';\n    if (msg.type === 'audio') return '[🎤 Audio enviado por el cliente]';\n    if (msg.type === 'document') return '[📄 Documento enviado por el cliente: ' + (msg.document && msg.document.filename ? msg.document.filename : '') + ']';\n    return '[Mensaje multimedia: ' + msg.type + ']';\n  })()\n}}"
+              }
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -207,7 +210,10 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"state\": \"{{ $('Guardar Cliente').item.json.contexto_laya || '' }}El cliente dice ahora: {{ $('Buffer Mensajes').item.json.mensaje_completo.replace(/\\n/g, ' ').replace(/\\\"/g, ' ') }}\",\n  \"questions\": {\n    \"camino\": {\n      \"type\": \"choice\",\n      \"instructions\": \"¿Cuál es la intención principal del cliente en SU ÚLTIMO MENSAJE ('El cliente dice ahora'), teniendo en cuenta la pregunta previa del asistente?\",\n      \"criteria\": {\n        \"catalogo\": \"Pregunta por autos en venta, stock disponible, precio, kilometraje, fotos o un modelo puntual\",\n        \"tasacion\": \"Pregunta si toman permuta, entrega de auto usado en parte de pago o cotización de su auto\",\n        \"financiacion\": \"Pregunta por cuotas, formas de pago, dólares, planes de financiación o créditos\",\n        \"agendar_cita\": \"Quiere ir a ver el auto, responde que sí a coordinar una visita ('sí dale', 'mañana a las 17'), pregunta dónde están ubicados o propone día y horario\",\n        \"negociacion\": \"Pide descuento, hace una oferta de contado o pregunta el último precio\",\n        \"humano\": \"Pide hablar con un vendedor o con Maxi, quiere señar o cerrar la compra, o tiene un reclamo\",\n        \"general\": \"Saludo inicial sin consulta específica (hola, buenas), horarios de atención o preguntas generales\"\n      }\n    }\n  }\n}",
-        "options": {}
+        "options": {},
+        "parameters": {
+          "jsonBody": "={{\n  JSON.stringify({\n    state: (($('Guardar Cliente').item.json.contexto_laya || '') + 'El cliente dice ahora: ' + ($('Buffer Mensajes').item.json.mensaje_completo || '')).replace(/\\s+/g, ' ').trim(),\n    questions: {\n      camino: {\n        type: \"choice\",\n        instructions: \"¿Cuál es la intención principal del cliente en SU ÚLTIMO MENSAJE ('El cliente dice ahora'), teniendo en cuenta la pregunta previa del asistente?\",\n        criteria: {\n          catalogo: \"Pregunta por autos en venta, stock disponible, precio, kilometraje, fotos o un modelo puntual\",\n          tasacion: \"Pregunta si toman permuta, entrega de auto usado en parte de pago o cotización de su auto\",\n          financiacion: \"Pregunta por cuotas, formas de pago, dólares, planes de financiación o créditos\",\n          agendar_cita: \"Quiere ir a ver el auto, responde que sí a coordinar una visita ('sí dale', 'mañana a las 17'), pregunta dónde están ubicados o propone día y horario\",\n          negociacion: \"Pide descuento, hace una oferta de contado o pregunta el último precio\",\n          humano: \"Pide hablar con un vendedor o con Maxi, quiere señar o cerrar la compra, o tiene un reclamo\",\n          general: \"Saludo inicial sin consulta específica (hola, buenas), horarios de atención o preguntas generales\"\n        }\n      }\n    }\n  })\n}}"
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -403,7 +409,10 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"session_id\": \"{{ $('Guardar Cliente').item.json.cliente.telefono }}\",\n  \"cliente_telefono\": \"{{ $('Guardar Cliente').item.json.cliente.telefono }}\",\n  \"cliente_nombre\": \"{{ $('Guardar Cliente').item.json.cliente.nombre }}\",\n  \"camino\": \"{{ $json.answers.camino.choice }}\",\n  \"mensaje\": \"{{ $('Buffer Mensajes').item.json.mensaje_completo }}\"\n}\n",
-        "options": {}
+        "options": {},
+        "parameters": {
+          "jsonBody": "={{\n  JSON.stringify({\n    session_id: $('Guardar Cliente').item.json.cliente.telefono,\n    cliente_telefono: $('Guardar Cliente').item.json.cliente.telefono,\n    cliente_nombre: $('Guardar Cliente').item.json.cliente.nombre,\n    camino: ($json.answers && $json.answers.camino && $json.answers.camino.choice) ? $json.answers.camino.choice : 'fallback',\n    mensaje: $('Buffer Mensajes').item.json.mensaje_completo || ''\n  })\n}}"
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
@@ -413,75 +422,53 @@
       ],
       "id": "8ec5d6e9-8adf-42a2-ba8a-48733afce89b",
       "name": "Ejecutar Agente"
+    },
+    {
+      "id": "f7b8c19a-9e12-4a56-b089-63a291f0412e",
+      "name": "¿Enviar WhatsApp?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2620,
+        -16
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1-enviar-wsp",
+              "leftValue": "={{ $json.enviar_mensaje_whatsapp }}",
+              "operator": {
+                "operation": "equals",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": true
+            },
+            {
+              "id": "c2-texto-no-vacio",
+              "leftValue": "={{ ($json.respuesta_texto || '').trim().length }}",
+              "operator": {
+                "operation": "gt",
+                "singleValue": true,
+                "type": "number"
+              },
+              "rightValue": 0
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          }
+        }
+      },
+      "disabled": false
     }
   ],
-  "pinData": {
-    "Webhook": [
-      {
-        "json": {
-          "headers": {
-            "host": "n8n-lvm.autoleadcrm.tech",
-            "x-forwarded-scheme": "https",
-            "x-forwarded-proto": "https",
-            "x-forwarded-for": "173.252.107.3",
-            "x-real-ip": "173.252.107.3",
-            "content-length": "545",
-            "accept": "*/*",
-            "accept-encoding": "deflate, gzip",
-            "user-agent": "facebookexternalua",
-            "content-type": "application/json",
-            "x-hub-signature": "sha1=ee8eba5a1541114668e18a1f4647844c8d9e5ce7",
-            "x-hub-signature-256": "sha256=9e5ab5229bc34bd34d2a34743a731612736c9f97892e53d4c5c100671609a88e"
-          },
-          "params": {},
-          "query": {},
-          "body": {
-            "object": "whatsapp_business_account",
-            "entry": [
-              {
-                "id": "2023677181655787",
-                "changes": [
-                  {
-                    "value": {
-                      "messaging_product": "whatsapp",
-                      "metadata": {
-                        "display_phone_number": "5492617752457",
-                        "phone_number_id": "1181457498395106"
-                      },
-                      "contacts": [
-                        {
-                          "profile": {
-                            "name": "kiki"
-                          },
-                          "wa_id": "5492614720339",
-                          "user_id": "AR.1371646515107072"
-                        }
-                      ],
-                      "messages": [
-                        {
-                          "from": "5492614720339",
-                          "from_user_id": "AR.1371646515107072",
-                          "id": "wamid.HBgNNTQ5MjYxNDcyMDMzORUCABIYFjNFQjA4NEFGNkMzQ0I5RTMyM0JBRTUA",
-                          "timestamp": "1787680613",
-                          "text": {
-                            "body": "Quería consultar por el Toyota Corolla y el precio"
-                          },
-                          "type": "text"
-                        }
-                      ]
-                    },
-                    "field": "messages"
-                  }
-                ]
-              }
-            ]
-          },
-          "webhookUrl": "https://n8n-lvm.autoleadcrm.tech/webhook/whatsapp",
-          "executionMode": "production"
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Guardar Cliente": {
       "main": [
@@ -562,6 +549,17 @@
       "main": [
         [
           {
+            "node": "¿Enviar WhatsApp?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Enviar WhatsApp?": {
+      "main": [
+        [
+          {
             "node": "Send message",
             "type": "main",
             "index": 0
@@ -576,10 +574,11 @@
     "binaryMode": "separate",
     "availableInMCP": true
   },
-  "versionId": "0017bcd3-e5c3-417b-8954-c2691f896de0",
+  "versionId": "6661b4ee-ccde-45bb-a49d-4780c142d96c",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "d90d229e6f91a1588de750a2f504c3d09357d21735e68d2b6f71c25c84d69d34"
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
   },
   "nodeGroups": [
     {
