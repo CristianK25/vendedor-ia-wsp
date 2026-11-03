@@ -3,6 +3,8 @@ from enum import Enum
 from typing import Any, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.Core.phone import sanitizar_telefono, sanitizar_nombre
+
 
 class Camino(str, Enum):
     catalogo = "catalogo"
@@ -211,6 +213,25 @@ class AgentChatRequest(BaseModel):
             cleaned = value.lstrip("=").strip()
             return cleaned
         return value
+
+    @field_validator("cliente_telefono", mode="after")
+    @classmethod
+    def normalize_telefono(cls, value: str) -> str:
+        return sanitizar_telefono(value)
+
+    @field_validator("session_id", mode="after")
+    @classmethod
+    def normalize_session_id(cls, value: str) -> str:
+        # Si session_id parece un teléfono, normalizarlo también para consistencia
+        try:
+            return sanitizar_telefono(value)
+        except Exception:
+            return value.strip()
+
+    @field_validator("cliente_nombre", mode="after")
+    @classmethod
+    def clean_cliente_nombre(cls, value: Optional[str]) -> Optional[str]:
+        return sanitizar_nombre(value)
 
     @field_validator("camino", mode="after")
     @classmethod
