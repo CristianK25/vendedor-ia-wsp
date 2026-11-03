@@ -71,9 +71,13 @@ class CitaRepository:
         return self.session.get(Cita, cita_id)
 
     def check_client_has_cita_on_date(self, telefono: str, target_date: datetime):
-        target_naive = target_date.astimezone(timezone.utc).replace(tzinfo=None) if target_date.tzinfo else target_date
-        start_of_day = datetime.combine(target_naive.date(), time.min)
-        end_of_day = datetime.combine(target_naive.date(), time.max)
+        target_utc = (
+            target_date.replace(tzinfo=timezone.utc)
+            if target_date.tzinfo is None
+            else target_date.astimezone(timezone.utc)
+        )
+        start_of_day = datetime.combine(target_utc.date(), time.min, tzinfo=timezone.utc)
+        end_of_day = datetime.combine(target_utc.date(), time.max, tzinfo=timezone.utc)
         
         statement = select(Cita).where(
             Cita.cliente_telefono == telefono,
@@ -84,9 +88,13 @@ class CitaRepository:
         return self.session.exec(statement).first() is not None
 
     def check_overlap_exists(self, target_date: datetime, margin_hours: int = 1):
-        target_naive = target_date.astimezone(timezone.utc).replace(tzinfo=None) if target_date.tzinfo else target_date
-        start_range = target_naive - timedelta(hours=margin_hours)
-        end_range = target_naive + timedelta(hours=margin_hours)
+        target_utc = (
+            target_date.replace(tzinfo=timezone.utc)
+            if target_date.tzinfo is None
+            else target_date.astimezone(timezone.utc)
+        )
+        start_range = target_utc - timedelta(hours=margin_hours)
+        end_range = target_utc + timedelta(hours=margin_hours)
         
         statement = select(Cita).where(
             Cita.fecha > start_range,
@@ -98,6 +106,8 @@ class CitaRepository:
     def create(self, cita: Cita):
         if cita.fecha and cita.fecha.tzinfo is None:
             cita.fecha = cita.fecha.replace(tzinfo=timezone.utc)
+        if cita.fecha_creacion and cita.fecha_creacion.tzinfo is None:
+            cita.fecha_creacion = cita.fecha_creacion.replace(tzinfo=timezone.utc)
         self.session.add(cita)
         self.session.commit()
         self.session.refresh(cita)
@@ -106,6 +116,8 @@ class CitaRepository:
     def update(self, cita: Cita):
         if cita.fecha and cita.fecha.tzinfo is None:
             cita.fecha = cita.fecha.replace(tzinfo=timezone.utc)
+        if cita.fecha_creacion and cita.fecha_creacion.tzinfo is None:
+            cita.fecha_creacion = cita.fecha_creacion.replace(tzinfo=timezone.utc)
         self.session.add(cita)
         self.session.commit()
         self.session.refresh(cita)

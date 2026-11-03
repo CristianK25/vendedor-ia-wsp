@@ -34,6 +34,32 @@ def _normalizar_fecha_admin(dt: datetime) -> datetime:
     return dt.astimezone(timezone.utc)
 
 
+def _resolver_vehiculo_id_peticion(session: Session, telefono: str, vehiculo_modelo: str | None) -> int | None:
+    """Intenta asociar la Cita al vehiculo_id real (por última interacción de compra o coincidencia de modelo)."""
+    from app.Modules.interacciones.model import Interaccion, TipoIntencion
+    from app.Modules.vehiculos.model import Vehiculo
+
+    inter = session.exec(
+        select(Interaccion)
+        .where(
+            Interaccion.cliente_telefono == telefono,
+            Interaccion.tipo == TipoIntencion.compra,
+            Interaccion.vehiculo_id.is_not(None),
+        )
+        .order_by(Interaccion.id.desc())
+    ).first()
+    if inter and inter.vehiculo_id:
+        return inter.vehiculo_id
+
+    if vehiculo_modelo:
+        modelo_lower = vehiculo_modelo.lower()
+        vehiculos = session.exec(select(Vehiculo).where(Vehiculo.activo.is_(True))).all()
+        for v in vehiculos:
+            if v.modelo and v.modelo.lower() in modelo_lower:
+                return v.id
+    return None
+
+
 @router.get("/", response_model=List[PeticionRead])
 def listar_peticiones(session: Session = Depends(get_session)):
     # Solo devolvemos las peticiones que están "vivas" y cuyo cliente no fue eliminado
@@ -67,12 +93,17 @@ def aceptar_peticion(peticion_id: int, background_tasks: BackgroundTasks, sessio
     from app.Modules.citas.schema import CitaCreate
     
     fecha_utc = _ensure_utc(peticion.fecha_propuesta)
+    vehiculo_id_resuelto = _resolver_vehiculo_id_peticion(
+        session=session,
+        telefono=peticion.cliente_telefono,
+        vehiculo_modelo=peticion.vehiculo_modelo,
+    )
     service = CitaService(session)
     cita_create = CitaCreate(
         cliente_telefono=peticion.cliente_telefono,
+        vehiculo_id=vehiculo_id_resuelto,
         fecha=fecha_utc,
         estado="confirmada",
-        notas=f"Auto: {peticion.vehiculo_modelo or 'Consulta general'}",
     )
     nueva_cita = service.create_cita(cita_create)
 
@@ -165,13 +196,18 @@ def forzar_confirmacion(peticion_id: int, session: Session = Depends(get_session
     from app.Modules.citas.schema import CitaCreate
     
     fecha_utc = _ensure_utc(peticion.fecha_propuesta)
+    vehiculo_id_resuelto = _resolver_vehiculo_id_peticion(
+        session=session,
+        telefono=peticion.cliente_telefono,
+        vehiculo_modelo=peticion.vehiculo_modelo,
+    )
     # Transformar a cita
     service = CitaService(session)
     cita_create = CitaCreate(
         cliente_telefono=peticion.cliente_telefono,
+        vehiculo_id=vehiculo_id_resuelto,
         fecha=fecha_utc,
         estado="confirmada",
-        notas=f"Auto: {peticion.vehiculo_modelo or 'Consulta general'}"
     )
     nueva_cita = service.create_cita(cita_create)
     

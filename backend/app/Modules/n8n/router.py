@@ -240,7 +240,7 @@ def verificar_estado_citas(telefono: str, session: Session = Depends(get_session
         select(Cita).where(
             Cita.cliente_telefono == telefono,
             Cita.estado == "confirmada",
-            Cita.fecha >= datetime.utcnow()
+            Cita.fecha >= datetime.now(timezone.utc)
         ).order_by(Cita.fecha.asc())
     ).first()
     

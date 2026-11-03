@@ -1,5 +1,5 @@
 import enum
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Optional, TYPE_CHECKING
 from sqlmodel import Field, SQLModel, Relationship
 
@@ -25,7 +25,7 @@ class GastoVehiculo(SQLModel, table=True):
     proveedor: str
     factura_a: bool = Field(default=False)
     comprobante_url: Optional[str] = Field(default=None, max_length=500)
-    fecha_hora_carga: datetime = Field(default_factory=datetime.utcnow)
+    fecha_hora_carga: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relaciones
     vehiculo: Optional["Vehiculo"] = Relationship(back_populates="gastos")

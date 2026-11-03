@@ -1,5 +1,5 @@
 from typing import Optional, TYPE_CHECKING
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import Field, SQLModel, Relationship
 import enum
 from app.Modules.vehiculos.model import EtapaVehiculo
@@ -35,6 +35,6 @@ class DocumentoVehiculo(SQLModel, table=True):
     ruta_archivo: str
     nombre_original: str
     version: int = Field(default=1)
-    fecha_subida: datetime = Field(default_factory=datetime.utcnow)
+    fecha_subida: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     vehiculo: Optional["Vehiculo"] = Relationship(back_populates="documentos")

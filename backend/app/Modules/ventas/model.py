@@ -1,5 +1,5 @@
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import Field, SQLModel
 
 class Venta(SQLModel, table=True):
@@ -7,7 +7,7 @@ class Venta(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     vehiculo_id: int = Field(foreign_key="vehiculos.id")
     cliente_telefono: str = Field(foreign_key="clientes.telefono")
-    fecha: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    fecha: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     precio_final: float
     metodo_pago: str = Field(default="Efectivo")
     tipo_venta: str = Field(default="vendido")
