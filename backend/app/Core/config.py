@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     INITIAL_BOT_PASSWORD: str = "bot1234"
 
     # Configuración de Proveedores LLM (Agente IA)
-    LLM_PROVIDER_ORDER: str = "openai,anthropic,groq,gemini"
+    LLM_PROVIDER_ORDER: str = "groq,openrouter,gemini,openai,anthropic"
     LLM_TIMEOUT_SECONDS: float = 12.0
     AGENT_SESSION_TTL_MINUTES: int = 30
 
@@ -35,7 +35,10 @@ class Settings(BaseSettings):
     ANTHROPIC_MODEL: str = "claude-3-5-haiku-latest"
 
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "openai/gpt-oss-120b"
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_MODEL: str = "openrouter/free"
 
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.5-flash"

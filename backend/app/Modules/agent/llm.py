@@ -208,7 +208,8 @@ class LLMClient:
                 historial=historial,
             )
         except RuntimeError as exc:
-            if "404" in str(exc) or "model_not_found" in str(exc) or "400" in str(exc):
+            err_msg = str(exc).lower()
+            if any(k in err_msg for k in ("404", "model_not_found", "400", "429", "rate_limit")):
                 fallback_model = self._discover_groq_model(target_model)
                 if fallback_model:
                     self._resolved_groq_model = fallback_model
@@ -222,6 +223,44 @@ class LLMClient:
                         historial=historial,
                     )
             raise
+
+    def _call_openrouter(
+        self,
+        full_system: str,
+        user_message: str,
+        historial: Optional[List[ChatTurn]],
+    ) -> str:
+        headers = {
+            "Authorization": f"Bearer {self.cfg.OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://vendedor-ia.local",
+            "X-Title": "Vendedor IA",
+        }
+        messages = [{"role": "system", "content": full_system}]
+        if historial:
+            for turn in historial:
+                role = "assistant" if turn.role == "assistant" else "user"
+                messages.append({"role": role, "content": turn.content})
+        messages.append({"role": "user", "content": user_message})
+
+        body = {
+            "model": self.cfg.OPENROUTER_MODEL,
+            "messages": messages,
+            "response_format": {"type": "json_object"},
+            "temperature": 0.2,
+        }
+        resp = self.http.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=body,
+            timeout=self.cfg.LLM_TIMEOUT_SECONDS,
+        )
+        if resp.status_code != 200:
+            snippet = resp.text[:200] if resp.text else ""
+            raise RuntimeError(f"openrouter HTTP {resp.status_code}: {snippet}")
+
+        data = resp.json()
+        return data["choices"][0]["message"]["content"]
 
     def _call_anthropic(
         self,
@@ -333,6 +372,7 @@ class LLMClient:
             "openai": (self._is_key_configured(self.cfg.OPENAI_API_KEY), self._call_openai),
             "anthropic": (self._is_key_configured(self.cfg.ANTHROPIC_API_KEY), self._call_anthropic),
             "groq": (self._is_key_configured(self.cfg.GROQ_API_KEY), self._call_groq),
+            "openrouter": (self._is_key_configured(self.cfg.OPENROUTER_API_KEY), self._call_openrouter),
             "gemini": (self._is_key_configured(self.cfg.GEMINI_API_KEY), self._call_gemini),
         }
 
@@ -341,7 +381,7 @@ class LLMClient:
 
         if not activos:
             logger.error(
-                "Ningún proveedor LLM tiene API Key configurada (revisar OPENAI_API_KEY, ANTHROPIC_API_KEY, GROQ_API_KEY o GEMINI_API_KEY)."
+                "Ningún proveedor LLM tiene API Key configurada (revisar GROQ_API_KEY, OPENROUTER_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY o ANTHROPIC_API_KEY)."
             )
             raise LLMUnavailableError("Sin proveedores LLM configurados.")
 
