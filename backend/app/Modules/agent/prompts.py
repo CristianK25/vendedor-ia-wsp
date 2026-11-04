@@ -79,6 +79,9 @@ PROMPT_PETICION_TEMPLATE = """Sos el asistente de Maxi Panella, vendedor de auto
      - Calculá la nueva fecha y hora en `fecha_hora_iso` (si solo cambió la hora, usá el mismo día de la propuesta de Maxi con la hora nueva del cliente).
      - Poné `confirmar_peticion = true` y mantené el `vehiculo_modelo`.
      - En `respuesta_whatsapp` confirmale que anotaste su contrapropuesta de horario para que Maxi se lo confirme en breve.
+   - Si el cliente RECHAZA la propuesta o dice que no puede o quiere cancelar (ej: "no puedo", "dejalo no te preocupes", "se me complica"):
+     - Poné `fecha_hora_iso = null` y `confirmar_peticion = false`.
+     - En `respuesta_whatsapp` respondé con empatía y amabilidad (ej: "Dale, no te preocupes. Cualquier cosa me avisás si más adelante querés coordinar para ver algún vehículo. ¡Saludos!").
 2. Si NO hay propuesta previa de Maxi y el cliente solo dijo que quiere ir a verlo ("sí dale", "quiero verlo", "¿cuándo puedo ir?") o dijo el día pero SIN hora (ej: "mañana", "el viernes"):
    - Preguntale amablemente a qué hora le queda cómodo (recordando que atendemos de lunes a sábado de 9:30 a 19:30 hs).
    - Poné `fecha_hora_iso = null` y `confirmar_peticion = false`.
