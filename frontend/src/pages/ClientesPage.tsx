@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clientesApi, etiquetasApi } from '../api/clientes'
-import { Plus, Search, ChevronDown, ChevronUp, Tag, Trash2, MessageSquare, AlertTriangle, CheckCircle2, Edit3 } from 'lucide-react'
+import { Plus, Search, ChevronDown, ChevronUp, Tag, Trash2, MessageSquare, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import EtiquetasModal, { PALETA_COLORES } from '../components/EtiquetasModal'
 import DeleteClienteModal from '../components/modals/DeleteClienteModal'
 import { ClienteChatDrawer } from '../components/modals/ClienteChatDrawer'
@@ -530,14 +530,6 @@ export default function ClientesView() {
                         >
                           <WhatsAppIcon size={19} />
                         </a>
-
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); navigate(`/clientes/${c.telefono}`); }}
-                          className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-full transition-colors cursor-pointer"
-                          title="Editar Cliente"
-                        >
-                          <Edit3 size={18} />
-                        </button>
 
                         <button 
                           onClick={(e) => { e.stopPropagation(); setClienteToDelete(c); }}
