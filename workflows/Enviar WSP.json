@@ -96,6 +96,33 @@
           "name": "WhatsApp account - Enviar Mensaje"
         }
       }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://backend:8000/api/n8n/peticiones/{{ $('Webhook').item.json.body.peticion_id }}/whatsapp-enviado",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "5c6bf98523bbf039cda81aba51b7d97becd8838253d1ff48cb18b1df818815fc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ mensaje_id: $json.messages ? $json.messages[0].id : null, estado: 'enviado', accion: $('Webhook').item.json.body.accion }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        -16
+      ],
+      "id": "7b58fae4-1845-4df3-a185-1bf8ee03ce55",
+      "name": "Notificar Backend Envio"
     }
   ],
   "connections": {
@@ -127,6 +154,28 @@
           }
         ]
       ]
+    },
+    "Confirmacion": {
+      "main": [
+        [
+          {
+            "node": "Notificar Backend Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pospuesto": {
+      "main": [
+        [
+          {
+            "node": "Notificar Backend Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -136,4 +185,3 @@
   },
   "id": "UaBJ2nbMicXowR6l"
 }
-

@@ -19,6 +19,19 @@ app = FastAPI(title="Vendedor IA API", description="API para el sistema de Vende
 @app.on_event("startup")
 def on_startup():
     SQLModel.metadata.create_all(engine)
+    # Migraciones idempotentes de columnas nuevas en PostgreSQL
+    try:
+        from sqlalchemy import text
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE peticiones ADD COLUMN IF NOT EXISTS whatsapp_enviado BOOLEAN DEFAULT FALSE;"))
+            conn.execute(text("ALTER TABLE peticiones ADD COLUMN IF NOT EXISTS whatsapp_enviado_at TIMESTAMP WITH TIME ZONE;"))
+            conn.execute(text("ALTER TABLE peticiones ADD COLUMN IF NOT EXISTS whatsapp_mensaje_id VARCHAR;"))
+            # Peticiones previas de admin ya cursadas se inicializan como enviadas
+            conn.execute(text("UPDATE peticiones SET whatsapp_enviado = TRUE WHERE origen = 'admin' AND (whatsapp_enviado IS FALSE OR whatsapp_enviado IS NULL);"))
+    except Exception as e:
+        import logging
+        logging.getLogger("uvicorn.error").warning(f"Error al asegurar columnas en peticiones: {e}")
+
     with Session(engine) as session:
         has_users = session.exec(select(Usuario)).first()
         if not has_users:

@@ -144,6 +144,12 @@ def aceptar_peticion(peticion_id: int, session: Session = Depends(get_session)):
     telefono_limpio = "".join(c for c in peticion.cliente_telefono if c.isdigit())
     whatsapp_url = f"https://wa.me/{telefono_limpio}?text={quote(mensaje_wsp)}"
 
+    if enviado_ok:
+        peticion.whatsapp_enviado = True
+        peticion.whatsapp_enviado_at = datetime.now(timezone.utc)
+        session.add(peticion)
+        session.commit()
+
     return {
         "status": "success",
         "message": "Petición aceptada y enviada por WhatsApp" if enviado_ok else "Petición aceptada (no se pudo enviar por n8n)",
@@ -214,6 +220,13 @@ def posponer_peticion(peticion_id: int, datos: PeticionPosponer, session: Sessio
     telefono_limpio = "".join(c for c in nueva_peticion.cliente_telefono if c.isdigit())
     whatsapp_url = f"https://wa.me/{telefono_limpio}?text={quote(mensaje_wsp)}"
 
+    if enviado_ok:
+        nueva_peticion.whatsapp_enviado = True
+        nueva_peticion.whatsapp_enviado_at = datetime.now(timezone.utc)
+        session.add(nueva_peticion)
+        session.commit()
+        session.refresh(nueva_peticion)
+
     return {
         "status": "success",
         "message": "Petición pospuesta y enviada por WhatsApp" if enviado_ok else "Petición pospuesta (no se pudo enviar por n8n)",
@@ -229,6 +242,16 @@ def reenviar_whatsapp_peticion(peticion_id: int, session: Session = Depends(get_
     peticion = session.get(Peticion, peticion_id)
     if not peticion:
         raise HTTPException(status_code=404, detail="Petición no encontrada")
+
+    # Cooldown de 24 horas para evitar dobles envíos y spam accidental al cliente
+    if peticion.whatsapp_enviado and peticion.whatsapp_enviado_at:
+        enviado_utc = _ensure_utc(peticion.whatsapp_enviado_at)
+        horas_desde_envio = (datetime.now(timezone.utc) - enviado_utc).total_seconds() / 3600
+        if horas_desde_envio < 24:
+            raise HTTPException(
+                status_code=400,
+                detail="El mensaje de WhatsApp ya fue enviado a este cliente recientemente (cooldown de 24hs).",
+            )
 
     fecha_utc = _ensure_utc(peticion.fecha_propuesta)
     fecha_mza = fecha_utc.astimezone(MENDOZA_TZ).strftime("%d/%m/%Y a las %H:%M")
@@ -264,6 +287,12 @@ def reenviar_whatsapp_peticion(peticion_id: int, session: Session = Depends(get_
             status_code=502,
             detail="No se pudo enviar el mensaje a través del flujo 'Enviar WSP' en n8n. Verificá que el workflow esté activo.",
         )
+
+    peticion.whatsapp_enviado = True
+    peticion.whatsapp_enviado_at = datetime.now(timezone.utc)
+    session.add(peticion)
+    session.commit()
+    session.refresh(peticion)
 
     return {
         "status": "success",

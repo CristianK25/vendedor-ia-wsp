@@ -175,4 +175,7 @@ export interface Peticion {
   origen: string
   estado: string
   peticion_padre_id?: number
+  whatsapp_enviado?: boolean
+  whatsapp_enviado_at?: string
+  whatsapp_mensaje_id?: string
 }

@@ -11,6 +11,9 @@ class PeticionRead(BaseModel):
     origen: str
     estado: str
     peticion_padre_id: Optional[int] = None
+    whatsapp_enviado: bool = False
+    whatsapp_enviado_at: Optional[datetime] = None
+    whatsapp_mensaje_id: Optional[str] = None
     
     class Config:
         from_attributes = True

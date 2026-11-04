@@ -20,3 +20,8 @@ class Peticion(SQLModel, table=True):
     
     peticion_padre_id: Optional[int] = Field(default=None)
     token_confirmacion: Optional[str] = Field(default_factory=lambda: uuid.uuid4().hex)
+
+    # Estado de envío por WhatsApp (notificación de propuesta de Maxi / reprogramación)
+    whatsapp_enviado: bool = Field(default=False)
+    whatsapp_enviado_at: Optional[datetime] = Field(default=None)
+    whatsapp_mensaje_id: Optional[str] = Field(default=None)

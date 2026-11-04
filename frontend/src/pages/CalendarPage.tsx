@@ -142,11 +142,19 @@ export default function CalendarView() {
     try {
       setIsActionLoading(true);
       await peticionesApi.reenviarWhatsApp(id);
+      await fetchData();
     } catch (error) {
       console.error(error);
     } finally {
       setIsActionLoading(false);
     }
+  };
+
+  const isEnviadoReciente = (p: Peticion) => {
+    if (!p.whatsapp_enviado) return false;
+    if (!p.whatsapp_enviado_at) return true;
+    const horas = (Date.now() - new Date(p.whatsapp_enviado_at).getTime()) / (1000 * 60 * 60);
+    return horas < 24;
   };
 
   const handleForzarConfirmacion = async (id: number) => {
@@ -461,8 +469,8 @@ export default function CalendarView() {
                             <span className="font-bold text-on-surface text-sm">{p.cliente_nombre}</span>
                             <span className="text-xs text-on-surface-variant">{p.cliente_telefono}</span>
                           </div>
-                          <span className="text-[9px] font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full border border-orange-100 uppercase tracking-wide flex items-center gap-1">
-                            WhatsApp <Check size={10} />
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wide flex items-center gap-1 ${p.whatsapp_enviado ? 'bg-primary/10 text-primary border-primary/20' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                            {p.whatsapp_enviado ? 'WhatsApp Enviado' : 'WhatsApp'} <Check size={10} />
                           </span>
                         </div>
                         <div className="bg-orange-50/50 rounded-lg p-3 text-[13px] text-gray-700 flex flex-col gap-1.5 mb-4 border border-orange-100/50">
@@ -476,15 +484,33 @@ export default function CalendarView() {
                               {new Date(p.fecha_propuesta).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}hs
                             </span>
                           </div>
+                          {p.whatsapp_enviado_at && (
+                            <div className="flex justify-between text-[11px] pt-1 border-t border-orange-100/50">
+                              <span className="text-gray-400">Enviado por Bot:</span>
+                              <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                                {new Date(p.whatsapp_enviado_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex gap-2">
-                          <button
-                            onClick={() => handleReenviarWhatsApp(p.id)}
-                            disabled={isActionLoading}
-                            className="flex-1 bg-[#25D366]/15 text-[#128C7E] dark:text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 text-xs font-bold py-2 rounded-lg transition-colors text-center flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
-                          >
-                            Reenviar WhatsApp
-                          </button>
+                          {isEnviadoReciente(p) ? (
+                            <button
+                              disabled
+                              className="flex-1 bg-surface-container-high text-on-surface-variant border border-outline-variant text-xs font-bold py-2 rounded-lg text-center flex items-center justify-center gap-1.5 cursor-not-allowed opacity-80"
+                            >
+                              <Check size={14} className="text-primary" />
+                              WhatsApp Enviado
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleReenviarWhatsApp(p.id)}
+                              disabled={isActionLoading}
+                              className="flex-1 bg-[#25D366]/15 text-[#128C7E] dark:text-[#25D366] border border-[#25D366]/30 hover:bg-[#25D366]/25 text-xs font-bold py-2 rounded-lg transition-colors text-center flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                            >
+                              Reenviar WhatsApp
+                            </button>
+                          )}
                           <button 
                             onClick={() => handleForzarConfirmacion(p.id)}
                             disabled={isActionLoading}

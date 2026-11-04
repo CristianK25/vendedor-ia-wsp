@@ -11,7 +11,7 @@ from app.Core.Security.deps import verify_n8n_internal_request
 from app.Modules.agent.model import AgentChatMessage
 from app.Modules.n8n.schema import (
     N8NCitaCreate, N8NCitaCancel, N8NClienteCheck, N8NResenaCreate, PeticionCreateN8N,
-    N8NWhatsAppBufferRequest, N8NWhatsAppBufferResponse
+    N8NWhatsAppBufferRequest, N8NWhatsAppBufferResponse, N8NWhatsAppEnviado
 )
 from app.Modules.vehiculos.service import VehiculoService
 from app.Modules.citas.service import CitaService
@@ -115,6 +115,38 @@ def confirmar_peticion(peticion_id: int, session: Session = Depends(get_session)
     session.commit()
     
     return {"status": "success", "message": "Cita confirmada", "cita": nueva_cita}
+
+@router.post("/peticiones/{peticion_id}/whatsapp-enviado")
+def marcar_whatsapp_enviado(
+    peticion_id: int,
+    datos: N8NWhatsAppEnviado,
+    session: Session = Depends(get_session)
+):
+    """
+    Callback invocado por n8n (workflow 'Enviar WSP') una vez que Meta confirma
+    la entrega del mensaje de WhatsApp al cliente.
+    """
+    peticion = session.get(Peticion, peticion_id)
+    if not peticion:
+        raise HTTPException(status_code=404, detail="Petición no encontrada")
+
+    peticion.whatsapp_enviado = True
+    peticion.whatsapp_enviado_at = datetime.now(timezone.utc)
+    if datos.mensaje_id:
+        peticion.whatsapp_mensaje_id = datos.mensaje_id
+
+    session.add(peticion)
+    session.commit()
+    session.refresh(peticion)
+
+    return {
+        "status": "success",
+        "message": "Petición actualizada como enviada por WhatsApp",
+        "peticion_id": peticion.id,
+        "whatsapp_enviado": True,
+        "whatsapp_enviado_at": peticion.whatsapp_enviado_at.isoformat() if peticion.whatsapp_enviado_at else None,
+        "whatsapp_mensaje_id": peticion.whatsapp_mensaje_id,
+    }
 
 @router.put("/citas/cancelar")
 def cancelar_cita(cita_data: N8NCitaCancel, session: Session = Depends(get_session)):

@@ -81,3 +81,9 @@ class N8NWhatsAppBufferResponse(BaseModel):
     total_mensajes: Optional[int] = 0
     motivo: Optional[str] = None
 
+
+class N8NWhatsAppEnviado(BaseModel):
+    mensaje_id: Optional[str] = None
+    estado: str = "enviado"
+    accion: Optional[str] = None
+
