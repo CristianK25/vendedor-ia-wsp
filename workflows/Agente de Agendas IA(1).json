@@ -3,44 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://backend:8000/api/n8n/clientes/verificar_o_crear",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-N8N-API-KEY",
-              "value": "5c6bf98523bbf039cda81aba51b7d97becd8838253d1ff48cb18b1df818815fc"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "telefono",
-              "value": "={{ $json.cliente_telefono }}"
-            },
-            {
-              "name": "nombre",
-              "value": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].profile.name }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        2000,
-        -16
-      ],
-      "id": "ab4f928a-c165-417d-9f39-ac054f9e04ff",
-      "name": "Guardar Cliente",
-      "executeOnce": true
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
         "path": "whatsapp",
         "options": {}
@@ -54,24 +16,6 @@
       "id": "65c56979-3363-459d-a4bd-4a704ebea765",
       "name": "Webhook",
       "webhookId": "61cc7ac8-8f1d-4182-a043-8e03d5ccd3f2"
-    },
-    {
-      "parameters": {
-        "operation": "send",
-        "phoneNumberId": "1181457498395106",
-        "recipientPhoneNumber": "=={{ $('Webhook').first().json.body.entry[0].changes[0].value.messages[0].from }}",
-        "textBody": "={{ $json.respuesta_texto }}",
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-base.whatsApp",
-      "typeVersion": 1.1,
-      "position": [
-        2840,
-        -16
-      ],
-      "id": "a599166d-12c9-4c47-9424-975ebf2ac72c",
-      "name": "Send message",
-      "webhookId": "2abf814f-ff0d-434f-b323-33c51213d44c"
     },
     {
       "parameters": {
@@ -108,6 +52,107 @@
       "name": "Hay Mensajes?"
     },
     {
+      "id": "tiene-texto-if-id",
+      "name": "¿Tiene Texto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1460,
+        16
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c-tiene-texto",
+              "leftValue": "={{ (() => { const msg = $json.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]; if (!msg) return false; if (msg.type === 'text' && msg.text?.body && msg.text.body.trim().length > 0) return true; if (msg[msg.type]?.caption && msg[msg.type].caption.trim().length > 0) return true; return false; })() }}",
+              "operator": {
+                "operation": "equals",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "pedir-solo-texto-id",
+      "name": "Pedir Solo Texto",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        180
+      ],
+      "parameters": {
+        "additionalFields": {},
+        "operation": "send",
+        "phoneNumberId": "1181457498395106",
+        "recipientPhoneNumber": "={{ $('Webhook').first().json.body.entry[0].changes[0].value.messages[0].from }}",
+        "textBody": "¡Hola! 👋 Por este medio solo puedo leer mensajes de texto (no puedo escuchar audios ni ver imágenes). ¿Me podrías escribir tu consulta por acá en un texto así te ayudo? ¡Muchas gracias!"
+      },
+      "credentials": {
+        "whatsAppApi": {
+          "id": "9byit9BxxrTxhsS7",
+          "name": "WhatsApp account - Enviar Mensaje"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cliente_telefono",
+              "value": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].from }}"
+            },
+            {
+              "name": "texto",
+              "value": "={{ (() => { const msg = $('Webhook').item.json.body.entry[0].changes[0].value.messages[0]; if (msg.type === 'text' && msg.text && msg.text.body) return msg.text.body.trim(); if (msg[msg.type] && msg[msg.type].caption) return msg[msg.type].caption.trim(); return ''; })() }}"
+            },
+            {
+              "name": "nombre",
+              "value": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].profile.name }}"
+            },
+            {
+              "name": "wait_seconds",
+              "value": "4"
+            }
+          ]
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "5c6bf98523bbf039cda81aba51b7d97becd8838253d1ff48cb18b1df818815fc"
+            }
+          ]
+        },
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "url": "http://backend:8000/api/n8n/whatsapp/buffer"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1680,
+        -16
+      ],
+      "id": "339ceb1e-4db6-4a2e-a62b-05ce8910586c",
+      "name": "Buffer Mensajes"
+    },
+    {
       "parameters": {
         "conditions": {
           "options": {
@@ -134,8 +179,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1776,
-        0
+        1880,
+        -16
       ],
       "id": "97af8b5e-1e8a-4ac8-9621-4885688c0c5e",
       "name": "Es lider?"
@@ -143,7 +188,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://backend:8000/api/n8n/whatsapp/buffer",
+        "url": "http://backend:8000/api/n8n/clientes/verificar_o_crear",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -157,20 +202,12 @@
         "bodyParameters": {
           "parameters": [
             {
-              "name": "cliente_telefono",
-              "value": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].from }}"
-            },
-            {
-              "name": "texto",
-              "value": "={{\n  (() => {\n    const msg = $('Webhook').item.json.body.entry[0].changes[0].value.messages[0];\n    if (msg.type === 'text' && msg.text && msg.text.body) return msg.text.body;\n    if (msg.type === 'image') return '[📷 Foto enviada por el cliente' + (msg.image && msg.image.caption ? ': ' + msg.image.caption : '') + ']';\n    if (msg.type === 'audio') return '[🎤 Audio enviado por el cliente]';\n    if (msg.type === 'document') return '[📄 Documento enviado por el cliente: ' + (msg.document && msg.document.filename ? msg.document.filename : '') + ']';\n    return '[Mensaje multimedia: ' + msg.type + ']';\n  })()\n}}"
+              "name": "telefono",
+              "value": "={{ $json.cliente_telefono }}"
             },
             {
               "name": "nombre",
               "value": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].profile.name }}"
-            },
-            {
-              "name": "wait_seconds",
-              "value": "4"
             }
           ]
         },
@@ -179,17 +216,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        1568,
-        0
+        2080,
+        -16
       ],
-      "id": "339ceb1e-4db6-4a2e-a62b-05ce8910586c",
-      "name": "Buffer Mensajes"
+      "id": "ab4f928a-c165-417d-9f39-ac054f9e04ff",
+      "name": "Guardar Cliente",
+      "executeOnce": true
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://laya:8000/v1/systemone",
-        "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
@@ -198,15 +233,18 @@
             }
           ]
         },
-        "sendBody": true,
-        "specifyBody": "json",
         "jsonBody": "={{\n  JSON.stringify({\n    state: (($('Guardar Cliente').item.json.contexto_laya || '') + 'El cliente dice ahora: ' + ($('Buffer Mensajes').item.json.mensaje_completo || '')).replace(/\\s+/g, ' ').trim(),\n    questions: {\n      camino: {\n        type: \"choice\",\n        instructions: \"¿Cuál es la intención principal del cliente en SU ÚLTIMO MENSAJE ('El cliente dice ahora'), teniendo en cuenta la pregunta previa del asistente?\",\n        criteria: {\n          catalogo: \"Pregunta por autos en venta, stock disponible, precio, kilometraje, fotos o un modelo puntual\",\n          tasacion: \"Pregunta si toman permuta, entrega de auto usado en parte de pago o cotización de su auto\",\n          financiacion: \"Pregunta por cuotas, formas de pago, dólares, planes de financiación o créditos\",\n          agendar_cita: \"Quiere ir a ver el auto, responde que sí a coordinar una visita ('sí dale', 'mañana a las 17'), pregunta dónde están ubicados o propone día y horario\",\n          negociacion: \"Pide descuento, hace una oferta de contado o pregunta el último precio\",\n          humano: \"Pide hablar con un vendedor o con Maxi, quiere señar o cerrar la compra, o tiene un reclamo\",\n          general: \"Saludo inicial sin consulta específica (hola, buenas), horarios de atención o preguntas generales\"\n        }\n      }\n    }\n  })\n}}",
-        "options": {}
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "http://laya:8000/v1/systemone"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2240,
+        2280,
         -16
       ],
       "id": "c26f29d9-ead7-4d94-a04f-69164d405d93",
@@ -214,178 +252,6 @@
     },
     {
       "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.answers.camino.choice }}",
-                    "rightValue": "catalogo",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "760f61a0-493c-447d-b7a9-5d16592f06c8"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "catalogo"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "011b201e-2bfd-4ccc-ae07-1508bc90fe7c",
-                    "leftValue": "={{ $json.answers.camino.choice }}",
-                    "rightValue": "tasacion",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "tasacion"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "76e664c7-d305-446a-b1a4-98bbebfe75e5",
-                    "leftValue": "={{ $json.answers.camino.choice }}",
-                    "rightValue": "financiacion",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "financiacion"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "2d0cc7e9-c29a-4398-8871-a5bfc138dfee",
-                    "leftValue": "={{ $json.answers.camino.choice }}",
-                    "rightValue": "agendar_cita",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "agendar cita"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "2f0be101-5037-4fac-9e30-4f9efe92ae7d",
-                    "leftValue": "={{ $json.answers.camino.choice }}",
-                    "rightValue": "negociacion",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "negociacion"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "5f2b4c31-6117-4d38-9ed2-d21472314fe1",
-                    "leftValue": "={{ $json.answers.camino.choice }}",
-                    "rightValue": "humano",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "humano"
-            }
-          ]
-        },
-        "options": {
-          "fallbackOutput": "extra"
-        }
-      },
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
-      "position": [
-        1808,
-        304
-      ],
-      "id": "ad39b864-99e9-4510-9833-40480d11c97e",
-      "name": "Camino",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://backend:8000/api/agent/chat",
-        "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
@@ -394,29 +260,24 @@
             }
           ]
         },
-        "sendBody": true,
-        "specifyBody": "json",
         "jsonBody": "={{\n  JSON.stringify({\n    session_id: $('Guardar Cliente').item.json.cliente.telefono,\n    cliente_telefono: $('Guardar Cliente').item.json.cliente.telefono,\n    cliente_nombre: $('Guardar Cliente').item.json.cliente.nombre,\n    camino: ($json.answers && $json.answers.camino && $json.answers.camino.choice) ? $json.answers.camino.choice : 'fallback',\n    mensaje: $('Buffer Mensajes').item.json.mensaje_completo || ''\n  })\n}}",
-        "options": {}
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "http://backend:8000/api/agent/chat"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2464,
+        2480,
         -16
       ],
       "id": "8ec5d6e9-8adf-42a2-ba8a-48733afce89b",
       "name": "Ejecutar Agente"
     },
     {
-      "id": "f7b8c19a-9e12-4a56-b089-63a291f0412e",
-      "name": "¿Enviar WhatsApp?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        2620,
-        -16
-      ],
       "parameters": {
         "conditions": {
           "combinator": "and",
@@ -448,24 +309,43 @@
             "typeValidation": "strict",
             "version": 3
           }
-        }
+        },
+        "options": {}
       },
-      "disabled": false
-    }
-  ],
-  "pinData": {},
-  "connections": {
-    "Guardar Cliente": {
-      "main": [
-        [
-          {
-            "node": "Consultar Ruta",
-            "type": "main",
-            "index": 0
-          }
-        ]
+      "id": "f7b8c19a-9e12-4a56-b089-63a291f0412e",
+      "name": "¿Enviar WhatsApp?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2680,
+        -16
       ]
     },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1181457498395106",
+        "recipientPhoneNumber": "=={{ $('Webhook').first().json.body.entry[0].changes[0].value.messages[0].from }}",
+        "textBody": "={{ $json.respuesta_texto }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2880,
+        -16
+      ],
+      "id": "a599166d-12c9-4c47-9424-975ebf2ac72c",
+      "name": "Send message",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "9byit9BxxrTxhsS7",
+          "name": "WhatsApp account - Enviar Mensaje"
+        }
+      }
+    }
+  ],
+  "connections": {
     "Webhook": {
       "main": [
         [
@@ -481,18 +361,25 @@
       "main": [
         [
           {
-            "node": "Buffer Mensajes",
+            "node": "¿Tiene Texto?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Es lider?": {
+    "¿Tiene Texto?": {
       "main": [
         [
           {
-            "node": "Guardar Cliente",
+            "node": "Buffer Mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pedir Solo Texto",
             "type": "main",
             "index": 0
           }
@@ -510,6 +397,28 @@
         ]
       ]
     },
+    "Es lider?": {
+      "main": [
+        [
+          {
+            "node": "Guardar Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Cliente": {
+      "main": [
+        [
+          {
+            "node": "Consultar Ruta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Consultar Ruta": {
       "main": [
         [
@@ -519,15 +428,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Camino": {
-      "main": [
-        [],
-        [],
-        [],
-        [],
-        []
       ]
     },
     "Ejecutar Agente": {
@@ -555,29 +455,7 @@
   },
   "active": true,
   "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": true
+    "executionOrder": "v1"
   },
-  "versionId": "6661b4ee-ccde-45bb-a49d-4780c142d96c",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "aiBuilderAssisted": true,
-    "builderVariant": "mcp"
-  },
-  "nodeGroups": [
-    {
-      "id": "3ed16e24-8bb5-475c-94de-d682dd9de5ef",
-      "name": "Filtros",
-      "nodeIds": [
-        "ab4f928a-c165-417d-9f39-ac054f9e04ff",
-        "49e2117e-32ef-4d45-8b05-bf57b8e37f15",
-        "97af8b5e-1e8a-4ac8-9621-4885688c0c5e",
-        "339ceb1e-4db6-4a2e-a62b-05ce8910586c"
-      ],
-      "description": "Buffers y guardado de  cliente"
-    }
-  ],
-  "id": "mi-flujo-ventas-id",
-  "tags": []
+  "id": "mi-flujo-ventas-id"
 }
